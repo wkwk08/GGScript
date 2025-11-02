@@ -228,18 +228,20 @@ class Lexer:
         if not self.current_char.isalpha():
             return Token(TokenType.ERROR, "Identifier must start with a letter", start_line, start_col)
         
-        # Read identifier (max 20 chars per page 7, rule 6)
+        # Read identifier (max 19 chars per page 7, rule 6)
         while self.current_char and (self.current_char.isalnum() or self.current_char == '_'):
             if self.current_char == '_':
                 underscore_count += 1
-                if underscore_count > 19:  # Max 19 underscores
-                    return Token(TokenType.ERROR, "Identifier cannot have more than 19 underscores", start_line, start_col)
+                # Rule 5: max 2 underscores
+                if underscore_count > 2:
+                    return Token(TokenType.ERROR, "Identifier cannot have more than 2 underscores", start_line, start_col)
             
             identifier += self.current_char
             self.advance()
             
-            if len(identifier) > 20:  # Max length 20 characters
-                return Token(TokenType.ERROR, "Identifier too long (max 20 characters)", start_line, start_col)
+            # Rule 6: max length 19
+            if len(identifier) > 19:
+                return Token(TokenType.ERROR, "Identifier too long (max 19 characters)", start_line, start_col)
                 
         # Special handling for two-word keyword "choke clutch"
         if identifier == 'choke':
@@ -359,14 +361,14 @@ class Lexer:
                 if self.current_char == '=':
                     self.advance()
                     return Token(TokenType.LESS_EQUAL, '<=', start_line, start_col)
-                return Token(TokenType.LESS_THAN, '<', start_line, start_col)
+                return Token(TokenType.LESS, '<', start_line, start_col)
             
             if self.current_char == '>':
                 self.advance()
                 if self.current_char == '=':
                     self.advance()
                     return Token(TokenType.GREATER_EQUAL, '>=', start_line, start_col)
-                return Token(TokenType.GREATER_THAN, '>', start_line, start_col)
+                return Token(TokenType.GREATER, '>', start_line, start_col)
             
             if self.current_char == '&':
                 self.advance()
