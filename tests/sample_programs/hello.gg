@@ -1,0 +1,15 @@
+/* Hello World in GGScript */
+
+frag lobby() {
+    ign message = "Hello, GGScript!";
+    shout message;
+    
+    frag score = 100;
+    clutch(score >= 50) {
+        shout "You win!";
+    } choke {
+        shout "Try again!";
+    }
+    
+    ggwp 0;
+}
