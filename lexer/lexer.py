@@ -108,6 +108,8 @@ class Lexer:
             num_str += self.current_char
             digit_count += 1
             self.advance()
+            if digit_count > 15:  # Max 15 digits
+                return Token(TokenType.ERROR, "Number too long (max 15 digits)", start_line, start_col)
         
         # Check for decimal point
         if self.current_char == '.':
