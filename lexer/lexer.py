@@ -196,6 +196,22 @@ class Lexer:
             
             if len(identifier) > 20:  # Max length 20 characters (updated rule)
                 return Token(TokenType.ERROR, "Identifier too long (max 20 characters)", start_line, start_col)
+                
+        if identifier == 'choke':
+            next_word = self.peek_word()
+            if next_word == 'clutch':
+                # Consume whitespace and 'clutch'
+                while self.current_char and self.current_char.isspace():
+                    self.advance()
+
+                # Read 'clutch'
+                clutch_word = ''
+                while self.current_char and (self.current_char.isalnum() or self.current_char == '_'):
+                    clutch_word += self.current_char
+                    self.advance()
+
+                if clutch_word == 'clutch':
+                    return Token(TokenType.CHOKE_CLUTCH, 'choke clutch', start_line, start_col)
         
         # Check if it's a reserved word
         token_type = self.keywords.get(identifier, TokenType.IDENTIFIER)
