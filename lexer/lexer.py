@@ -187,14 +187,14 @@ class Lexer:
         while self.current_char and (self.current_char.isalnum() or self.current_char == '_'):
             if self.current_char == '_':
                 underscore_count += 1
-                if underscore_count > 2:  # Max 2 underscores (rule 5)
-                    return Token(TokenType.ERROR, "Identifier cannot have more than 2 underscores", start_line, start_col)
+                if underscore_count > 19:  # Max 19 underscores (updated rule)
+                    return Token(TokenType.ERROR, "Identifier cannot have more than 19 underscores", start_line, start_col)
             
             identifier += self.current_char
             self.advance()
             
-            if len(identifier) > 19:  # Max length (rule 6)
-                return Token(TokenType.ERROR, "Identifier too long (max 19 characters)", start_line, start_col)
+            if len(identifier) > 20:  # Max length 20 characters (updated rule)
+                return Token(TokenType.ERROR, "Identifier too long (max 20 characters)", start_line, start_col)
         
         # Check if it's a reserved word
         token_type = self.keywords.get(identifier, TokenType.IDENTIFIER)
