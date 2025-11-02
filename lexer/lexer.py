@@ -82,30 +82,37 @@ class Lexer:
             self.advance()
     
     def skip_comment(self):
-        """Handle comments: /* single-line and /* */ multi-line (page 12)"""
-        # Single-line: / followed by space then *
-        if self.current_char == '/' and self.peek() == ' ' and self.peek(2) == '*':
-            self.advance()  # skip /
-            self.advance()  # skip space
-            self.advance()  # skip *
-            while self.current_char and self.current_char != '\n':
-                self.advance()
-            return True
-            
-        # Multi-line comment: /* ... */
+        """
+        Handle comments: /* single-line and /* */ multi-line (page 12)
+        - /*comment (single-line - continues to end of line)
+        - /* comment */ (multi-line - must have closing */)
+        """
+        # Check for /* pattern
         if self.current_char == '/' and self.peek() == '*':
             self.advance()  # skip /
             self.advance()  # skip *
+            
+            # Look for multi-line closing */
             while self.current_char:
                 if self.current_char == '*' and self.peek() == '/':
-                    self.advance()
-                    self.advance()
+                    # Found closing */ - this is a multi-line comment
+                    self.advance()  # skip *
+                    self.advance()  # skip /
+                    return True
+                elif self.current_char == '\n':
+                    # Newline reached without */ - this was a single-line comment
                     return True
                 self.advance()
+            
+            # Reached end of file - treat as single-line comment
             return True
+        
+        return False
 
     def read_number(self):
-        """Read integer or float (pages 16-17, 52)"""
+        """
+        Tokenize frag and elo literals with digit limits and optional scientific notation (pages 16-17, 52).
+        """
         start_line = self.line
         start_col = self.column
         num_str = ''
@@ -137,6 +144,26 @@ class Lexer:
                 self.advance()
                 if frac_count > 6:  # Max 6 digits after decimal
                     return Token(TokenType.ERROR, "Too many digits after decimal (max 6)", start_line, start_col)
+            
+            # Check for scientific notation (e or E)
+            if self.current_char and self.current_char.lower() == 'e':
+                num_str += self.current_char
+                self.advance()
+                
+                # Optional + or - after e
+                if self.current_char and self.current_char in ['+', '-']:
+                    num_str += self.current_char
+                    self.advance()
+                
+                # Read exponent digits
+                exp_count = 0
+                if not self.current_char or not self.current_char.isdigit():
+                    return Token(TokenType.ERROR, "Invalid scientific notation: expected digits after 'e'", start_line, start_col)
+                
+                while self.current_char and self.current_char.isdigit():
+                    num_str += self.current_char
+                    exp_count += 1
+                    self.advance()
             
             try:
                 return Token(TokenType.FLOAT, float(num_str), start_line, start_col)
@@ -201,19 +228,20 @@ class Lexer:
         if not self.current_char.isalpha():
             return Token(TokenType.ERROR, "Identifier must start with a letter", start_line, start_col)
         
-        # Read identifier (max 19 chars per page 7, rule 6)
+        # Read identifier (max 20 chars per page 7, rule 6)
         while self.current_char and (self.current_char.isalnum() or self.current_char == '_'):
             if self.current_char == '_':
                 underscore_count += 1
-                if underscore_count > 19:  # Max 19 underscores (updated rule)
+                if underscore_count > 19:  # Max 19 underscores
                     return Token(TokenType.ERROR, "Identifier cannot have more than 19 underscores", start_line, start_col)
             
             identifier += self.current_char
             self.advance()
             
-            if len(identifier) > 20:  # Max length 20 characters (updated rule)
+            if len(identifier) > 20:  # Max length 20 characters
                 return Token(TokenType.ERROR, "Identifier too long (max 20 characters)", start_line, start_col)
                 
+        # Special handling for two-word keyword "choke clutch"
         if identifier == 'choke':
             next_word = self.peek_word()
             if next_word == 'clutch':
