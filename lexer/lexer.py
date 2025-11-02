@@ -89,8 +89,7 @@ class Lexer:
                     self.advance()
                     return True
                 self.advance()
-                return True
-            return False
+            return True
 
     def read_number(self):
         """Read integer or float (pages 16-17, 52)"""
