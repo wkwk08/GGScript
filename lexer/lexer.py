@@ -70,26 +70,28 @@ class Lexer:
     
     def skip_comment(self):
         """Handle comments: /* single-line and /* */ multi-line (page 12)"""
+        # Single-line: / followed by space then *
+        if self.current_char == '/' and self.peek() == ' ' and self.peek(2) == '*':
+            self.advance()  # skip /
+            self.advance()  # skip space
+            self.advance()  # skip *
+            while self.current_char and self.current_char != '\n':
+                self.advance()
+            return True
+            
+        # Multi-line comment: /* ... */
         if self.current_char == '/' and self.peek() == '*':
             self.advance()  # skip /
             self.advance()  # skip *
-            
-            # Look for multi-line comment ending
             while self.current_char:
                 if self.current_char == '*' and self.peek() == '/':
-                    # Multi-line comment end
-                    self.advance()  # skip *
-                    self.advance()  # skip /
-                    return True
-                elif self.current_char == '\n':
-                    # Single-line comment ends at newline
-                    # Don't consume the newline, let skip_whitespace handle it
+                    self.advance()
+                    self.advance()
                     return True
                 self.advance()
-            
-            return True
-        return False
-    
+                return True
+            return False
+
     def read_number(self):
         """Read integer or float (pages 16-17, 52)"""
         start_line = self.line
