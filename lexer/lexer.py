@@ -122,6 +122,8 @@ class Lexer:
                 num_str += self.current_char
                 frac_count += 1
                 self.advance()
+                if frac_count > 6:  # Max 6 digits after decimal
+                    return Token(TokenType.ERROR, "Too many digits after decimal (max 6)", start_line, start_col)
             
             try:
                 return Token(TokenType.FLOAT, float(num_str), start_line, start_col)
