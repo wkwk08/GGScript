@@ -1,100 +1,106 @@
-from enum import Enum
+from enum import Enum, auto
 
 class TokenType(Enum):
-    # Data Types
-    FRAG = "frag"           # int
-    ELO = "elo"             # float
-    IGN = "ign"             # string
-    SUREBOL = "surebol"     # boolean
-    TAG = "tag"             # char
+    # Data Types (page 42)
+    FRAG = auto()      # int
+    ELO = auto()       # float
+    IGN = auto()       # string
+    SUREBOL = auto()   # boolean
+    TAG = auto()       # char
     
-    # Control Flow
-    CLUTCH = "clutch"       # if
-    CHOKE = "choke"         # else
-    CHOKE_CLUTCH = "choke clutch"  # else if
-    PICK = "pick"           # switch
-    ROLE = "role"           # case
-    NOOB = "noob"           # default
+    # Control Flow (page 42-43)
+    CLUTCH = auto()         # if
+    CHOKE = auto()          # else
+    CHOKE_CLUTCH = auto()   # else if (NEW: two-word keyword)
+    PICK = auto()           # switch
+    ROLE = auto()           # case
+    NOOB = auto()           # default
+    GRIND = auto()          # for
+    RETRY = auto()          # while
+    TRY = auto()            # do
+    AFK = auto()            # break
+    HOP = auto()            # continue
     
-    # Loops
-    GRIND = "grind"         # for
-    RETRY = "retry"         # while
-    TRY = "try"             # do
+    # I/O (page 43)
+    COMSAT = auto()    # scanf/input
+    SHOUT = auto()     # printf/output
     
-    # Control Statements
-    AFK = "afk"             # break
-    HOP = "hop"             # continue
-    GGWP = "ggwp"           # return
+    # Functions (page 43-44)
+    BUILD = auto()     # function declaration
+    LOBBY = auto()     # main
+    DODGE = auto()     # void
+    GGWP = auto()      # return
     
-    # I/O
-    COMSAT = "comsat"       # scanf
-    SHOUT = "shout"         # printf
+    # Modifiers (page 44)
+    STUN = auto()      # const
     
-    # Function/Program
-    BUILD = "build"         # function
-    LOBBY = "lobby"         # main
-    DODGE = "dodge"         # void
+    # Boolean Literals (page 44)
+    BUFF = auto()      # true
+    NERF = auto()      # false
     
-    # Other Keywords
-    STUN = "stun"           # const
-    BUFF = "buff"           # true
-    NERF = "nerf"           # false
-    STACK = "stack"         # append
-    CRAFT = "craft"         # insert
-    DROP = "drop"           # pop
-    COUNT = "count"         # length
-    SPLIT = "split"         # split
+    # Array Operations (page 44)
+    STACK = auto()     # append
+    CRAFT = auto()     # insert
+    DROP = auto()      # pop
+    COUNT = auto()     # length
+    SPLIT = auto()     # split
     
-    # Operators
-    PLUS = "+"
-    MINUS = "-"
-    MULTIPLY = "*"
-    DIVIDE = "/"
-    MODULO = "%"
+    # Arithmetic Operators (page 45)
+    PLUS = auto()          # +
+    MINUS = auto()         # -
+    MULTIPLY = auto()      # *
+    DIVIDE = auto()        # /
+    MODULO = auto()        # %
     
-    EQUAL = "=="
-    NOT_EQUAL = "!="
-    LESS_THAN = "<"
-    GREATER_THAN = ">"
-    LESS_EQUAL = "<="
-    GREATER_EQUAL = ">="
+    # Relational Operators (page 45)
+    EQUAL = auto()         # ==
+    NOT_EQUAL = auto()     # !=
+    LESS = auto()          # <
+    GREATER = auto()       # >
+    LESS_EQUAL = auto()    # <=
+    GREATER_EQUAL = auto() # >=
     
-    ASSIGN = "="
-    PLUS_ASSIGN = "+="
-    MINUS_ASSIGN = "-="
-    MULT_ASSIGN = "*="
-    DIV_ASSIGN = "/="
-    MOD_ASSIGN = "%="
+    # Assignment Operators (page 46)
+    ASSIGN = auto()        # =
+    PLUS_ASSIGN = auto()   # +=
+    MINUS_ASSIGN = auto()  # -=
+    MULT_ASSIGN = auto()   # *=
+    DIV_ASSIGN = auto()    # /=
+    MOD_ASSIGN = auto()    # %=
     
-    AND = "&&"
-    OR = "||"
-    NOT = "!"
+    # Logical Operators (page 46)
+    AND = auto()           # &&
+    OR = auto()            # ||
+    NOT = auto()           # !
     
-    INCREMENT = "++"
-    DECREMENT = "--"
+    # Unary Operators (page 47)
+    INCREMENT = auto()     # ++
+    DECREMENT = auto()     # --
     
-    # Delimiters
-    SEMICOLON = ";"
-    COMMA = ","
-    LPAREN = "("
-    RPAREN = ")"
-    LBRACE = "{"
-    RBRACE = "}"
-    LBRACKET = "["
-    RBRACKET = "]"
-    QUOTE = '"'
-    COLON = ":"
+    # Delimiters (page 47)
+    LPAREN = auto()        # (
+    RPAREN = auto()        # )
+    LBRACE = auto()        # {
+    RBRACE = auto()        # }
+    LBRACKET = auto()      # [
+    RBRACKET = auto()      # ]
+    COMMA = auto()         # ,
+    SEMICOLON = auto()     # ;
+    COLON = auto()         # :
     
-    # Literals & Identifiers
-    INTEGER = "INTEGER"
-    FLOAT = "FLOAT"
-    STRING = "STRING"
-    CHAR = "CHAR"
-    IDENTIFIER = "IDENTIFIER"
+    # Literals
+    INTEGER = auto()       # frag literal
+    FLOAT = auto()         # elo literal
+    STRING = auto()        # ign literal
+    CHAR = auto()          # tag literal
     
-    # Comments
-    COMMENT = "COMMENT"
+    # Identifiers
+    IDENTIFIER = auto()    # variable names, function names
     
     # Special
-    EOF = "EOF"
-    ERROR = "ERROR"
+    EOF = auto()           # End of file
+    ERROR = auto()         # Lexical error
+    
+    def __str__(self):
+        """String representation for debugging"""
+        return self.name
