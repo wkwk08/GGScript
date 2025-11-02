@@ -63,6 +63,19 @@ class Lexer:
             return self.source[peek_pos]
         return None
     
+    def peek_word(self):
+        """Peek ahead to the next word without consuming characters."""
+        pos = self.pos
+        while pos < len(self.source) and self.source[pos].isspace():
+            pos += 1
+
+        word = ''
+        while pos < len(self.source) and (self.source[pos].isalnum() or self.source[pos] == '_'):
+            word += self.source[pos]
+            pos += 1
+
+        return word
+        
     def skip_whitespace(self):
         """Skip spaces, tabs, newlines"""
         while self.current_char and self.current_char.isspace():
