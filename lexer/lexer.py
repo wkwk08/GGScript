@@ -212,19 +212,38 @@ class Lexer:
         self.advance()  # skip opening '
         
         if not self.current_char:
-            return Token(TokenType.ERROR, "Empty character literal", start_line, start_col)
+             return Token(TokenType.ERROR, "Unterminated character literal", start_line, start_col)
         
         if self.current_char == "'":
+            self.advance() # consume closing '
             return Token(TokenType.ERROR, "Empty character literal", start_line, start_col)
         
-        char_value = self.current_char
-        self.advance()
+        char_value = ''
         
+        # Handle escape sequences (Page 28, Rule 7)
+        if self.current_char == '\\':
+            self.advance() # skip backslash
+            if self.current_char in ['n', 't', 'r', "'", '\\']:
+                escape_map = {'n': '\n', 't': '\t', 'r': '\r', "'": "'", '\\': '\\'}
+                char_value = escape_map[self.current_char]
+                self.advance()
+            else:
+                return Token(TokenType.ERROR, f"Invalid escape sequence: \\{self.current_char} in char literal", start_line, start_col)
+        else:
+            # Handle non-escaped character
+            char_value = self.current_char
+            self.advance()
+        
+        # Check for closing '
         if self.current_char == "'":
             self.advance()  # skip closing '
             return Token(TokenType.CHAR, char_value, start_line, start_col)
         else:
+            # Error: either unterminated or too long
+            if not self.current_char:
+                 return Token(TokenType.ERROR, "Unterminated character literal", start_line, start_col)
             return Token(TokenType.ERROR, "Character literal must contain exactly one character", start_line, start_col)
+
     
     def read_identifier(self):
         """Read identifier or keyword (page 15, rules 3-6)"""
@@ -233,7 +252,7 @@ class Lexer:
         identifier = ''
         underscore_count = 0
         
-        # Must start with letter (rule 4)
+        # Must start with letter (rule 4, page 7; rule 2, page 13)
         if not self.current_char.isalpha():
             return Token(TokenType.ERROR, "Identifier must start with a letter", start_line, start_col)
         
