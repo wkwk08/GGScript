@@ -278,6 +278,11 @@ class Lexer:
         while self.current_char:
             start_line = self.line
             start_col = self.column
+
+            # Emit NEWLINE tokens
+            if self.current_char == '\n':
+                self.advance()
+                return Token(TokenType.NEWLINE, '\\n', start_line, start_col)
             
             # Skip whitespace
             if self.current_char.isspace():
