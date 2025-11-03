@@ -100,6 +100,9 @@ class TokenType(Enum):
     # Special
     EOF = auto()           # End of file
     ERROR = auto()         # Lexical error
+    COMMENT = auto()       # Comments
+    WHITESPACE = auto()    # Spaces, tabs, newlines
+    NEWLINE = auto()       # Newline character
     
     def __str__(self):
         """String representation for debugging"""
