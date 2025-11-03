@@ -184,10 +184,19 @@ class Lexer:
         string_value = ''
         
         while self.current_char and self.current_char != '"':
-            if self.current_char == '\n':
-                return Token(TokenType.ERROR, "Unterminated string (newline)", start_line, start_col)
-            string_value += self.current_char
-            self.advance()
+            if self.current_char == '\\':
+                self.advance()  # skip backslash
+                if self.current_char in ['n', 't', 'r', '"', '\\']:
+                    escape_map = {'n': '\n', 't': '\t', 'r': '\r', '"': '"', '\\': '\\'}
+                    string_value += escape_map[self.current_char]
+                    self.advance()
+                else:
+                    return Token(TokenType.ERROR, f"Invalid escape sequence: \\{self.current_char} - Rule 2a, Page 26", start_line, start_col)
+            elif self.current_char == '\n':
+                return Token(TokenType.ERROR, "String literal cannot span multiple lines without \\n - Rule 2, Page 26", start_line, start_col)
+            else:
+                string_value += self.current_char
+                self.advance()
         
         if self.current_char == '"':
             self.advance()  # skip closing "
