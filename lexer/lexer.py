@@ -241,9 +241,9 @@ class Lexer:
         while self.current_char and (self.current_char.isalnum() or self.current_char == '_'):
             if self.current_char == '_':
                 underscore_count += 1
-                # Rule 5: max 2 underscores
-                if underscore_count > 2:
-                    return Token(TokenType.ERROR, "Identifier cannot have more than 2 underscores", start_line, start_col)
+                # Rule 5: max 19 underscores
+                if underscore_count > 19:
+                    return Token(TokenType.ERROR, "Identifier cannot have more than 19 underscores", start_line, start_col)
             
             identifier += self.current_char
             self.advance()
