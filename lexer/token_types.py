@@ -55,8 +55,8 @@ class TokenType(Enum):
     # Relational Operators (page 45)
     EQUAL = auto()         # ==
     NOT_EQUAL = auto()     # !=
-    LESS_THAN = auto()          # <
-    GREATER_THAN = auto()       # >
+    LESS_THAN = auto()     # <
+    GREATER_THAN = auto()  # >
     LESS_EQUAL = auto()    # <=
     GREATER_EQUAL = auto() # >=
     
