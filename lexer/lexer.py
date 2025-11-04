@@ -319,11 +319,20 @@ class Lexer:
             if self.current_char.isdigit():
                 return self.read_number()
             
-            # Check for negative number vs minus operator
-            if self.current_char == '-' and self.peek() and self.peek().isdigit():
-                # Check if previous token suggests this is negation
-                return self.read_number()
-            
+            # Whitespace-sensitive minus handling (Page 13)
+            if self.current_char == '-': 
+                next_char = self.peek()
+                next_next_char = self.peek(2)
+
+                # Case: negation (e.g., -5) — no space between '-' and digit
+                if next_char and next_char.isdigit():
+                    return self.read_number()
+                
+                # Case: subtraction (e.g., - 5) — space after '-' before digit
+                if next_char == ' ' and next_next_char and next_next_char.isdigit():
+                    self.advance()  # consume '-'
+                    return Token(TokenType.MINUS, '-', start_line, start_col)
+                
             # Strings
             if self.current_char == '"':
                 return self.read_string()
