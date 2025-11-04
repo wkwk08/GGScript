@@ -1,3 +1,5 @@
+from .token_types import TokenType
+
 class Token:
     """
     Represents a token in the GGScript language
