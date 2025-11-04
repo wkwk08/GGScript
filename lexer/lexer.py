@@ -41,6 +41,12 @@ class Lexer:
             'count': TokenType.COUNT,
             'split': TokenType.SPLIT,
         }
+        
+        # Constants for validation (Page 7, Rule 16-17)
+        self.MAX_INTEGER = 999999999999999
+        self.MIN_INTEGER = -999999999999999
+        self.MAX_INTEGER_DIGITS = 15
+        self.MAX_FRACTIONAL_DIGITS = 6
     
     def advance(self):
         """Move to next character"""
@@ -113,24 +119,31 @@ class Lexer:
     def read_number(self):
         """
         Tokenize frag and elo literals with digit limits and optional scientific notation (pages 16-17, 52).
+        IMPROVED: Now includes range validation for integers and integer part length for floats.
         """
         start_line = self.line
         start_col = self.column
         num_str = ''
         
         # Handle negative numbers
+        is_negative = False
         if self.current_char == '-':
+            is_negative = True
             num_str += self.current_char
             self.advance()
         
-        # Read integer part (max 15 digits per page 7, rule 16)
+        # Read integer part (max 15 digits per page 7, rule 16-17)
         digit_count = 0
         while self.current_char and self.current_char.isdigit():
             num_str += self.current_char
             digit_count += 1
             self.advance()
-            if digit_count > 15:  # Max 15 digits
-                return Token(TokenType.ERROR, "Number too long (max 15 digits)", start_line, start_col)
+            
+            # IMPROVED: Check max digits (applies to both frag and elo integer parts)
+            if digit_count > self.MAX_INTEGER_DIGITS:
+                return Token(TokenType.ERROR, 
+                           f"Number too long (max {self.MAX_INTEGER_DIGITS} digits)", 
+                           start_line, start_col)
         
         is_float = False
         # Check for decimal point
@@ -146,8 +159,10 @@ class Lexer:
                 frac_count += 1
                 self.advance()
         
-                if frac_count > 6:  # Max 6 digits after decimal
-                    return Token(TokenType.ERROR, "Too many digits after decimal (max 6)", start_line, start_col)
+                if frac_count > self.MAX_FRACTIONAL_DIGITS:
+                    return Token(TokenType.ERROR, 
+                               f"Too many digits after decimal (max {self.MAX_FRACTIONAL_DIGITS})", 
+                               start_line, start_col)
             
             # Check for scientific notation (e or E)
             if self.current_char and self.current_char.lower() == 'e':
@@ -161,7 +176,9 @@ class Lexer:
                 
                 # Read exponent digits
                 if not self.current_char or not self.current_char.isdigit():
-                    return Token(TokenType.ERROR, "Invalid scientific notation: expected digits after 'e'", start_line, start_col)
+                    return Token(TokenType.ERROR, 
+                               "Invalid scientific notation: expected digits after 'e'", 
+                               start_line, start_col)
                 
                 while self.current_char and self.current_char.isdigit():
                     num_str += self.current_char
@@ -169,14 +186,23 @@ class Lexer:
             
         if is_float:
             try:
-                return Token(TokenType.FLOAT, float(num_str), start_line, start_col)
+                float_val = float(num_str)
+                return Token(TokenType.FLOAT, float_val, start_line, start_col)
             except ValueError:
                 return Token(TokenType.ERROR, f"Invalid float: {num_str}", start_line, start_col)
-        
-        try:
-            return Token(TokenType.INTEGER, int(num_str), start_line, start_col)
-        except ValueError:
-            return Token(TokenType.ERROR, f"Invalid integer: {num_str}", start_line, start_col)
+        else:
+            # IMPROVED: Integer range validation (Page 7, Rule 16)
+            try:
+                int_val = int(num_str)
+                
+                if int_val < self.MIN_INTEGER or int_val > self.MAX_INTEGER:
+                    return Token(TokenType.ERROR, 
+                               f"Integer out of range (±999,999,999,999,999): {num_str}", 
+                               start_line, start_col)
+                
+                return Token(TokenType.INTEGER, int_val, start_line, start_col)
+            except ValueError:
+                return Token(TokenType.ERROR, f"Invalid integer: {num_str}", start_line, start_col)
     
     def read_string(self):
         """Read string literal (page 17, rule 19)"""
@@ -194,9 +220,13 @@ class Lexer:
                     string_value += escape_map[self.current_char]
                     self.advance()
                 else:
-                    return Token(TokenType.ERROR, f"Invalid escape sequence: \\{self.current_char} - Rule 2a, Page 26", start_line, start_col)
+                    return Token(TokenType.ERROR, 
+                               f"Invalid escape sequence: \\{self.current_char} - Rule 2a, Page 26", 
+                               start_line, start_col)
             elif self.current_char == '\n':
-                return Token(TokenType.ERROR, "String literal cannot span multiple lines without \\n - Rule 2, Page 26", start_line, start_col)
+                return Token(TokenType.ERROR, 
+                           "String literal cannot span multiple lines without \\n - Rule 2, Page 26", 
+                           start_line, start_col)
             else:
                 string_value += self.current_char
                 self.advance()
@@ -231,7 +261,9 @@ class Lexer:
                 char_value = escape_map[self.current_char]
                 self.advance()
             else:
-                return Token(TokenType.ERROR, f"Invalid escape sequence: \\{self.current_char} in char literal", start_line, start_col)
+                return Token(TokenType.ERROR, 
+                           f"Invalid escape sequence: \\{self.current_char} in char literal", 
+                           start_line, start_col)
         else:
             # Handle non-escaped character
             char_value = self.current_char
@@ -245,11 +277,16 @@ class Lexer:
             # Error: either unterminated or too long
             if not self.current_char:
                  return Token(TokenType.ERROR, "Unterminated character literal", start_line, start_col)
-            return Token(TokenType.ERROR, "Character literal must contain exactly one character", start_line, start_col)
+            return Token(TokenType.ERROR, 
+                       "Character literal must contain exactly one character", 
+                       start_line, start_col)
 
     
     def read_identifier(self):
-        """Read identifier or keyword (page 15, rules 3-6)"""
+        """
+        Read identifier or keyword (page 15, rules 3-6)
+        IMPROVED: Now includes explicit minimum length check
+        """
         start_line = self.line
         start_col = self.column
         identifier = ''
@@ -262,18 +299,29 @@ class Lexer:
         # Read identifier
         while self.current_char and (self.current_char.isalnum() or self.current_char == '_'):
             
-            # Rule: max length 20 characters [FIXED]
+            # Rule: max length 20 characters
             if len(identifier) >= 20: 
-                return Token(TokenType.ERROR, "Identifier too long (max 20 characters)", start_line, start_col)
+                return Token(TokenType.ERROR, 
+                           "Identifier too long (max 20 characters)", 
+                           start_line, start_col)
 
             if self.current_char == '_':
                 underscore_count += 1
                 # Rule 5: max 19 underscores
                 if underscore_count > 19:
-                    return Token(TokenType.ERROR, "Identifier cannot have more than 19 underscores", start_line, start_col)
+                    return Token(TokenType.ERROR, 
+                               "Identifier cannot have more than 19 underscores", 
+                               start_line, start_col)
             
             identifier += self.current_char
             self.advance()
+        
+        # IMPROVED: Explicit minimum length check (Rule 6, Page 7)
+        if len(identifier) < 1:
+            return Token(TokenType.ERROR, 
+                       "Identifier must be at least 1 character long", 
+                       start_line, start_col)
+        
         # Special handling for two-word keyword "choke clutch"
         if identifier == 'choke':
             next_word = self.peek_word()
