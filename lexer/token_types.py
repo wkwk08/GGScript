@@ -64,9 +64,9 @@ class TokenType(Enum):
     ASSIGN = auto()        # =
     PLUS_ASSIGN = auto()   # +=
     MINUS_ASSIGN = auto()  # -=
-    MULT_ASSIGN = auto()   # *=
-    DIV_ASSIGN = auto()    # /=
-    MOD_ASSIGN = auto()    # %=
+    MULTIPLY_ASSIGN = auto()  # *=
+    DIVIDE_ASSIGN = auto()    # /=
+    MODULO_ASSIGN = auto()    # %=
     
     # Logical Operators (page 46)
     AND = auto()           # &&
