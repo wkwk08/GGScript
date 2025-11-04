@@ -101,6 +101,7 @@ class Lexer:
                     return True
                 elif self.current_char == '\n':
                     # Newline reached without */ - this was a single-line comment
+                    self.advance() # consume newline
                     return True
                 self.advance()
             
@@ -131,8 +132,10 @@ class Lexer:
             if digit_count > 15:  # Max 15 digits
                 return Token(TokenType.ERROR, "Number too long (max 15 digits)", start_line, start_col)
         
+        is_float = False
         # Check for decimal point
         if self.current_char == '.':
+            is_float = True
             num_str += self.current_char
             self.advance()
             
@@ -142,6 +145,7 @@ class Lexer:
                 num_str += self.current_char
                 frac_count += 1
                 self.advance()
+        
                 if frac_count > 6:  # Max 6 digits after decimal
                     return Token(TokenType.ERROR, "Too many digits after decimal (max 6)", start_line, start_col)
             
@@ -156,15 +160,14 @@ class Lexer:
                     self.advance()
                 
                 # Read exponent digits
-                exp_count = 0
                 if not self.current_char or not self.current_char.isdigit():
                     return Token(TokenType.ERROR, "Invalid scientific notation: expected digits after 'e'", start_line, start_col)
                 
                 while self.current_char and self.current_char.isdigit():
                     num_str += self.current_char
-                    exp_count += 1
                     self.advance()
             
+        if is_float:
             try:
                 return Token(TokenType.FLOAT, float(num_str), start_line, start_col)
             except ValueError:
@@ -212,7 +215,7 @@ class Lexer:
         self.advance()  # skip opening '
         
         if not self.current_char:
-             return Token(TokenType.ERROR, "Unterminated character literal", start_line, start_col)
+            return Token(TokenType.ERROR, "Unterminated character literal", start_line, start_col)
         
         if self.current_char == "'":
             self.advance() # consume closing '
@@ -256,8 +259,13 @@ class Lexer:
         if not self.current_char.isalpha():
             return Token(TokenType.ERROR, "Identifier must start with a letter", start_line, start_col)
         
-        # Read identifier (max 19 chars per page 7, rule 6)
+        # Read identifier
         while self.current_char and (self.current_char.isalnum() or self.current_char == '_'):
+            
+            # Rule: max length 20 characters [FIXED]
+            if len(identifier) >= 20: 
+                return Token(TokenType.ERROR, "Identifier too long (max 20 characters)", start_line, start_col)
+
             if self.current_char == '_':
                 underscore_count += 1
                 # Rule 5: max 19 underscores
@@ -266,11 +274,6 @@ class Lexer:
             
             identifier += self.current_char
             self.advance()
-            
-            # Rule 6: max length 19
-            if len(identifier) > 19:
-                return Token(TokenType.ERROR, "Identifier too long (max 19 characters)", start_line, start_col)
-                
         # Special handling for two-word keyword "choke clutch"
         if identifier == 'choke':
             next_word = self.peek_word()
