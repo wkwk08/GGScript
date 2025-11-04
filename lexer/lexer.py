@@ -397,14 +397,14 @@ class Lexer:
                 if self.current_char == '=':
                     self.advance()
                     return Token(TokenType.LESS_EQUAL, '<=', start_line, start_col)
-                return Token(TokenType.LESS, '<', start_line, start_col)
+                return Token(TokenType.LESS_THAN, '<', start_line, start_col)
             
             if self.current_char == '>':
                 self.advance()
                 if self.current_char == '=':
                     self.advance()
                     return Token(TokenType.GREATER_EQUAL, '>=', start_line, start_col)
-                return Token(TokenType.GREATER, '>', start_line, start_col)
+                return Token(TokenType.GREATER_THAN, '>', start_line, start_col)
             
             if self.current_char == '&':
                 self.advance()
