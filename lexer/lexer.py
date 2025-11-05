@@ -125,12 +125,12 @@ class Lexer:
         start_col = self.column
         num_str = ''
         
-        # Handle negative numbers
-        is_negative = False
-        if self.current_char == '-':
-            is_negative = True
+        # === START OF FIX 1a ===
+        # Handle negative or positive signs
+        if self.current_char == '-' or self.current_char == '+':
             num_str += self.current_char
             self.advance()
+        # === END OF FIX 1a ===
         
         # Read integer part (max 15 digits per page 7, rule 16-17)
         digit_count = 0
@@ -202,6 +202,11 @@ class Lexer:
                 
                 return Token(TokenType.INTEGER, int_val, start_line, start_col)
             except ValueError:
+                # === START OF FIX 1b ===
+                # Handle cases like just '+' or '-'
+                if num_str == '+' or num_str == '-':
+                     return Token(TokenType.ERROR, f"Invalid character '{num_str}'", start_line, start_col)
+                # === END OF FIX 1b ===
                 return Token(TokenType.ERROR, f"Invalid integer: {num_str}", start_line, start_col)
     
     def read_string(self):
@@ -372,11 +377,12 @@ class Lexer:
                 next_char = self.peek()
                 next_next_char = self.peek(2)
 
+                # === START OF FIX 2 ===
                 # Case: positive number (+5) — no space after '+'
                 if next_char and next_char.isdigit():
-                    # This is unary positive, treat as regular number
-                    self.advance()  # Skip '+'
+                    # This is unary positive, let read_number() handle the '+'
                     return self.read_number()
+                # === END OF FIX 2 ===
                 
                 # Case: addition (+ 5) — space after '+' before digit
                 # Continue to normal '+' operator handling below
