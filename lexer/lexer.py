@@ -367,6 +367,20 @@ class Lexer:
             if self.current_char.isdigit():
                 return self.read_number()
             
+            # **FIX #1: Whitespace-sensitive plus handling (Page 13) - NEW**
+            if self.current_char == '+':
+                next_char = self.peek()
+                next_next_char = self.peek(2)
+
+                # Case: positive number (+5) — no space after '+'
+                if next_char and next_char.isdigit():
+                    # This is unary positive, treat as regular number
+                    self.advance()  # Skip '+'
+                    return self.read_number()
+                
+                # Case: addition (+ 5) — space after '+' before digit
+                # Continue to normal '+' operator handling below
+            
             # Whitespace-sensitive minus handling (Page 13)
             if self.current_char == '-': 
                 next_char = self.peek()
