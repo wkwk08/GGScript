@@ -2,108 +2,108 @@ from enum import Enum, auto
 
 class TokenType(Enum):
     # Data Types (page 42)
-    FRAG = auto()      # int
-    ELO = auto()       # float
-    IGN = auto()       # string
-    SUREBOL = auto()   # boolean
-    TAG = auto()       # char
+    frag = auto()      # int
+    elo = auto()       # float
+    ign = auto()       # string
+    surebol = auto()   # boolean
+    tag = auto()       # char
 
     # Control Flow (page 42-43)
-    CLUTCH = auto()         # if
-    CHOKE = auto()          # else
-    CHOKE_CLUTCH = auto()   # else if
-    PICK = auto()           # switch
-    ROLE = auto()           # case
-    NOOB = auto()           # default
-    GRIND = auto()          # for
-    RETRY = auto()          # while
-    TRY = auto()            # do
-    AFK = auto()            # break
-    HOP = auto()            # continue
+    clutch = auto()         # if
+    choke = auto()          # else
+    choke_clutch = auto()   # else if
+    pick = auto()           # switch
+    role = auto()           # case
+    noob = auto()           # default
+    grind = auto()          # for
+    retry = auto()          # while
+    try_ = auto()           # do
+    afk = auto()            # break
+    hop = auto()            # continue
 
     # I/O (page 43)
-    COMSAT = auto()    # scanf/input
-    SHOUT = auto()     # printf/output
+    comsat = auto()    # scanf/input
+    shout = auto()     # printf/output
 
     # Functions (page 43-44)
-    BUILD = auto()     # function declaration
-    LOBBY = auto()     # main
-    DODGE = auto()     # void
-    GGWP = auto()      # return
+    build = auto()     # function declaration
+    lobby = auto()     # main
+    dodge = auto()     # void
+    ggwp = auto()      # return
 
     # Modifiers (page 44)
-    STUN = auto()      # const
+    stun = auto()      # const
 
     # Boolean Literals (page 44)
-    BUFF = auto()      # true
-    NERF = auto()      # false
+    buff = auto()      # true
+    nerf = auto()      # false
 
     # Array Operations (page 44)
-    STACK = auto()     # append
-    CRAFT = auto()     # insert
-    DROP = auto()      # pop
-    COUNT = auto()     # length
-    SPLIT = auto()     # split
+    stack = auto()     # append
+    craft = auto()     # insert
+    drop = auto()      # pop
+    count = auto()     # length
+    split = auto()     # split
 
     # Arithmetic Operators (page 45)
-    PLUS = auto()          # +
-    MINUS = auto()         # -
-    MUL = auto()           # *
-    DIV = auto()           # /
-    MOD = auto()           # %
+    plus = auto()          # +
+    minus = auto()         # -
+    mul = auto()           # *
+    div = auto()           # /
+    mod = auto()           # %
 
     # Relational Operators (page 45)
-    EQ = auto()            # ==
-    NEQ = auto()           # !=
-    LT = auto()            # <
-    GT = auto()            # >
-    LTE = auto()           # <=
-    GTE = auto()           # >=
+    eq = auto()            # ==
+    neq = auto()           # !=
+    lt = auto()            # <
+    gt = auto()            # >
+    lte = auto()           # <=
+    gte = auto()           # >=
 
     # Assignment Operators (page 46)
-    ASSIGN = auto()        # =
-    PLUS_ASSIGN = auto()   # +=
-    MINUS_ASSIGN = auto()  # -=
-    MUL_ASSIGN = auto()    # *=
-    DIV_ASSIGN = auto()    # /=
-    MOD_ASSIGN = auto()    # %=
+    assign = auto()        # =
+    plus_assign = auto()   # +=
+    minus_assign = auto()  # -=
+    mul_assign = auto()    # *=
+    div_assign = auto()    # /=
+    mod_assign = auto()    # %=
 
     # Logical Operators (page 46)
-    AND = auto()           # &&
-    OR = auto()            # ||
-    NOT = auto()           # !
+    and_ = auto()          # &&
+    or_ = auto()           # ||
+    not_ = auto()          # !
 
     # Unary Operators (page 47)
-    INCREMENT = auto()     # ++
-    DECREMENT = auto()     # --
+    increment = auto()     # ++
+    decrement = auto()     # --
 
     # Delimiters (page 47)
-    LPAREN = auto()        # (
-    RPAREN = auto()        # )
-    LBRACE = auto()        # {
-    RBRACE = auto()        # }
-    LBRACKET = auto()      # [
-    RBRACKET = auto()      # ]
-    COMMA = auto()         # ,
-    SEMICOLON = auto()     # ;
-    COLON = auto()         # :
-    DOT = auto()           # .
+    lparen = auto()        # (
+    rparen = auto()        # )
+    lbrace = auto()        # {
+    rbrace = auto()        # }
+    lbracket = auto()      # [
+    rbracket = auto()      # ]
+    comma = auto()         # ,
+    semicolon = auto()     # ;
+    colon = auto()         # :
+    dot = auto()           # .
 
     # Literals
-    INTEGER = auto()       # frag literal
-    FLOAT = auto()         # elo literal
-    STRING = auto()        # ign literal
-    CHAR = auto()          # tag literal
+    integer = auto()       # frag literal
+    float_ = auto()        # elo literal
+    string = auto()        # ign literal
+    char = auto()          # tag literal
 
     # Identifiers
-    IDENTIFIER = auto()    # variable names, function names
+    identifier = auto()    # variable names, function names
 
     # Special
-    EOF = auto()           # End of file
-    ERROR = auto()         # Lexical error
-    COMMENT = auto()       # Comments
-    WHITESPACE = auto()    # Spaces, tabs, newlines
-    NEWLINE = auto()       # Newline character
+    eof = auto()           # End of file
+    error = auto()         # Lexical error
+    comment = auto()       # Comments
+    whitespace = auto()    # Spaces, tabs, newlines
+    newline = auto()       # Newline character
 
     def __str__(self):
         """String representation for debugging"""
