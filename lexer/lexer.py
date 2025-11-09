@@ -794,27 +794,22 @@ class Lexer:
             self.advance()
 
         if not matched:
-            while self.current_char is not None and (self.current_char in ALPHANUM or self.current_char == '_'):
-                if self.current_char == '_':
-                    underscore_count += 1
-                    if previous_char == '_':
-                        consecutive_underscore = True
+            # Continue collecting valid identifier characters
+            while self.current_char and (self.current_char.isalnum() or self.current_char == '_'):
                 ident_str += self.current_char
-                previous_char = self.current_char
                 self.advance()
-            if len(ident_str) < MIN_ID_LENGTH or len(ident_str) > MAX_ID_LENGTH:
-                errors.append(LexicalError(start_pos, f"Identifier length must be 1-20 characters: '{ident_str}'"))
-            elif ident_str.startswith('_') or ident_str.endswith('_'):
-                errors.append(LexicalError(start_pos, "Identifier cannot start or end with '_'"))
-            elif consecutive_underscore:
-                errors.append(LexicalError(start_pos, "No consecutive '_' allowed"))
-            elif underscore_count > MAX_UNDERSCORES:
-                errors.append(LexicalError(start_pos, f"Max {MAX_UNDERSCORES} '_' allowed"))
-            elif self.current_char is None or self.current_char in IDFR_DLM:
+
+            # Validate identifier rules
+            if (
+                ident_str[0] in ALPHA and
+                all(c in ALPHANUM + '_' for c in ident_str) and
+                MIN_ID_LENGTH <= len(ident_str) <= MAX_ID_LENGTH and
+                ident_str.count('_') <= MAX_UNDERSCORES
+            ):
                 tokens.append(Token(TokenType.identifier, ident_str, start_pos.ln, start_pos.col))
             else:
-                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after identifier '{ident_str}'"))
-
+                errors.append(LexicalError(start_pos, f"Invalid identifier '{ident_str}'"))
+       
     def make_number(self, tokens, errors, positive=True):
         start_pos = self.pos.copy()
         num_str = '' if positive else '-'
