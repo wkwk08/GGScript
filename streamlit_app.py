@@ -17,36 +17,26 @@ st.markdown("<p style='text-align: center; color: #888; font-size: 0.9rem;'>Auto
 # ------------------------------------------------------------------
 #  Token Category Helper
 # ------------------------------------------------------------------
-def token_category(tt: TokenType) -> str:
+def token_category(tt: str) -> str:
     KEYWORDS = {
-        TokenType.afk, TokenType.buff, TokenType.build, TokenType.choke,
-        TokenType.choke_clutch, TokenType.clutch, TokenType.comsat,
-        TokenType.count, TokenType.craft, TokenType.dodge, TokenType.drop,
-        TokenType.elo, TokenType.frag, TokenType.ggwp, TokenType.grind,
-        TokenType.hop, TokenType.ign, TokenType.lobby, TokenType.nerf,
-        TokenType.noob, TokenType.pick, TokenType.retry, TokenType.role,
-        TokenType.shout, TokenType.split, TokenType.stack, TokenType.stun,
-        TokenType.surebol, TokenType.tag, TokenType.try_,
+        'afk', 'buff', 'build', 'choke', 'choke_clutch', 'clutch', 'comsat',
+        'count', 'craft', 'dodge', 'drop', 'elo', 'frag', 'ggwp', 'grind',
+        'hop', 'ign', 'lobby', 'nerf', 'noob', 'pick', 'retry', 'role',
+        'shout', 'split', 'stack', 'stun', 'surebol', 'tag', 'try'
     }
     if tt in KEYWORDS:
         return "KEYWORD"
-    if tt is TokenType.identifier:
+    if tt == "identifier":
         return "IDENTIFIER"
-    if tt in (TokenType.integer, TokenType.float_, TokenType.string, TokenType.char):
+    if tt in ("integer", "float", "string", "char"):
         return "LITERAL"
     if tt in {
-        TokenType.plus, TokenType.minus, TokenType.mul, TokenType.div,
-        TokenType.mod, TokenType.assign, TokenType.plus_assign,
-        TokenType.minus_assign, TokenType.mul_assign, TokenType.div_assign,
-        TokenType.mod_assign, TokenType.increment, TokenType.decrement,
-        TokenType.lt, TokenType.gt, TokenType.lte, TokenType.gte,
-        TokenType.eq, TokenType.neq, TokenType.not_, TokenType.and_, TokenType.or_
+        '+', '-', '*', '/', '%', '=', '+=', '-=', '*=', '/=', '%=',
+        '++', '--', '<', '>', '<=', '>=', '==', '!=', '!', '&&', '||'
     }:
         return "OPERATOR"
     if tt in {
-        TokenType.lparen, TokenType.rparen, TokenType.lbracket,
-        TokenType.rbracket, TokenType.lbrace, TokenType.rbrace,
-        TokenType.comma, TokenType.semicolon, TokenType.colon, TokenType.dot
+        '(', ')', '[', ']', '{', '}', ',', ';', ':', '.'
     }:
         return "DELIMITER"
     return "OTHER"
@@ -101,7 +91,7 @@ with st.container():
                 lexeme = str(t.value).replace("\n", "\\n").replace("\t", "\\t").replace("\r", "\\r")
                 rows.append({
                     "LEXEME": lexeme,
-                    "TOKEN": t.type.name,
+                    "TOKEN": t.type,  # Removed .name
                     "TYPE": token_category(t.type)
                 })
 
