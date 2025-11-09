@@ -1090,12 +1090,10 @@ class Lexer:
         elif self.current_char == '*':
             self.advance()  # consume '*'
             while self.current_char is not None:
-                if self.current_char == '\n':
-                    return  # auto-close single-line comment
                 if self.current_char == '*' and self.peek() == '/':
-                    self.advance()
-                    self.advance()
-                    return
+                    self.advance()  # consume '*'
+                    self.advance()  # consume '/'
+                    return  # Exit — comment successfully closed
                 self.advance()
             errors.append(LexicalError(start_pos, "Unterminated multi-line comment"))
             return
