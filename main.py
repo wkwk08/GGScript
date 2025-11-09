@@ -10,7 +10,7 @@ def print_tokens(tokens, show_details=True):
     print("="*80)
     
     for token in tokens:
-        if token.type != TokenType.EOF:
+        if token.type != TokenType.eof:
             value_str = str(token.value) if token.value is not None else ''
             if len(value_str) > 23:
                 value_str = value_str[:20] + '...'
@@ -19,8 +19,8 @@ def print_tokens(tokens, show_details=True):
     print("="*80)
     
     # Statistics
-    token_count = len([t for t in tokens if t.type != TokenType.EOF])
-    error_count = len([t for t in tokens if t.type == TokenType.ERROR])
+    token_count = len([t for t in tokens if t.type != TokenType.eof])
+    error_count = len([t for t in tokens if t.type == TokenType.error])
     
     print("\nToken Statistics:")
     print(f"  Total tokens: {token_count}")
@@ -87,7 +87,7 @@ def main():
     print_tokens(tokens)
     
     # Check for lexical errors
-    lex_errors = [t for t in tokens if t.type == TokenType.ERROR]
+    lex_errors = [t for t in tokens if t.type == TokenType.error]
     
     if lex_errors:
         print("\nLexical Errors Found:\n")
