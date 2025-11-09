@@ -851,6 +851,7 @@ class Lexer:
                 self.advance()
 
         dlm = FLT_LIT_DLM if is_float else INT_DLM
+        dlm += SEMI_DLM
         if self.current_char is None or self.current_char in dlm:
             if is_float:
                 try:
