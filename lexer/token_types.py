@@ -88,20 +88,20 @@ class TokenType:
     DOT = "."           # .
 
     # Literals
-    INTEGER = "INTEGER"       # frag literal
-    FLOAT = "FLOAT"        # elo literal
-    STRING = "STRING"        # ign literal
-    CHAR = "CHAR"          # tag literal
+    integer = "integer"       # frag literal
+    float = "float"        # elo literal
+    string = "string"        # ign literal
+    char = "char"          # tag literal
 
     # Identifiers
-    IDENTIFIER = "IDENTIFIER"    # variable names, function names
+    identifier = "identifier"    # variable names, function names
 
     # Special
-    EOF = "EOF"           # End of file
-    ERROR = "ERROR"         # Lexical error
-    COMMENT = "COMMENT"       # Comments
-    WHITESPACE = "WHITESPACE"    # Spaces, tabs, newlines
-    NEWLINE = "NEWLINE"       # Newline character
+    EOF = "eof"           # End of file
+    ERROR = "error"         # Lexical error
+    COMMENT = "comment"       # Comments
+    WHITESPACE = "whitespace"    # Spaces, tabs, newlines
+    newline = "newline"       # Newline character
 
 # Symbol mapping
 SYMBOL_TO_TOKEN = {
