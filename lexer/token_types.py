@@ -1,91 +1,91 @@
 class TokenType:
     # Data Types (page 42)
-    FRAG = "frag"          # int
-    ELO = "elo"           # float
-    IGN = "ign"           # string
-    SUREBOL = "surebol"   # boolean
-    TAG = "tag"           # char
+    frag = "frag"          # int
+    elo = "elo"           # float
+    ign = "ign"           # string
+    surebol = "surebol"   # boolean
+    tag = "tag"           # char
 
     # Control Flow (page 42-43)
-    CLUTCH = "clutch"         # if
-    CHOKE = "choke"          # else
-    CHOKE_CLUTCH = "choke_clutch"   # else if
-    PICK = "pick"           # switch
-    ROLE = "role"           # case
-    NOOB = "noob"           # default
-    GRIND = "grind"          # for
-    RETRY = "retry"          # while
-    TRY = "try"           # do
-    AFK = "afk"            # break
-    HOP = "hop"            # continue
+    clutch = "clutch"         # if
+    choke = "choke"          # else
+    choke_clutch = "choke_clutch"   # else if
+    pick = "pick"           # switch
+    role = "role"           # case
+    noob = "noob"           # default
+    grind = "grind"          # for
+    retry = "retry"          # while
+    try_ = "try"           # do
+    afk = "afk"            # break
+    hop = "hop"            # continue
 
     # I/O (page 43)
-    COMSAT = "comsat"    # scanf/input
-    SHOUT = "shout"     # printf/output
+    comsat = "comsat"    # scanf/input
+    shout = "shout"     # printf/output
 
     # Functions (page 43-44)
-    BUILD = "build"     # function declaration
-    LOBBY = "lobby"     # main
-    DODGE = "dodge"     # void
-    GGWP = "ggwp"      # return
+    build = "build"     # function declaration
+    lobby = "lobby"     # main
+    dodge = "dodge"     # void
+    ggwp = "ggwp"      # return
 
     # Modifiers (page 44)
-    STUN = "stun"      # const
+    stun = "stun"      # const
 
     # Boolean Literals (page 44)
-    BUFF = "buff"      # true
-    NERF = "nerf"      # false
+    buff = "buff"      # true
+    nerf = "nerf"      # false
 
     # Array Operations (page 44)
-    STACK = "stack"     # append
-    CRAFT = "craft"     # insert
-    DROP = "drop"      # pop
-    COUNT = "count"     # length
-    SPLIT = "split"     # split
+    stack = "stack"     # append
+    craft = "craft"     # insert
+    drop = "drop"      # pop
+    count = "count"     # length
+    split = "split"     # split
 
     # Arithmetic Operators (page 45)
-    PLUS = "+"          # +
-    MINUS = "-"         # -
-    MUL = "*"           # *
-    DIV = "/"           # /
-    MOD = "%"           # %
+    plus = "+"          # +
+    minus = "-"         # -
+    mul = "*"           # *
+    div = "/"           # /
+    mod = "%"           # %
 
     # Relational Operators (page 45)
-    EQ = "=="            # ==
-    NEQ = "!="           # !=
-    LT = "<"            # <
-    GT = ">"            # >
-    LTE = "<="           # <=
-    GTE = ">="           # >=
+    eq = "=="            # ==
+    neq = "!="           # !=
+    lt = "<"            # <
+    gt = ">"            # >
+    lte = "<="           # <=
+    gte = ">="           # >=
 
     # Assignment Operators (page 46)
-    ASSIGN = "="        # =
-    PLUS_ASSIGN = "+="   # +=
-    MINUS_ASSIGN = "-="  # -=
-    MUL_ASSIGN = "*="    # *=
-    DIV_ASSIGN = "/="    # /
-    MOD_ASSIGN = "%="    # %=
+    assign = "="        # =
+    plus_assign = "+="   # +=
+    minus_assign = "-="  # -=
+    mul_assign = "*="    # *=
+    div_assign = "/="    # /=
+    mod_assign = "%="    # %=
 
     # Logical Operators (page 46)
-    AND = "&&"          # &&
-    OR = "||"           # ||
-    NOT = "!"          # !
+    and_ = "&&"          # &&
+    or_ = "||"           # ||
+    not_ = "!"          # !
 
     # Unary Operators (page 47)
-    INCREMENT = "++"     # ++
-    DECREMENT = "--"     # --
+    increment = "++"     # ++
+    decrement = "--"     # --
 
     # Delimiters (page 47)
-    LPAREN = "("        # (
-    RPAREN = ")"        # )
-    LBRACE = "{"        # {
-    RBRACE = "}"        # }
-    LBRACKET = "["      # [
-    RBRACKET = "]"      # ]
-    COMMA = ","         # ,
-    SEMICOLON = ";"     # ;
-    COLON = ":"         # :
-    DOT = "."           # .
+    lparen = "("        # (
+    rparen = ")"        # )
+    lbrace = "{"        # {
+    rbrace = "}"        # }
+    lbracket = "["      # [
+    rbracket = "]"      # ]
+    comma = ","         # ,
+    semicolon = ";"     # ;
+    colon = ":"         # :
+    dot = "."           # .
 
     # Literals
     integer = "integer"       # frag literal
@@ -97,78 +97,96 @@ class TokenType:
     identifier = "identifier"    # variable names, function names
 
     # Special
-    EOF = "eof"           # End of file
-    ERROR = "error"         # Lexical error
-    COMMENT = "comment"       # Comments
-    WHITESPACE = "whitespace"    # Spaces, tabs, newlines
+    eof = "eof"           # End of file
+    error = "error"         # Lexical error
+    comment = "comment"       # Comments
+    whitespace = "whitespace"    # Spaces, tabs, newlines
     newline = "newline"       # Newline character
 
 # Symbol mapping
 SYMBOL_TO_TOKEN = {
-    '+': TokenType.PLUS,
-    '-': TokenType.MINUS,
-    '*': TokenType.MUL,
-    '/': TokenType.DIV,
-    '%': TokenType.MOD,
-    '==': TokenType.EQ,
-    '!=': TokenType.NEQ,
-    '<': TokenType.LT,
-    '>': TokenType.GT,
-    '<=': TokenType.LTE,
-    '>=': TokenType.GTE,
-    '=': TokenType.ASSIGN,
-    '+=': TokenType.PLUS_ASSIGN,
-    '-=': TokenType.MINUS_ASSIGN,
-    '*=': TokenType.MUL_ASSIGN,
-    '/=': TokenType.DIV_ASSIGN,
-    '%=': TokenType.MOD_ASSIGN,
-    '&&': TokenType.AND,
-    '||': TokenType.OR,
-    '!': TokenType.NOT,
-    '++': TokenType.INCREMENT,
-    '--': TokenType.DECREMENT,
-    '(': TokenType.LPAREN,
-    ')': TokenType.RPAREN,
-    '{': TokenType.LBRACE,
-    '}': TokenType.RBRACE,
-    '[': TokenType.LBRACKET,
-    ']': TokenType.RBRACKET,
-    ',': TokenType.COMMA,
-    ';': TokenType.SEMICOLON,
-    ':': TokenType.COLON,
-    '.': TokenType.DOT,
+    '+': TokenType.plus,
+    '-': TokenType.minus,
+    '*': TokenType.mul,
+    '/': TokenType.div,
+    '%': TokenType.mod,
+    '==': TokenType.eq,
+    '!=': TokenType.neq,
+    '<': TokenType.lt,
+    '>': TokenType.gt,
+    '<=': TokenType.lte,
+    '>=': TokenType.gte,
+    '=': TokenType.assign,
+    '+=': TokenType.plus_assign,
+    '-=': TokenType.minus_assign,
+    '*=': TokenType.mul_assign,
+    '/=': TokenType.div_assign,
+    '%=': TokenType.mod_assign,
+    '&&': TokenType.and_,
+    '||': TokenType.or_,
+    '!': TokenType.not_,
+    '++': TokenType.increment,
+    '--': TokenType.decrement,
+    '(': TokenType.lparen,
+    ')': TokenType.rparen,
+    '{': TokenType.lbrace,
+    '}': TokenType.rbrace,
+    '[': TokenType.lbracket,
+    ']': TokenType.rbracket,
+    ',': TokenType.comma,
+    ';': TokenType.semicolon,
+    ':': TokenType.colon,
+    '.': TokenType.dot,
 }
 
 # Keyword mapping
 KEYWORD_TO_TOKEN = {
-    'afk': TokenType.AFK,
-    'buff': TokenType.BUFF,
-    'build': TokenType.BUILD,
-    'choke': TokenType.CHOKE,
-    'choke_clutch': TokenType.CHOKE_CLUTCH,
-    'clutch': TokenType.CLUTCH,
-    'comsat': TokenType.COMSAT,
-    'count': TokenType.COUNT,
-    'craft': TokenType.CRAFT,
-    'dodge': TokenType.DODGE,
-    'drop': TokenType.DROP,
-    'elo': TokenType.ELO,
-    'frag': TokenType.FRAG,
-    'ggwp': TokenType.GGWP,
-    'grind': TokenType.GRIND,
-    'hop': TokenType.HOP,
-    'ign': TokenType.IGN,
-    'lobby': TokenType.LOBBY,
-    'nerf': TokenType.NERF,
-    'noob': TokenType.NOOB,
-    'pick': TokenType.PICK,
-    'retry': TokenType.RETRY,
-    'role': TokenType.ROLE,
-    'shout': TokenType.SHOUT,
-    'split': TokenType.SPLIT,
-    'stack': TokenType.STACK,
-    'stun': TokenType.STUN,
-    'surebol': TokenType.SUREBOL,
-    'tag': TokenType.TAG,
-    'try': TokenType.TRY,
+    'afk': TokenType.afk,
+    'buff': TokenType.buff,
+    'build': TokenType.build,
+    'choke': TokenType.choke,
+    'choke_clutch': TokenType.choke_clutch,
+    'clutch': TokenType.clutch,
+    'comsat': TokenType.comsat,
+    'count': TokenType.count,
+    'craft': TokenType.craft,
+    'dodge': TokenType.dodge,
+    'drop': TokenType.drop,
+    'elo': TokenType.elo,
+    'frag': TokenType.frag,
+    'ggwp': TokenType.ggwp,
+    'grind': TokenType.grind,
+    'hop': TokenType.hop,
+    'ign': TokenType.ign,
+    'lobby': TokenType.lobby,
+    'nerf': TokenType.nerf,
+    'noob': TokenType.noob,
+    'pick': TokenType.pick,
+    'retry': TokenType.retry,
+    'role': TokenType.role,
+    'shout': TokenType.shout,
+    'split': TokenType.split,
+    'stack': TokenType.stack,
+    'stun': TokenType.stun,
+    'surebol': TokenType.surebol,
+    'tag': TokenType.tag,
+    'try': TokenType.try_,
+}
+
+# Literal mapping
+LITERAL_TO_TOKEN = {
+    'integer': TokenType.integer,
+    'float': TokenType.float,
+    'string': TokenType.string,
+    'char': TokenType.char
+}
+
+# Special token mapping
+SPECIAL_TO_TOKEN = {
+    'identifier': TokenType.identifier,
+    'eof': TokenType.eof,
+    'error': TokenType.error,
+    'comment': TokenType.comment,
+    'whitespace': TokenType.whitespace,
+    'newline': TokenType.newline
 }
