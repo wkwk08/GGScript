@@ -874,6 +874,15 @@ class Lexer:
                     errors.append(LexicalError(start_pos, f"Invalid integer literal '{num_str}'"))
         else:
             errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after number '{num_str}'"))
+            
+    def validate_number_limits(num_str, is_integer, start_pos, errors):
+        if is_integer:
+            if len(num_str.lstrip('-')) > MAX_INTEGER_DIGITS:
+                errors.append(LexicalError(start_pos, f"frag value exceeds {MAX_INTEGER_DIGITS} digits"))
+            else:
+                int_part, _, frac_part = num_str.partition('.')
+                if len(frac_part) > MAX_FRACTIONAL_DIGITS:
+                    errors.append(LexicalError(start_pos, f"elo fractional part exceeds {MAX_FRACTIONAL_DIGITS} digits"))
 
     def make_signed_number_or_operator(self, tokens, errors):
         start_pos = self.pos.copy()
