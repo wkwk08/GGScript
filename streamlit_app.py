@@ -19,34 +19,34 @@ st.markdown("<p style='text-align: center; color: #888; font-size: 0.9rem;'>Auto
 # ------------------------------------------------------------------
 def token_category(tt: TokenType) -> str:
     KEYWORDS = {
-        TokenType.AFK, TokenType.BUFF, TokenType.BUILD, TokenType.CHOKE,
-        TokenType.CHOKE_CLUTCH, TokenType.CLUTCH, TokenType.COMSAT,
-        TokenType.COUNT, TokenType.CRAFT, TokenType.DODGE, TokenType.DROP,
-        TokenType.ELO, TokenType.FRAG, TokenType.GGWP, TokenType.GRIND,
-        TokenType.HOP, TokenType.IGN, TokenType.LOBBY, TokenType.NERF,
-        TokenType.NOOB, TokenType.PICK, TokenType.RETRY, TokenType.ROLE,
-        TokenType.SHOUT, TokenType.SPLIT, TokenType.STACK, TokenType.STUN,
-        TokenType.SUREBOL, TokenType.TAG, TokenType.TRY,
+        TokenType.afk, TokenType.buff, TokenType.build, TokenType.choke,
+        TokenType.choke_clutch, TokenType.clutch, TokenType.comsat,
+        TokenType.count, TokenType.craft, TokenType.dodge, TokenType.drop,
+        TokenType.elo, TokenType.frag, TokenType.ggwp, TokenType.grind,
+        TokenType.hop, TokenType.ign, TokenType.lobby, TokenType.nerf,
+        TokenType.noob, TokenType.pick, TokenType.retry, TokenType.role,
+        TokenType.shout, TokenType.split, TokenType.stack, TokenType.stun,
+        TokenType.surebol, TokenType.tag, TokenType.try_,
     }
     if tt in KEYWORDS:
         return "KEYWORD"
-    if tt is TokenType.IDENTIFIER:
+    if tt is TokenType.identifier:
         return "IDENTIFIER"
-    if tt in (TokenType.INTEGER, TokenType.FLOAT, TokenType.STRING, TokenType.CHAR):
+    if tt in (TokenType.integer, TokenType.float_, TokenType.string, TokenType.char):
         return "LITERAL"
     if tt in {
-        TokenType.PLUS, TokenType.MINUS, TokenType.MUL, TokenType.DIV,
-        TokenType.MOD, TokenType.ASSIGN, TokenType.PLUS_ASSIGN,
-        TokenType.MINUS_ASSIGN, TokenType.MUL_ASSIGN, TokenType.DIV_ASSIGN,
-        TokenType.MOD_ASSIGN, TokenType.INCREMENT, TokenType.DECREMENT,
-        TokenType.LT, TokenType.GT, TokenType.LTE, TokenType.GTE,
-        TokenType.EQ, TokenType.NEQ, TokenType.NOT, TokenType.AND, TokenType.OR
+        TokenType.plus, TokenType.minus, TokenType.mul, TokenType.div,
+        TokenType.mod, TokenType.assign, TokenType.plus_assign,
+        TokenType.minus_assign, TokenType.mul_assign, TokenType.div_assign,
+        TokenType.mod_assign, TokenType.increment, TokenType.decrement,
+        TokenType.lt, TokenType.gt, TokenType.lte, TokenType.gte,
+        TokenType.eq, TokenType.neq, TokenType.not_, TokenType.and_, TokenType.or_
     }:
         return "OPERATOR"
     if tt in {
-        TokenType.LPAREN, TokenType.RPAREN, TokenType.LBRACKET,
-        TokenType.RBRACKET, TokenType.LBRACE, TokenType.RBRACE,
-        TokenType.COMMA, TokenType.SEMICOLON, TokenType.COLON, TokenType.DOT
+        TokenType.lparen, TokenType.rparen, TokenType.lbracket,
+        TokenType.rbracket, TokenType.lbrace, TokenType.rbrace,
+        TokenType.comma, TokenType.semicolon, TokenType.colon, TokenType.dot
     }:
         return "DELIMITER"
     return "OTHER"
@@ -96,7 +96,7 @@ with st.container():
             # Token Table
             rows = []
             for t in tokens:
-                if t.type in (TokenType.EOF, TokenType.NEWLINE):
+                if t.type in (TokenType.eof, TokenType.newline):
                     continue
                 lexeme = str(t.value).replace("\n", "\\n").replace("\t", "\\t").replace("\r", "\\r")
                 rows.append({
