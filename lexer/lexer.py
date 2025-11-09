@@ -1,534 +1,1308 @@
 from .token_types import TokenType
 from .token import Token
 
+# Constants
+ALPHA_LOWER = 'abcdefghijklmnopqrstuvwxyz'
+ALPHA_UPPER = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+ALPHA = ALPHA_LOWER + ALPHA_UPPER
+ZERO = '0'
+DIGITS = '123456789'
+NUM = ZERO + DIGITS
+ALPHANUM = ALPHA + NUM
+PUNCTUATIONS = '!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'
+ASCII = ALPHANUM + PUNCTUATIONS
+OPER = '+-/*%<>=!&|'
+WHTSPC = ' \t\n'
+
+# Delimiters
+WHTSPC_DLM = ' \t\n' 
+TERMI_DLM = WHTSPC_DLM
+BRCKT_DLM = WHTSPC_DLM + '()[]{}'
+OPRTR_DLM = ALPHANUM + WHTSPC_DLM
+CMPLX_DLM = WHTSPC_DLM + ',;) }'
+COMMT_DLM = WHTSPC_DLM
+IDFR_DLM = WHTSPC_DLM + OPER + ';,.:()[]{}'
+INT_DLM = ' ' + OPER
+FLT_LIT_DLM = ' ' + PUNCTUATIONS + OPER + ALPHA
+STRG_DLM = WHTSPC_DLM + '; ,'
+BRC_DLM = WHTSPC_DLM + '{'
+COLON_DLM = WHTSPC_DLM + ':'
+DOT_DLM = '.();\n'
+PRN_BLCK_DLM = WHTSPC_DLM + '(){ }'
+PRN_BRC_DLM = WHTSPC_DLM + '({'
+PRN_DLM = WHTSPC_DLM + '();'
+SEMI_DLM = ';' + WHTSPC_DLM
+
+# Group delimiters
+DATATYPE_DLM = WHTSPC_DLM  # dodge, elo, frag, ign, surebol, stun, tag
+COND_DLM = PRN_BRC_DLM  # choke clutch, clutch, pick
+LOOP_FUNC_DLM = PRN_BLCK_DLM  # build, grind, lobby, retry
+JUMP_DLM = SEMI_DLM  # afk, ggwp, hop
+BOOL_DLM = CMPLX_DLM  # buff, nerf
+DO_ELSE_DLM = BRC_DLM  # choke, try
+IO_ARRAY_DLM = PRN_DLM  # comsat, craft, drop, shout, stack
+METHOD_DLM = DOT_DLM  # count, split
+CASE_DLM = COLON_DLM  # noob, role
+SYMBOL_DLM = OPRTR_DLM # plus, minus, mul, div, mod, assign, lt, gt, eq, neq, and, or
+QUOTE_DLM = STRG_DLM # string and char literals
+SEMI_SYM_DLM = TERMI_DLM # for semicolon and symbols
+PAREN_DLM = BRCKT_DLM # for parentheses
+
+# Validation constants
+MAX_INTEGER = 999999999999999
+MIN_INTEGER = -999999999999999
+MAX_INTEGER_DIGITS = 15
+MAX_FRACTIONAL_DIGITS = 6
+MAX_ID_LENGTH = 20
+MIN_ID_LENGTH = 1
+MAX_UNDERSCORES = 19
+
+class Position:
+    def __init__(self, index, ln, col):
+        self.index = index
+        self.ln = ln
+        self.col = col
+
+    def advance(self, current_char):
+        self.index += 1
+        self.col += 1
+        if current_char == '\n':
+            self.ln += 1
+            self.col = 1
+        return self
+
+    def copy(self):
+        return Position(self.index, self.ln, self.col)
+
+class LexicalError:
+    def __init__(self, pos, details):
+        self.pos = pos
+        self.details = details
+
+    def as_string(self):
+        self.details = self.details.replace('\n', '\\n')
+        return f"Ln {self.pos.ln}, Col {self.pos.col} Lexical Error: {self.details}"
+
 class Lexer:
     def __init__(self, source_code):
-        self.source = source_code
-        self.pos = 0
-        self.line = 1
-        self.column = 1
-        self.current_char = self.source[0] if source_code else None
-        
-        # Reserved words
-        self.keywords = {
-            'frag': TokenType.FRAG,
-            'elo': TokenType.ELO,
-            'ign': TokenType.IGN,
-            'surebol': TokenType.SUREBOL,
-            'tag': TokenType.TAG,
-            'clutch': TokenType.CLUTCH,
-            'choke': TokenType.CHOKE,
-            'pick': TokenType.PICK,
-            'role': TokenType.ROLE,
-            'noob': TokenType.NOOB,
-            'grind': TokenType.GRIND,
-            'retry': TokenType.RETRY,
-            'try': TokenType.TRY,
-            'afk': TokenType.AFK,
-            'hop': TokenType.HOP,
-            'ggwp': TokenType.GGWP,
-            'comsat': TokenType.COMSAT,
-            'shout': TokenType.SHOUT,
-            'build': TokenType.BUILD,
-            'lobby': TokenType.LOBBY,
-            'dodge': TokenType.DODGE,
-            'stun': TokenType.STUN,
-            'buff': TokenType.BUFF,
-            'nerf': TokenType.NERF,
-            'stack': TokenType.STACK,
-            'craft': TokenType.CRAFT,
-            'drop': TokenType.DROP,
-            'count': TokenType.COUNT,
-            'split': TokenType.SPLIT,
-        }
-        
-        # Constants for validation (Page 7, Rule 16-17)
-        self.MAX_INTEGER = 999999999999999
-        self.MIN_INTEGER = -999999999999999
-        self.MAX_INTEGER_DIGITS = 15
-        self.MAX_FRACTIONAL_DIGITS = 6
-    
+        self.source_code = source_code + '\n'
+        self.pos = Position(-1, 1, 0)
+        self.current_char = None
+        self.advance()
+
     def advance(self):
-        """Move to next character"""
-        if self.current_char == '\n':
-            self.line += 1
-            self.column = 0
-        
-        self.pos += 1
-        self.column += 1
-        
-        if self.pos < len(self.source):
-            self.current_char = self.source[self.pos]
-        else:
-            self.current_char = None
-    
+        self.pos.advance(self.current_char)
+        self.current_char = self.source_code[self.pos.index] if self.pos.index < len(self.source_code) else None
+
     def peek(self, offset=1):
-        """Look ahead without advancing"""
-        peek_pos = self.pos + offset
-        if peek_pos < len(self.source):
-            return self.source[peek_pos]
+        peek_pos = self.pos.index + offset
+        if peek_pos < len(self.source_code):
+            return self.source_code[peek_pos]
         return None
-    
+
     def peek_word(self):
-        """Peek ahead to the next word without consuming characters."""
-        pos = self.pos
-        while pos < len(self.source) and self.source[pos].isspace():
+        pos = self.pos.index
+        while pos < len(self.source_code) and self.source_code[pos].isspace():
             pos += 1
-
         word = ''
-        while pos < len(self.source) and (self.source[pos].isalnum() or self.source[pos] == '_'):
-            word += self.source[pos]
+        while pos < len(self.source_code) and (self.source_code[pos].isalnum() or self.source_code[pos] == '_'):
+            word += self.source_code[pos]
             pos += 1
-
         return word
-        
-    def skip_whitespace(self):
-        """Skip spaces, tabs, newlines"""
-        while self.current_char and self.current_char.isspace():
-            self.advance()
-    
-    def skip_comment(self):
-        """
-        Handle comments: /* single-line and /* */ multi-line (page 12)
-        - /*comment (single-line - continues to end of line)
-        - /* comment */ (multi-line - must have closing */)
-        """
-        # Check for /* pattern
-        if self.current_char == '/' and self.peek() == '*':
-            self.advance()  # skip /
-            self.advance()  # skip *
-            
-            # Look for multi-line closing */
-            while self.current_char:
-                if self.current_char == '*' and self.peek() == '/':
-                    # Found closing */ - this is a multi-line comment
-                    self.advance()  # skip *
-                    self.advance()  # skip /
-                    return True
-                elif self.current_char == '\n':
-                    # Newline reached without */ - this was a single-line comment
-                    self.advance() # consume newline
-                    return True
-                self.advance()
-            
-            # Reached end of file - treat as single-line comment
-            return True
-        
-        return False
 
-    def read_number(self):
-        """
-        Tokenize frag and elo literals with digit limits and optional scientific notation (pages 16-17, 52).
-        IMPROVED: Now includes range validation for integers and integer part length for floats.
-        """
-        start_line = self.line
-        start_col = self.column
-        num_str = ''
-        
-        # === START OF FIX 1a ===
-        # Handle negative or positive signs
-        if self.current_char == '-' or self.current_char == '+':
-            num_str += self.current_char
+    def make_tokens(self):
+        tokens = []
+        errors = []
+        while self.current_char is not None:
+            if self.current_char.isspace():
+                if self.current_char == '\n':
+                    tokens.append(Token(TokenType.NEWLINE, '\\n', self.pos.ln, self.pos.col))
+                self.advance()
+                continue
+
+            if self.current_char in ALPHA:
+                self.make_identifier_or_keyword(tokens, errors)
+                continue
+
+            if self.current_char in NUM:
+                self.make_number(tokens, errors, positive=True)
+                continue
+
+            if self.current_char in '+-':
+                self.make_signed_number_or_operator(tokens, errors)
+                continue
+
+            if self.current_char == '"':
+                self.make_string(tokens, errors)
+                continue
+
+            if self.current_char == "'":
+                self.make_char(tokens, errors)
+                continue
+
+            if self.current_char == '/':
+                self.make_comment_or_div_or_div_assign(tokens, errors)
+                continue
+
+            if self.current_char == '*':
+                self.make_mul_or_mul_assign(tokens, errors)
+                continue
+
+            if self.current_char == '%':
+                self.make_mod_or_mod_assign(tokens, errors)
+                continue
+
+            if self.current_char == '=':
+                self.make_assign_or_eq(tokens, errors)
+                continue
+
+            if self.current_char == '<':
+                self.make_lt_or_lte(tokens, errors)
+                continue
+
+            if self.current_char == '>':
+                self.make_gt_or_gte(tokens, errors)
+                continue
+
+            if self.current_char == '!':
+                self.make_not_or_neq(tokens, errors)
+                continue
+
+            if self.current_char == '&':
+                self.make_and(tokens, errors)
+                continue
+
+            if self.current_char == '|':
+                self.make_or(tokens, errors)
+                continue
+
+            if self.current_char == ',':
+                self.make_comma(tokens, errors)
+                continue
+
+            if self.current_char == ';':
+                self.make_semicolon(tokens, errors)
+                continue
+
+            if self.current_char == ':':
+                self.make_colon(tokens, errors)
+                continue
+
+            if self.current_char == '.':
+                self.make_dot_or_fractional(tokens, errors)
+                continue
+
+            if self.current_char == '(':
+                self.make_lparen(tokens, errors)
+                continue
+
+            if self.current_char == ')':
+                self.make_rparen(tokens, errors)
+                continue
+
+            if self.current_char == '[':
+                self.make_lbracket(tokens, errors)
+                continue
+
+            if self.current_char == ']':
+                self.make_rbracket(tokens, errors)
+                continue
+
+            if self.current_char == '{':
+                self.make_lbrace(tokens, errors)
+                continue
+
+            if self.current_char == '}':
+                self.make_rbrace(tokens, errors)
+                continue
+
+            errors.append(LexicalError(self.pos.copy(), f"Invalid character '{self.current_char}'"))
             self.advance()
-        # === END OF FIX 1a ===
-        
-        # Read integer part (max 15 digits per page 7, rule 16-17)
+
+        tokens.append(Token(TokenType.EOF, None, self.pos.ln, self.pos.col))
+        return tokens, errors
+
+    def make_identifier_or_keyword(self, tokens, errors):
+        start_pos = self.pos.copy()
+        ident_str = ''
+        underscore_count = 0
+        consecutive_underscore = False
+        previous_char = None
+
+        if not self.current_char.isalpha():
+            errors.append(LexicalError(start_pos, "Identifier must start with a letter"))
+            self.advance()
+            return
+
+        matched = False
+
+        if self.current_char == 'a':
+            ident_str += self.current_char
+            previous_char = self.current_char
+            self.advance()
+            if self.current_char == 'f':
+                ident_str += self.current_char
+                previous_char = self.current_char
+                self.advance()
+                if self.current_char == 'k':
+                    ident_str += self.current_char
+                    previous_char = self.current_char
+                    self.advance()
+                    if self.current_char is None or self.current_char in JUMP_DLM:
+                        tokens.append(Token(TokenType.AFK, ident_str, start_pos.ln, start_pos.col))
+                        matched = True
+                    # No else for invalid dlm here, handled below if not matched
+        elif self.current_char == 'b':
+            ident_str += self.current_char
+            previous_char = self.current_char
+            self.advance()
+            if self.current_char == 'u':
+                ident_str += self.current_char
+                previous_char = self.current_char
+                self.advance()
+                if self.current_char == 'f':
+                    ident_str += self.current_char
+                    previous_char = self.current_char
+                    self.advance()
+                    if self.current_char == 'f':
+                        ident_str += self.current_char
+                        previous_char = self.current_char
+                        self.advance()
+                        if self.current_char is None or self.current_char in BOOL_DLM:
+                            tokens.append(Token(TokenType.BUFF, ident_str, start_pos.ln, start_pos.col))
+                            matched = True
+                elif self.current_char == 'i':
+                    ident_str += self.current_char
+                    previous_char = self.current_char
+                    self.advance()
+                    if self.current_char == 'l':
+                        ident_str += self.current_char
+                        previous_char = self.current_char
+                        self.advance()
+                        if self.current_char == 'd':
+                            ident_str += self.current_char
+                            previous_char = self.current_char
+                            self.advance()
+                            if self.current_char is None or self.current_char in LOOP_FUNC_DLM:
+                                tokens.append(Token(TokenType.BUILD, ident_str, start_pos.ln, start_pos.col))
+                                matched = True
+        elif self.current_char == 'c':
+            ident_str += self.current_char
+            previous_char = self.current_char
+            self.advance()
+            if self.current_char == 'h':
+                ident_str += self.current_char
+                previous_char = self.current_char
+                self.advance()
+                if self.current_char == 'o':
+                    ident_str += self.current_char
+                    previous_char = self.current_char
+                    self.advance()
+                    if self.current_char == 'k':
+                        ident_str += self.current_char
+                        previous_char = self.current_char
+                        self.advance()
+                        if self.current_char == 'e':
+                            ident_str += self.current_char
+                            previous_char = self.current_char
+                            self.advance()
+                            next_word = self.peek_word()
+                            if next_word == 'clutch':
+                                while self.current_char and self.current_char.isspace():
+                                    self.advance()
+                                clutch_str = ''
+                                while self.current_char and (self.current_char.isalnum() or self.current_char == '_'):
+                                    clutch_str += self.current_char
+                                    self.advance()
+                                if clutch_str == 'clutch':
+                                    if self.current_char is None or self.current_char in COND_DLM:
+                                        tokens.append(Token(TokenType.CHOKE_CLUTCH, 'choke clutch', start_pos.ln, start_pos.col))
+                                        matched = True
+                                    else:
+                                        errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after 'choke clutch'"))
+                                        matched = True
+                                else:
+                                    errors.append(LexicalError(start_pos, f"Invalid after 'choke': '{clutch_str}'"))
+                                    matched = True
+                            else:
+                                if self.current_char is None or self.current_char in DO_ELSE_DLM:
+                                    tokens.append(Token(TokenType.CHOKE, ident_str, start_pos.ln, start_pos.col))
+                                    matched = True
+                elif self.current_char == 'u':
+                    ident_str += self.current_char
+                    previous_char = self.current_char
+                    self.advance()
+                    if self.current_char == 't':
+                        ident_str += self.current_char
+                        previous_char = self.current_char
+                        self.advance()
+                        if self.current_char == 'c':
+                            ident_str += self.current_char
+                            previous_char = self.current_char
+                            self.advance()
+                            if self.current_char == 'h':
+                                ident_str += self.current_char
+                                previous_char = self.current_char
+                                self.advance()
+                                if self.current_char is None or self.current_char in COND_DLM:
+                                    tokens.append(Token(TokenType.CLUTCH, ident_str, start_pos.ln, start_pos.col))
+                                    matched = True
+            elif self.current_char == 'o':
+                ident_str += self.current_char
+                previous_char = self.current_char
+                self.advance()
+                if self.current_char == 'm':
+                    ident_str += self.current_char
+                    previous_char = self.current_char
+                    self.advance()
+                    if self.current_char == 's':
+                        ident_str += self.current_char
+                        previous_char = self.current_char
+                        self.advance()
+                        if self.current_char == 'a':
+                            ident_str += self.current_char
+                            previous_char = self.current_char
+                            self.advance()
+                            if self.current_char == 't':
+                                ident_str += self.current_char
+                                previous_char = self.current_char
+                                self.advance()
+                                if self.current_char is None or self.current_char in IO_ARRAY_DLM:
+                                    tokens.append(Token(TokenType.COMSAT, ident_str, start_pos.ln, start_pos.col))
+                                    matched = True
+                elif self.current_char == 'u':
+                    ident_str += self.current_char
+                    previous_char = self.current_char
+                    self.advance()
+                    if self.current_char == 'n':
+                        ident_str += self.current_char
+                        previous_char = self.current_char
+                        self.advance()
+                        if self.current_char == 't':
+                            ident_str += self.current_char
+                            previous_char = self.current_char
+                            self.advance()
+                            if self.current_char is None or self.current_char in METHOD_DLM:
+                                tokens.append(Token(TokenType.COUNT, ident_str, start_pos.ln, start_pos.col))
+                                matched = True
+            elif self.current_char == 'r':
+                ident_str += self.current_char
+                previous_char = self.current_char
+                self.advance()
+                if self.current_char == 'a':
+                    ident_str += self.current_char
+                    previous_char = self.current_char
+                    self.advance()
+                    if self.current_char == 'f':
+                        ident_str += self.current_char
+                        previous_char = self.current_char
+                        self.advance()
+                        if self.current_char == 't':
+                            ident_str += self.current_char
+                            previous_char = self.current_char
+                            self.advance()
+                            if self.current_char is None or self.current_char in IO_ARRAY_DLM:
+                                tokens.append(Token(TokenType.CRAFT, ident_str, start_pos.ln, start_pos.col))
+                                matched = True
+        elif self.current_char == 'd':
+            ident_str += self.current_char
+            previous_char = self.current_char
+            self.advance()
+            if self.current_char == 'o':
+                ident_str += self.current_char
+                previous_char = self.current_char
+                self.advance()
+                if self.current_char == 'd':
+                    ident_str += self.current_char
+                    previous_char = self.current_char
+                    self.advance()
+                    if self.current_char == 'g':
+                        ident_str += self.current_char
+                        previous_char = self.current_char
+                        self.advance()
+                        if self.current_char == 'e':
+                            ident_str += self.current_char
+                            previous_char = self.current_char
+                            self.advance()
+                            if self.current_char is None or self.current_char in DATATYPE_DLM:
+                                tokens.append(Token(TokenType.DODGE, ident_str, start_pos.ln, start_pos.col))
+                                matched = True
+            elif self.current_char == 'r':
+                ident_str += self.current_char
+                previous_char = self.current_char
+                self.advance()
+                if self.current_char == 'o':
+                    ident_str += self.current_char
+                    previous_char = self.current_char
+                    self.advance()
+                    if self.current_char == 'p':
+                        ident_str += self.current_char
+                        previous_char = self.current_char
+                        self.advance()
+                        if self.current_char is None or self.current_char in IO_ARRAY_DLM:
+                            tokens.append(Token(TokenType.DROP, ident_str, start_pos.ln, start_pos.col))
+                            matched = True
+        elif self.current_char == 'e':
+            ident_str += self.current_char
+            previous_char = self.current_char
+            self.advance()
+            if self.current_char == 'l':
+                ident_str += self.current_char
+                previous_char = self.current_char
+                self.advance()
+                if self.current_char == 'o':
+                    ident_str += self.current_char
+                    previous_char = self.current_char
+                    self.advance()
+                    if self.current_char is None or self.current_char in DATATYPE_DLM:
+                        tokens.append(Token(TokenType.ELO, ident_str, start_pos.ln, start_pos.col))
+                        matched = True
+        elif self.current_char == 'f':
+            ident_str += self.current_char
+            previous_char = self.current_char
+            self.advance()
+            if self.current_char == 'r':
+                ident_str += self.current_char
+                previous_char = self.current_char
+                self.advance()
+                if self.current_char == 'a':
+                    ident_str += self.current_char
+                    previous_char = self.current_char
+                    self.advance()
+                    if self.current_char == 'g':
+                        ident_str += self.current_char
+                        previous_char = self.current_char
+                        self.advance()
+                        if self.current_char is None or self.current_char in DATATYPE_DLM:
+                            tokens.append(Token(TokenType.FRAG, ident_str, start_pos.ln, start_pos.col))
+                            matched = True
+        elif self.current_char == 'g':
+            ident_str += self.current_char
+            previous_char = self.current_char
+            self.advance()
+            if self.current_char == 'r':
+                ident_str += self.current_char
+                previous_char = self.current_char
+                self.advance()
+                if self.current_char == 'i':
+                    ident_str += self.current_char
+                    previous_char = self.current_char
+                    self.advance()
+                    if self.current_char == 'n':
+                        ident_str += self.current_char
+                        previous_char = self.current_char
+                        self.advance()
+                        if self.current_char == 'd':
+                            ident_str += self.current_char
+                            previous_char = self.current_char
+                            self.advance()
+                            if self.current_char is None or self.current_char in LOOP_FUNC_DLM:
+                                tokens.append(Token(TokenType.GRIND, ident_str, start_pos.ln, start_pos.col))
+                                matched = True
+            elif self.current_char == 'g':
+                ident_str += self.current_char
+                previous_char = self.current_char
+                self.advance()
+                if self.current_char == 'w':
+                    ident_str += self.current_char
+                    previous_char = self.current_char
+                    self.advance()
+                    if self.current_char == 'p':
+                        ident_str += self.current_char
+                        previous_char = self.current_char
+                        self.advance()
+                        if self.current_char is None or self.current_char in JUMP_DLM:
+                            tokens.append(Token(TokenType.GGWP, ident_str, start_pos.ln, start_pos.col))
+                            matched = True
+        elif self.current_char == 'h':
+            ident_str += self.current_char
+            previous_char = self.current_char
+            self.advance()
+            if self.current_char == 'o':
+                ident_str += self.current_char
+                previous_char = self.current_char
+                self.advance()
+                if self.current_char == 'p':
+                    ident_str += self.current_char
+                    previous_char = self.current_char
+                    self.advance()
+                    if self.current_char is None or self.current_char in JUMP_DLM:
+                        tokens.append(Token(TokenType.HOP, ident_str, start_pos.ln, start_pos.col))
+                        matched = True
+        elif self.current_char == 'i':
+            ident_str += self.current_char
+            previous_char = self.current_char
+            self.advance()
+            if self.current_char == 'g':
+                ident_str += self.current_char
+                previous_char = self.current_char
+                self.advance()
+                if self.current_char == 'n':
+                    ident_str += self.current_char
+                    previous_char = self.current_char
+                    self.advance()
+                    if self.current_char is None or self.current_char in DATATYPE_DLM:
+                        tokens.append(Token(TokenType.IGN, ident_str, start_pos.ln, start_pos.col))
+                        matched = True
+        elif self.current_char == 'l':
+            ident_str += self.current_char
+            previous_char = self.current_char
+            self.advance()
+            if self.current_char == 'o':
+                ident_str += self.current_char
+                previous_char = self.current_char
+                self.advance()
+                if self.current_char == 'b':
+                    ident_str += self.current_char
+                    previous_char = self.current_char
+                    self.advance()
+                    if self.current_char == 'b':
+                        ident_str += self.current_char
+                        previous_char = self.current_char
+                        self.advance()
+                        if self.current_char == 'y':
+                            ident_str += self.current_char
+                            previous_char = self.current_char
+                            self.advance()
+                            if self.current_char is None or self.current_char in LOOP_FUNC_DLM:
+                                tokens.append(Token(TokenType.LOBBY, ident_str, start_pos.ln, start_pos.col))
+                                matched = True
+        elif self.current_char == 'n':
+            ident_str += self.current_char
+            previous_char = self.current_char
+            self.advance()
+            if self.current_char == 'e':
+                ident_str += self.current_char
+                previous_char = self.current_char
+                self.advance()
+                if self.current_char == 'r':
+                    ident_str += self.current_char
+                    previous_char = self.current_char
+                    self.advance()
+                    if self.current_char == 'f':
+                        ident_str += self.current_char
+                        previous_char = self.current_char
+                        self.advance()
+                        if self.current_char is None or self.current_char in BOOL_DLM:
+                            tokens.append(Token(TokenType.NERF, ident_str, start_pos.ln, start_pos.col))
+                            matched = True
+            elif self.current_char == 'o':
+                ident_str += self.current_char
+                previous_char = self.current_char
+                self.advance()
+                if self.current_char == 'o':
+                    ident_str += self.current_char
+                    previous_char = self.current_char
+                    self.advance()
+                    if self.current_char == 'b':
+                        ident_str += self.current_char
+                        previous_char = self.current_char
+                        self.advance()
+                        if self.current_char is None or self.current_char in CASE_DLM:
+                            tokens.append(Token(TokenType.NOOB, ident_str, start_pos.ln, start_pos.col))
+                            matched = True
+        elif self.current_char == 'p':
+            ident_str += self.current_char
+            previous_char = self.current_char
+            self.advance()
+            if self.current_char == 'i':
+                ident_str += self.current_char
+                previous_char = self.current_char
+                self.advance()
+                if self.current_char == 'c':
+                    ident_str += self.current_char
+                    previous_char = self.current_char
+                    self.advance()
+                    if self.current_char == 'k':
+                        ident_str += self.current_char
+                        previous_char = self.current_char
+                        self.advance()
+                        if self.current_char is None or self.current_char in COND_DLM:
+                            tokens.append(Token(TokenType.PICK, ident_str, start_pos.ln, start_pos.col))
+                            matched = True
+        elif self.current_char == 'r':
+            ident_str += self.current_char
+            previous_char = self.current_char
+            self.advance()
+            if self.current_char == 'o':
+                ident_str += self.current_char
+                previous_char = self.current_char
+                self.advance()
+                if self.current_char == 'l':
+                    ident_str += self.current_char
+                    previous_char = self.current_char
+                    self.advance()
+                    if self.current_char == 'e':
+                        ident_str += self.current_char
+                        previous_char = self.current_char
+                        self.advance()
+                        if self.current_char is None or self.current_char in CASE_DLM:
+                            tokens.append(Token(TokenType.ROLE, ident_str, start_pos.ln, start_pos.col))
+                            matched = True
+            elif self.current_char == 'e':
+                ident_str += self.current_char
+                previous_char = self.current_char
+                self.advance()
+                if self.current_char == 't':
+                    ident_str += self.current_char
+                    previous_char = self.current_char
+                    self.advance()
+                    if self.current_char == 'r':
+                        ident_str += self.current_char
+                        previous_char = self.current_char
+                        self.advance()
+                        if self.current_char == 'y':
+                            ident_str += self.current_char
+                            previous_char = self.current_char
+                            self.advance()
+                            if self.current_char is None or self.current_char in LOOP_FUNC_DLM:
+                                tokens.append(Token(TokenType.RETRY, ident_str, start_pos.ln, start_pos.col))
+                                matched = True
+        elif self.current_char == 's':
+            ident_str += self.current_char
+            previous_char = self.current_char
+            self.advance()
+            if self.current_char == 'u':
+                ident_str += self.current_char
+                previous_char = self.current_char
+                self.advance()
+                if self.current_char == 'r':
+                    ident_str += self.current_char
+                    previous_char = self.current_char
+                    self.advance()
+                    if self.current_char == 'e':
+                        ident_str += self.current_char
+                        previous_char = self.current_char
+                        self.advance()
+                        if self.current_char == 'b':
+                            ident_str += self.current_char
+                            previous_char = self.current_char
+                            self.advance()
+                            if self.current_char == 'o':
+                                ident_str += self.current_char
+                                previous_char = self.current_char
+                                self.advance()
+                                if self.current_char == 'l':
+                                    ident_str += self.current_char
+                                    previous_char = self.current_char
+                                    self.advance()
+                                    if self.current_char is None or self.current_char in DATATYPE_DLM:
+                                        tokens.append(Token(TokenType.SUREBOL, ident_str, start_pos.ln, start_pos.col))
+                                        matched = True
+            elif self.current_char == 'h':
+                ident_str += self.current_char
+                previous_char = self.current_char
+                self.advance()
+                if self.current_char == 'o':
+                    ident_str += self.current_char
+                    previous_char = self.current_char
+                    self.advance()
+                    if self.current_char == 'u':
+                        ident_str += self.current_char
+                        previous_char = self.current_char
+                        self.advance()
+                        if self.current_char == 't':
+                            ident_str += self.current_char
+                            previous_char = self.current_char
+                            self.advance()
+                            if self.current_char is None or self.current_char in IO_ARRAY_DLM:
+                                tokens.append(Token(TokenType.SHOUT, ident_str, start_pos.ln, start_pos.col))
+                                matched = True
+            elif self.current_char == 't':
+                ident_str += self.current_char
+                previous_char = self.current_char
+                self.advance()
+                if self.current_char == 'u':
+                    ident_str += self.current_char
+                    previous_char = self.current_char
+                    self.advance()
+                    if self.current_char == 'n':
+                        ident_str += self.current_char
+                        previous_char = self.current_char
+                        self.advance()
+                        if self.current_char is None or self.current_char in DATATYPE_DLM:
+                            tokens.append(Token(TokenType.STUN, ident_str, start_pos.ln, start_pos.col))
+                            matched = True
+            elif self.current_char == 't':
+                ident_str += self.current_char
+                previous_char = self.current_char
+                self.advance()
+                if self.current_char == 'a':
+                    ident_str += self.current_char
+                    previous_char = self.current_char
+                    self.advance()
+                    if self.current_char == 'c':
+                        ident_str += self.current_char
+                        previous_char = self.current_char
+                        self.advance()
+                        if self.current_char == 'k':
+                            ident_str += self.current_char
+                            previous_char = self.current_char
+                            self.advance()
+                            if self.current_char is None or self.current_char in IO_ARRAY_DLM:
+                                tokens.append(Token(TokenType.STACK, ident_str, start_pos.ln, start_pos.col))
+                                matched = True
+            elif self.current_char == 'p':
+                ident_str += self.current_char
+                previous_char = self.current_char
+                self.advance()
+                if self.current_char == 'l':
+                    ident_str += self.current_char
+                    previous_char = self.current_char
+                    self.advance()
+                    if self.current_char == 'i':
+                        ident_str += self.current_char
+                        previous_char = self.current_char
+                        self.advance()
+                        if self.current_char == 't':
+                            ident_str += self.current_char
+                            previous_char = self.current_char
+                            self.advance()
+                            if self.current_char is None or self.current_char in METHOD_DLM:
+                                tokens.append(Token(TokenType.SPLIT, ident_str, start_pos.ln, start_pos.col))
+                                matched = True
+        elif self.current_char == 't':
+            ident_str += self.current_char
+            previous_char = self.current_char
+            self.advance()
+            if self.current_char == 'a':
+                ident_str += self.current_char
+                previous_char = self.current_char
+                self.advance()
+                if self.current_char == 'g':
+                    ident_str += self.current_char
+                    previous_char = self.current_char
+                    self.advance()
+                    if self.current_char is None or self.current_char in DATATYPE_DLM:
+                        tokens.append(Token(TokenType.TAG, ident_str, start_pos.ln, start_pos.col))
+                        matched = True
+            elif self.current_char == 'r':
+                ident_str += self.current_char
+                previous_char = self.current_char
+                self.advance()
+                if self.current_char == 'y':
+                    ident_str += self.current_char
+                    previous_char = self.current_char
+                    self.advance()
+                    if self.current_char is None or self.current_char in DO_ELSE_DLM:
+                        tokens.append(Token(TokenType.TRY, ident_str, start_pos.ln, start_pos.col))
+                        matched = True
+        # For letters without keywords (e.g., 'q', 'v', etc.), just build identifier
+        else:
+            ident_str += self.current_char
+            previous_char = self.current_char
+            self.advance()
+
+        if not matched:
+            while self.current_char is not None and (self.current_char in ALPHANUM or self.current_char == '_'):
+                if self.current_char == '_':
+                    underscore_count += 1
+                    if previous_char == '_':
+                        consecutive_underscore = True
+                ident_str += self.current_char
+                previous_char = self.current_char
+                self.advance()
+            if len(ident_str) < MIN_ID_LENGTH or len(ident_str) > MAX_ID_LENGTH:
+                errors.append(LexicalError(start_pos, f"Identifier length must be 1-20 characters: '{ident_str}'"))
+            elif ident_str.startswith('_') or ident_str.endswith('_'):
+                errors.append(LexicalError(start_pos, "Identifier cannot start or end with '_'"))
+            elif consecutive_underscore:
+                errors.append(LexicalError(start_pos, "No consecutive '_' allowed"))
+            elif underscore_count > MAX_UNDERSCORES:
+                errors.append(LexicalError(start_pos, f"Max {MAX_UNDERSCORES} '_' allowed"))
+            elif self.current_char is None or self.current_char in IDFR_DLM:
+                tokens.append(Token(TokenType.IDENTIFIER, ident_str, start_pos.ln, start_pos.col))
+            else:
+                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after identifier '{ident_str}'"))
+
+    def make_number(self, tokens, errors, positive=True):
+        start_pos = self.pos.copy()
+        num_str = '' if positive else '-'
         digit_count = 0
+        is_float = False
+
         while self.current_char and self.current_char.isdigit():
             num_str += self.current_char
             digit_count += 1
             self.advance()
-            
-            # IMPROVED: Check max digits (applies to both frag and elo integer parts)
-            if digit_count > self.MAX_INTEGER_DIGITS:
-                return Token(TokenType.ERROR, 
-                           f"Number too long (max {self.MAX_INTEGER_DIGITS} digits)", 
-                           start_line, start_col)
-        
-        is_float = False
-        # Check for decimal point
+            if digit_count > MAX_INTEGER_DIGITS:
+                errors.append(LexicalError(start_pos, f"Integer part too long (max {MAX_INTEGER_DIGITS} digits)"))
+                return
+
         if self.current_char == '.':
             is_float = True
-            num_str += self.current_char
+            num_str += '.'
             self.advance()
-            
-            # Read fractional part (max 6 digits per page 7, rule 17)
             frac_count = 0
             while self.current_char and self.current_char.isdigit():
                 num_str += self.current_char
                 frac_count += 1
                 self.advance()
-        
-                if frac_count > self.MAX_FRACTIONAL_DIGITS:
-                    return Token(TokenType.ERROR, 
-                               f"Too many digits after decimal (max {self.MAX_FRACTIONAL_DIGITS})", 
-                               start_line, start_col)
-            
-            # Check for scientific notation (e or E)
-            if self.current_char and self.current_char.lower() == 'e':
+                if frac_count > MAX_FRACTIONAL_DIGITS:
+                    errors.append(LexicalError(start_pos, f"Fractional part too long (max {MAX_FRACTIONAL_DIGITS} digits)"))
+                    return
+
+        if is_float and self.current_char and self.current_char.lower() == 'e':
+            num_str += self.current_char
+            self.advance()
+            if self.current_char in '+-':
                 num_str += self.current_char
                 self.advance()
-                
-                # Optional + or - after e
-                if self.current_char and self.current_char in ['+', '-']:
-                    num_str += self.current_char
-                    self.advance()
-                
-                # Read exponent digits
-                if not self.current_char or not self.current_char.isdigit():
-                    return Token(TokenType.ERROR, 
-                               "Invalid scientific notation: expected digits after 'e'", 
-                               start_line, start_col)
-                
+            if not self.current_char or not self.current_char.isdigit():
+                errors.append(LexicalError(start_pos, "Expected digits after 'e' in scientific notation"))
+                return
+            while self.current_char and self.current_char.isdigit():
+                num_str += self.current_char
+                self.advance()
+
+        dlm = FLT_LIT_DLM if is_float else INT_DLM
+        if self.current_char is None or self.current_char in dlm:
+            if is_float:
+                try:
+                    value = float(num_str)
+                    tokens.append(Token(TokenType.FLOAT, value, start_pos.ln, start_pos.col))
+                except ValueError:
+                    errors.append(LexicalError(start_pos, f"Invalid float literal '{num_str}'"))
+            else:
+                try:
+                    value = int(num_str)
+                    if value < MIN_INTEGER or value > MAX_INTEGER:
+                        errors.append(LexicalError(start_pos, f"Integer out of range (±{MAX_INTEGER}): '{num_str}'"))
+                    else:
+                        tokens.append(Token(TokenType.INTEGER, value, start_pos.ln, start_pos.col))
+                except ValueError:
+                    errors.append(LexicalError(start_pos, f"Invalid integer literal '{num_str}'"))
+        else:
+            errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after number '{num_str}'"))
+
+    def make_signed_number_or_operator(self, tokens, errors):
+        start_pos = self.pos.copy()
+        sign = self.current_char
+        self.advance()
+        if sign == '+':
+            if self.current_char == '+':
+                self.advance()
+                if self.current_char is None or self.current_char in SYMBOL_DLM:
+                    tokens.append(Token(TokenType.INCREMENT, '++', start_pos.ln, start_pos.col))
+                else:
+                    errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '++'"))
+                return
+            elif self.current_char == '=':
+                self.advance()
+                if self.current_char is None or self.current_char in SYMBOL_DLM:
+                    tokens.append(Token(TokenType.PLUS_ASSIGN, '+=', start_pos.ln, start_pos.col))
+                else:
+                    errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '+='"))
+                return
+            elif self.current_char.isdigit():
+                self.make_number(tokens, errors, positive=True)
+                return
+            elif self.current_char == '.' and self.peek() and self.peek().isdigit():
+                num_str = '+0.'
+                self.advance()  # .
+                frac_count = 0
                 while self.current_char and self.current_char.isdigit():
                     num_str += self.current_char
+                    frac_count += 1
                     self.advance()
-            
-        if is_float:
-            try:
-                float_val = float(num_str)
-                return Token(TokenType.FLOAT, float_val, start_line, start_col)
-            except ValueError:
-                return Token(TokenType.ERROR, f"Invalid float: {num_str}", start_line, start_col)
-        else:
-            # IMPROVED: Integer range validation (Page 7, Rule 16)
-            try:
-                int_val = int(num_str)
-                
-                if int_val < self.MIN_INTEGER or int_val > self.MAX_INTEGER:
-                    return Token(TokenType.ERROR, 
-                               f"Integer out of range (±999,999,999,999,999): {num_str}", 
-                               start_line, start_col)
-                
-                return Token(TokenType.INTEGER, int_val, start_line, start_col)
-            except ValueError:
-                # === START OF FIX 1b ===
-                # Handle cases like just '+' or '-'
-                if num_str == '+' or num_str == '-':
-                     return Token(TokenType.ERROR, f"Invalid character '{num_str}'", start_line, start_col)
-                # === END OF FIX 1b ===
-                return Token(TokenType.ERROR, f"Invalid integer: {num_str}", start_line, start_col)
-    
-    def read_string(self):
-        """Read string literal (page 17, rule 19)"""
-        start_line = self.line
-        start_col = self.column
-        
-        self.advance()  # skip opening "
+                    if frac_count > MAX_FRACTIONAL_DIGITS:
+                        errors.append(LexicalError(start_pos, f"Fractional part too long (max {MAX_FRACTIONAL_DIGITS} digits)"))
+                        return
+                if self.current_char and self.current_char.lower() == 'e':
+                    num_str += self.current_char
+                    self.advance()
+                    if self.current_char in '+-':
+                        num_str += self.current_char
+                        self.advance()
+                    if not self.current_char or not self.current_char.isdigit():
+                        errors.append(LexicalError(start_pos, "Expected digits after 'e'"))
+                        return
+                    while self.current_char and self.current_char.isdigit():
+                        num_str += self.current_char
+                        self.advance()
+                if self.current_char is None or self.current_char in FLT_LIT_DLM:
+                    try:
+                        value = float(num_str)
+                        tokens.append(Token(TokenType.FLOAT, value, start_pos.ln, start_pos.col))
+                    except ValueError:
+                        errors.append(LexicalError(start_pos, f"Invalid float '{num_str}'"))
+                else:
+                    errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after float '{num_str}'"))
+                return
+            else:
+                if self.current_char is None or self.current_char in SYMBOL_DLM:
+                    tokens.append(Token(TokenType.PLUS, '+', start_pos.ln, start_pos.col))
+                else:
+                    errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '+'"))
+                return
+        elif sign == '-':
+            if self.current_char == '-':
+                self.advance()
+                if self.current_char is None or self.current_char in SYMBOL_DLM:
+                    tokens.append(Token(TokenType.DECREMENT, '--', start_pos.ln, start_pos.col))
+                else:
+                    errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '--'"))
+                return
+            elif self.current_char == '=':
+                self.advance()
+                if self.current_char is None or self.current_char in SYMBOL_DLM:
+                    tokens.append(Token(TokenType.MINUS_ASSIGN, '-=', start_pos.ln, start_pos.col))
+                else:
+                    errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '-='"))
+                return
+            elif self.current_char.isdigit():
+                self.make_number(tokens, errors, positive=False)
+                return
+            elif self.current_char == '.' and self.peek() and self.peek().isdigit():
+                num_str = '-0.'
+                self.advance()  # .
+                frac_count = 0
+                while self.current_char and self.current_char.isdigit():
+                    num_str += self.current_char
+                    frac_count += 1
+                    self.advance()
+                    if frac_count > MAX_FRACTIONAL_DIGITS:
+                        errors.append(LexicalError(start_pos, f"Fractional part too long (max {MAX_FRACTIONAL_DIGITS} digits)"))
+                        return
+                if self.current_char and self.current_char.lower() == 'e':
+                    num_str += self.current_char
+                    self.advance()
+                    if self.current_char in '+-':
+                        num_str += self.current_char
+                        self.advance()
+                    if not self.current_char or not self.current_char.isdigit():
+                        errors.append(LexicalError(start_pos, "Expected digits after 'e'"))
+                        return
+                    while self.current_char and self.current_char.isdigit():
+                        num_str += self.current_char
+                        self.advance()
+                if self.current_char is None or self.current_char in FLT_LIT_DLM:
+                    try:
+                        value = float(num_str)
+                        tokens.append(Token(TokenType.FLOAT, value, start_pos.ln, start_pos.col))
+                    except ValueError:
+                        errors.append(LexicalError(start_pos, f"Invalid float '{num_str}'"))
+                else:
+                    errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after float '{num_str}'"))
+                return
+            else:
+                if self.current_char is None or self.current_char in SYMBOL_DLM:
+                    tokens.append(Token(TokenType.MINUS, '-', start_pos.ln, start_pos.col))
+                else:
+                    errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '-'"))
+                return
+
+    def make_string(self, tokens, errors):
+        start_pos = self.pos.copy()
+        self.advance()  # "
         string_value = ''
-        
         while self.current_char and self.current_char != '"':
             if self.current_char == '\\':
-                self.advance()  # skip backslash
-                if self.current_char in ['n', 't', 'r', '"', '\\']:
+                self.advance()
+                if self.current_char in 'ntr"\\':
                     escape_map = {'n': '\n', 't': '\t', 'r': '\r', '"': '"', '\\': '\\'}
-                    string_value += escape_map[self.current_char]
+                    string_value += escape_map.get(self.current_char, self.current_char)
                     self.advance()
                 else:
-                    return Token(TokenType.ERROR, 
-                               f"Invalid escape sequence: \\{self.current_char} - Rule 2a, Page 26", 
-                               start_line, start_col)
+                    errors.append(LexicalError(start_pos, f"Invalid escape sequence \\{self.current_char}"))
+                    return
             elif self.current_char == '\n':
-                return Token(TokenType.ERROR, 
-                           "String literal cannot span multiple lines without \\n - Rule 2, Page 26", 
-                           start_line, start_col)
+                errors.append(LexicalError(start_pos, "String literal cannot span multiple lines without \\n"))
+                return
             else:
                 string_value += self.current_char
                 self.advance()
-        
         if self.current_char == '"':
-            self.advance()  # skip closing "
-            return Token(TokenType.STRING, string_value, start_line, start_col)
+            self.advance()
+            if self.current_char is None or self.current_char in STRG_DLM:
+                tokens.append(Token(TokenType.STRING, string_value, start_pos.ln, start_pos.col))
+            else:
+                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after string"))
         else:
-            return Token(TokenType.ERROR, "Unterminated string", start_line, start_col)
-    
-    def read_char(self):
-        """Read character literal (page 19, rule 20)"""
-        start_line = self.line
-        start_col = self.column
-        
-        self.advance()  # skip opening '
-        
-        if not self.current_char:
-            return Token(TokenType.ERROR, "Unterminated character literal", start_line, start_col)
-        
-        if self.current_char == "'":
-            self.advance() # consume closing '
-            return Token(TokenType.ERROR, "Empty character literal", start_line, start_col)
-        
+            errors.append(LexicalError(start_pos, "Unterminated string literal"))
+
+    def make_char(self, tokens, errors):
+        start_pos = self.pos.copy()
+        self.advance()  # '
         char_value = ''
-        
-        # Handle escape sequences (Page 28, Rule 7)
+        if not self.current_char:
+            errors.append(LexicalError(start_pos, "Unterminated character literal"))
+            return
+        if self.current_char == "'":
+            self.advance()
+            errors.append(LexicalError(start_pos, "Empty character literal"))
+            return
         if self.current_char == '\\':
-            self.advance() # skip backslash
-            if self.current_char in ['n', 't', 'r', "'", '\\']:
+            self.advance()
+            if self.current_char in 'ntr\'\\':
                 escape_map = {'n': '\n', 't': '\t', 'r': '\r', "'": "'", '\\': '\\'}
-                char_value = escape_map[self.current_char]
+                char_value += escape_map.get(self.current_char, self.current_char)
                 self.advance()
             else:
-                return Token(TokenType.ERROR, 
-                           f"Invalid escape sequence: \\{self.current_char} in char literal", 
-                           start_line, start_col)
+                errors.append(LexicalError(start_pos, f"Invalid escape sequence \\{self.current_char}"))
+                return
         else:
-            # Handle non-escaped character
-            char_value = self.current_char
+            char_value += self.current_char
             self.advance()
-        
-        # Check for closing '
         if self.current_char == "'":
-            self.advance()  # skip closing '
-            return Token(TokenType.CHAR, char_value, start_line, start_col)
+            self.advance()
+            if len(char_value) != 1:
+                errors.append(LexicalError(start_pos, "Character literal must be a single character"))
+                return
+            if self.current_char is None or self.current_char in STRG_DLM:  # Reuse STRG_DLM for char
+                tokens.append(Token(TokenType.CHAR, char_value, start_pos.ln, start_pos.col))
+            else:
+                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after character literal"))
         else:
-            # Error: either unterminated or too long
-            if not self.current_char:
-                 return Token(TokenType.ERROR, "Unterminated character literal", start_line, start_col)
-            return Token(TokenType.ERROR, 
-                       "Character literal must contain exactly one character", 
-                       start_line, start_col)
+            errors.append(LexicalError(start_pos, "Unterminated character literal"))
 
-    
-    def read_identifier(self):
-        """
-        Read identifier or keyword (page 15, rules 3-6)
-        IMPROVED: Now includes explicit minimum length check
-        """
-        start_line = self.line
-        start_col = self.column
-        identifier = ''
-        underscore_count = 0
-        
-        # Must start with letter (rule 4, page 7; rule 2, page 13)
-        if not self.current_char.isalpha():
-            return Token(TokenType.ERROR, "Identifier must start with a letter", start_line, start_col)
-        
-        # Read identifier
-        while self.current_char and (self.current_char.isalnum() or self.current_char == '_'):
-            
-            # Rule: max length 20 characters
-            if len(identifier) >= 20: 
-                return Token(TokenType.ERROR, 
-                           "Identifier too long (max 20 characters)", 
-                           start_line, start_col)
-
-            if self.current_char == '_':
-                underscore_count += 1
-                # Rule 5: max 19 underscores
-                if underscore_count > 19:
-                    return Token(TokenType.ERROR, 
-                               "Identifier cannot have more than 19 underscores", 
-                               start_line, start_col)
-            
-            identifier += self.current_char
+    def make_comment_or_div_or_div_assign(self, tokens, errors):
+        start_pos = self.pos.copy()
+        self.advance()  # /
+        if self.current_char == '*':
+            self.advance()  # *
+            while self.current_char:
+                if self.current_char == '*' and self.peek() == '/':
+                    self.advance()  # *
+                    self.advance()  # /
+                    break
+                elif self.current_char == '\n':
+                    break
+                self.advance()
+        elif self.current_char == '=':
             self.advance()
-        
-        # IMPROVED: Explicit minimum length check (Rule 6, Page 7)
-        if len(identifier) < 1:
-            return Token(TokenType.ERROR, 
-                       "Identifier must be at least 1 character long", 
-                       start_line, start_col)
-        
-        # Special handling for two-word keyword "choke clutch"
-        if identifier == 'choke':
-            next_word = self.peek_word()
-            if next_word == 'clutch':
-                # Consume whitespace and 'clutch'
-                while self.current_char and self.current_char.isspace():
-                    self.advance()
+            if self.current_char is None or self.current_char in SYMBOL_DLM:
+                tokens.append(Token(TokenType.DIV_ASSIGN, '/=', start_pos.ln, start_pos.col))
+            else:
+                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '/='"))
+        else:
+            if self.current_char is None or self.current_char in SYMBOL_DLM:
+                tokens.append(Token(TokenType.DIV, '/', start_pos.ln, start_pos.col))
+            else:
+                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '/'"))
 
-                # Read 'clutch'
-                clutch_word = ''
-                while self.current_char and (self.current_char.isalnum() or self.current_char == '_'):
-                    clutch_word += self.current_char
-                    self.advance()
-
-                if clutch_word == 'clutch':
-                    return Token(TokenType.CHOKE_CLUTCH, 'choke clutch', start_line, start_col)
-        
-        # Check if it's a reserved word
-        token_type = self.keywords.get(identifier, TokenType.IDENTIFIER)
-        return Token(token_type, identifier, start_line, start_col)
-    
-    def get_next_token(self):
-        """Main tokenization method"""
-        while self.current_char:
-            start_line = self.line
-            start_col = self.column
-
-            # Emit NEWLINE tokens
-            if self.current_char == '\n':
-                self.advance()
-                return Token(TokenType.NEWLINE, '\\n', start_line, start_col)
-            
-            # Skip whitespace
-            if self.current_char.isspace():
-                self.skip_whitespace()
-                continue
-            
-            # Handle comments
-            if self.skip_comment():
-                continue
-            
-            # Numbers (including negative)
-            if self.current_char.isdigit():
-                return self.read_number()
-            
-            # **FIX #1: Whitespace-sensitive plus handling (Page 13) - NEW**
-            if self.current_char == '+':
-                next_char = self.peek()
-                next_next_char = self.peek(2)
-
-                # === START OF FIX 2 ===
-                # Case: positive number (+5) — no space after '+'
-                if next_char and next_char.isdigit():
-                    # This is unary positive, let read_number() handle the '+'
-                    return self.read_number()
-                # === END OF FIX 2 ===
-                
-                # Case: addition (+ 5) — space after '+' before digit
-                # Continue to normal '+' operator handling below
-            
-            # Whitespace-sensitive minus handling (Page 13)
-            if self.current_char == '-': 
-                next_char = self.peek()
-                next_next_char = self.peek(2)
-
-                # Case: negation (e.g., -5) — no space between '-' and digit
-                if next_char and next_char.isdigit():
-                    return self.read_number()
-                
-                # Case: subtraction (e.g., - 5) — space after '-' before digit
-                if next_char == ' ' and next_next_char and next_next_char.isdigit():
-                    self.advance()  # consume '-'
-                    return Token(TokenType.MINUS, '-', start_line, start_col)
-                
-            # Strings
-            if self.current_char == '"':
-                return self.read_string()
-            
-            # Characters  
-            if self.current_char == "'":
-                return self.read_char()
-            
-            # Identifiers and keywords
-            if self.current_char.isalpha():
-                return self.read_identifier()
-            
-            # Two-character operators
-            if self.current_char == '+':
-                self.advance()
-                if self.current_char == '+':
-                    self.advance()
-                    return Token(TokenType.INCREMENT, '++', start_line, start_col)
-                elif self.current_char == '=':
-                    self.advance()
-                    return Token(TokenType.PLUS_ASSIGN, '+=', start_line, start_col)
-                return Token(TokenType.PLUS, '+', start_line, start_col)
-            
-            if self.current_char == '-':
-                self.advance()
-                if self.current_char == '-':
-                    self.advance()
-                    return Token(TokenType.DECREMENT, '--', start_line, start_col)
-                elif self.current_char == '=':
-                    self.advance()
-                    return Token(TokenType.MINUS_ASSIGN, '-=', start_line, start_col)
-                return Token(TokenType.MINUS, '-', start_line, start_col)
-            
-            if self.current_char == '*':
-                self.advance()
-                if self.current_char == '=':
-                    self.advance()
-                    return Token(TokenType.MULT_ASSIGN, '*=', start_line, start_col)
-                return Token(TokenType.MULTIPLY, '*', start_line, start_col)
-            
-            if self.current_char == '/':
-                self.advance()
-                if self.current_char == '=':
-                    self.advance()
-                    return Token(TokenType.DIV_ASSIGN, '/=', start_line, start_col)
-                return Token(TokenType.DIVIDE, '/', start_line, start_col)
-            
-            if self.current_char == '%':
-                self.advance()
-                if self.current_char == '=':
-                    self.advance()
-                    return Token(TokenType.MOD_ASSIGN, '%=', start_line, start_col)
-                return Token(TokenType.MODULO, '%', start_line, start_col)
-            
-            if self.current_char == '=':
-                self.advance()
-                if self.current_char == '=':
-                    self.advance()
-                    return Token(TokenType.EQUAL, '==', start_line, start_col)
-                return Token(TokenType.ASSIGN, '=', start_line, start_col)
-            
-            if self.current_char == '!':
-                self.advance()
-                if self.current_char == '=':
-                    self.advance()
-                    return Token(TokenType.NOT_EQUAL, '!=', start_line, start_col)
-                return Token(TokenType.NOT, '!', start_line, start_col)
-            
-            if self.current_char == '<':
-                self.advance()
-                if self.current_char == '=':
-                    self.advance()
-                    return Token(TokenType.LESS_EQUAL, '<=', start_line, start_col)
-                return Token(TokenType.LESS_THAN, '<', start_line, start_col)
-            
-            if self.current_char == '>':
-                self.advance()
-                if self.current_char == '=':
-                    self.advance()
-                    return Token(TokenType.GREATER_EQUAL, '>=', start_line, start_col)
-                return Token(TokenType.GREATER_THAN, '>', start_line, start_col)
-            
-            if self.current_char == '&':
-                self.advance()
-                if self.current_char == '&':
-                    self.advance()
-                    return Token(TokenType.AND, '&&', start_line, start_col)
-                return Token(TokenType.ERROR, "Invalid character '&'", start_line, start_col)
-            
-            if self.current_char == '|':
-                self.advance()
-                if self.current_char == '|':
-                    self.advance()
-                    return Token(TokenType.OR, '||', start_line, start_col)
-                return Token(TokenType.ERROR, "Invalid character '|'", start_line, start_col)
-            
-            # Single-character tokens
-            single_char_tokens = {
-                ';': TokenType.SEMICOLON,
-                ',': TokenType.COMMA,
-                '(': TokenType.LPAREN,
-                ')': TokenType.RPAREN,
-                '{': TokenType.LBRACE,
-                '}': TokenType.RBRACE,
-                '[': TokenType.LBRACKET,
-                ']': TokenType.RBRACKET,
-                ':': TokenType.COLON,
-            }
-            
-            if self.current_char in single_char_tokens:
-                char = self.current_char
-                token_type = single_char_tokens[char]
-                self.advance()
-                return Token(token_type, char, start_line, start_col)
-            
-            # Unknown character
-            char = self.current_char
+    def make_mul_or_mul_assign(self, tokens, errors):
+        start_pos = self.pos.copy()
+        self.advance()  # *
+        if self.current_char == '=':
             self.advance()
-            return Token(TokenType.ERROR, f"Invalid character '{char}'", start_line, start_col)
-        
-        return Token(TokenType.EOF, None, self.line, self.column)
-    
-    def tokenize(self):
-        """Return all tokens as a list"""
-        tokens = []
-        while True:
-            token = self.get_next_token()
-            tokens.append(token)
-            if token.type == TokenType.EOF:
-                break
-        return tokens
+            if self.current_char is None or self.current_char in SYMBOL_DLM:
+                tokens.append(Token(TokenType.MUL_ASSIGN, '*=', start_pos.ln, start_pos.col))
+            else:
+                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '*='"))
+        else:
+            if self.current_char is None or self.current_char in SYMBOL_DLM:
+                tokens.append(Token(TokenType.MUL, '*', start_pos.ln, start_pos.col))
+            else:
+                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '*'"))
+
+    def make_mod_or_mod_assign(self, tokens, errors):
+        start_pos = self.pos.copy()
+        self.advance()  # %
+        if self.current_char == '=':
+            self.advance()
+            if self.current_char is None or self.current_char in SYMBOL_DLM:
+                tokens.append(Token(TokenType.MOD_ASSIGN, '%=', start_pos.ln, start_pos.col))
+            else:
+                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '%='"))
+        else:
+            if self.current_char is None or self.current_char in SYMBOL_DLM:
+                tokens.append(Token(TokenType.MOD, '%', start_pos.ln, start_pos.col))
+            else:
+                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '%'"))
+
+    def make_assign_or_eq(self, tokens, errors):
+        start_pos = self.pos.copy()
+        self.advance()  # =
+        if self.current_char == '=':
+            self.advance()
+            if self.current_char is None or self.current_char in SYMBOL_DLM:
+                tokens.append(Token(TokenType.EQ, '==', start_pos.ln, start_pos.col))
+            else:
+                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '=='"))
+        else:
+            if self.current_char is None or self.current_char in SYMBOL_DLM:
+                tokens.append(Token(TokenType.ASSIGN, '=', start_pos.ln, start_pos.col))
+            else:
+                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '='"))
+
+    def make_lt_or_lte(self, tokens, errors):
+        start_pos = self.pos.copy()
+        self.advance()  # <
+        if self.current_char == '=':
+            self.advance()
+            if self.current_char is None or self.current_char in SYMBOL_DLM:
+                tokens.append(Token(TokenType.LTE, '<=', start_pos.ln, start_pos.col))
+            else:
+                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '<='"))
+        else:
+            if self.current_char is None or self.current_char in SYMBOL_DLM:
+                tokens.append(Token(TokenType.LT, '<', start_pos.ln, start_pos.col))
+            else:
+                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '<'"))
+
+    def make_gt_or_gte(self, tokens, errors):
+        start_pos = self.pos.copy()
+        self.advance()  # >
+        if self.current_char == '=':
+            self.advance()
+            if self.current_char is None or self.current_char in SYMBOL_DLM:
+                tokens.append(Token(TokenType.GTE, '>=', start_pos.ln, start_pos.col))
+            else:
+                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '>='"))
+        else:
+            if self.current_char is None or self.current_char in SYMBOL_DLM:
+                tokens.append(Token(TokenType.GT, '>', start_pos.ln, start_pos.col))
+            else:
+                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '>'"))
+
+    def make_not_or_neq(self, tokens, errors):
+        start_pos = self.pos.copy()
+        self.advance()  # !
+        if self.current_char == '=':
+            self.advance()
+            if self.current_char is None or self.current_char in SYMBOL_DLM:
+                tokens.append(Token(TokenType.NEQ, '!=', start_pos.ln, start_pos.col))
+            else:
+                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '!='"))
+        else:
+            if self.current_char is None or self.current_char in SYMBOL_DLM:
+                tokens.append(Token(TokenType.NOT, '!', start_pos.ln, start_pos.col))
+            else:
+                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '!'"))
+
+    def make_and(self, tokens, errors):
+        start_pos = self.pos.copy()
+        self.advance()  # &
+        if self.current_char == '&':
+            self.advance()
+            if self.current_char is None or self.current_char in SYMBOL_DLM:
+                tokens.append(Token(TokenType.AND, '&&', start_pos.ln, start_pos.col))
+            else:
+                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '&&'"))
+        else:
+            errors.append(LexicalError(start_pos, "Invalid '&' (expected '&&')"))
+
+    def make_or(self, tokens, errors):
+        start_pos = self.pos.copy()
+        self.advance()  # |
+        if self.current_char == '|':
+            self.advance()
+            if self.current_char is None or self.current_char in SYMBOL_DLM:
+                tokens.append(Token(TokenType.OR, '||', start_pos.ln, start_pos.col))
+            else:
+                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '||'"))
+        else:
+            errors.append(LexicalError(start_pos, "Invalid '|' (expected '||')"))
+
+    def make_comma(self, tokens, errors):
+        start_pos = self.pos.copy()
+        self.advance()  # ,
+        if self.current_char is None or self.current_char in SYMBOL_DLM:
+            tokens.append(Token(TokenType.COMMA, ',', start_pos.ln, start_pos.col))
+        else:
+            errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after ','"))
+
+    def make_semicolon(self, tokens, errors):
+        start_pos = self.pos.copy()
+        self.advance()  # ;
+        if self.current_char is None or self.current_char in SEMI_SYM_DLM:
+            tokens.append(Token(TokenType.SEMICOLON, ';', start_pos.ln, start_pos.col))
+        else:
+            errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after ';'"))
+
+    def make_colon(self, tokens, errors):
+        start_pos = self.pos.copy()
+        self.advance()  # :
+        if self.current_char is None or self.current_char in COLON_DLM:
+            tokens.append(Token(TokenType.COLON, ':', start_pos.ln, start_pos.col))
+        else:
+            errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after ':'"))
+
+    def make_dot_or_fractional(self, tokens, errors):
+        start_pos = self.pos.copy()
+        if self.peek() and self.peek().isdigit():
+            num_str = '0.'
+            self.advance()  # .
+            frac_count = 0
+            while self.current_char and self.current_char.isdigit():
+                num_str += self.current_char
+                frac_count += 1
+                self.advance()
+                if frac_count > MAX_FRACTIONAL_DIGITS:
+                    errors.append(LexicalError(start_pos, f"Fractional part too long (max {MAX_FRACTIONAL_DIGITS} digits)"))
+                    return
+            if self.current_char and self.current_char.lower() == 'e':
+                num_str += self.current_char
+                self.advance()
+                if self.current_char in '+-':
+                    num_str += self.current_char
+                    self.advance()
+                if not self.current_char or not self.current_char.isdigit():
+                    errors.append(LexicalError(start_pos, "Expected digits after 'e'"))
+                    return
+                while self.current_char and self.current_char.isdigit():
+                    num_str += self.current_char
+                    self.advance()
+            if self.current_char is None or self.current_char in FLT_LIT_DLM:
+                try:
+                    value = float(num_str)
+                    tokens.append(Token(TokenType.FLOAT, value, start_pos.ln, start_pos.col))
+                except ValueError:
+                    errors.append(LexicalError(start_pos, f"Invalid float '{num_str}'"))
+            else:
+                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after float '{num_str}'"))
+        else:
+            self.advance()  # .
+            if self.current_char is None or self.current_char in DOT_DLM:
+                tokens.append(Token(TokenType.DOT, '.', start_pos.ln, start_pos.col))
+            else:
+                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '.'"))
+
+    def make_lparen(self, tokens, errors):
+        start_pos = self.pos.copy()
+        self.advance()  # (
+        if self.current_char is None or self.current_char in PAREN_DLM:
+            tokens.append(Token(TokenType.LPAREN, '(', start_pos.ln, start_pos.col))
+        else:
+            errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '('"))
+
+    def make_rparen(self, tokens, errors):
+        start_pos = self.pos.copy()
+        self.advance()  # )
+        if self.current_char is None or self.current_char in PAREN_DLM:
+            tokens.append(Token(TokenType.RPAREN, ')', start_pos.ln, start_pos.col))
+        else:
+            errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after ')'"))
+
+    def make_lbracket(self, tokens, errors):
+        start_pos = self.pos.copy()
+        self.advance()  # [
+        if self.current_char is None or self.current_char in PAREN_DLM:
+            tokens.append(Token(TokenType.LBRACKET, '[', start_pos.ln, start_pos.col))
+        else:
+            errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '['"))
+
+    def make_rbracket(self, tokens, errors):
+        start_pos = self.pos.copy()
+        self.advance()  # ]
+        if self.current_char is None or self.current_char in PAREN_DLM:
+            tokens.append(Token(TokenType.RBRACKET, ']', start_pos.ln, start_pos.col))
+        else:
+            errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after ']'"))
+
+    def make_lbrace(self, tokens, errors):
+        start_pos = self.pos.copy()
+        self.advance()  # {
+        if self.current_char is None or self.current_char in PAREN_DLM:
+            tokens.append(Token(TokenType.LBRACE, '{', start_pos.ln, start_pos.col))
+        else:
+            errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '{{'"))
+
+    def make_rbrace(self, tokens, errors):
+        start_pos = self.pos.copy()
+        self.advance()  # }
+        if self.current_char is None or self.current_char in PAREN_DLM:
+            tokens.append(Token(TokenType.RBRACE, '}', start_pos.ln, start_pos.col))
+        else:
+            errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '}}'"))
