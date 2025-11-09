@@ -13,22 +13,43 @@ def _type_str(token):
         return t.name
     return str(t)
 
-def print_tokens(tokens):
-    """Pretty print tokens"""
+def print_tokens_single_pass(tokens):
+    """Print tokens and collect lexical error tokens in a single pass."""
     print("\n" + "="*80)
     print(f"{'TOKEN TYPE':<25} {'VALUE':<25} {'LINE':<10} {'COLUMN':<10}")
     print("="*80)
+
+    lex_errors = []
+    count_visible = 0
+    last_line = 0
+
     for token in tokens:
         tstr = _type_str(token)
+        last_line = getattr(token, "line", last_line)
+        # skip EOF entirely
         if tstr == TokenType.eof:
             continue
+        # skip invisible tokens in the table
         if tstr in (TokenType.whitespace, TokenType.comment):
+            # still collect lexical error tokens if they are marked as error type
+            if tstr == TokenType.error:
+                lex_errors.append(token)
             continue
-        value_str = str(token.value) if token.value is not None else ''
+        # count visible
+        count_visible += 1
+        if tstr == TokenType.error:
+            lex_errors.append(token)
+        value_str = str(token.value) if token.value is not None else ""
         if len(value_str) > 23:
-            value_str = value_str[:20] + '...'
+            value_str = value_str[:20] + "..."
         print(f"{tstr:<25} {value_str:<25} {token.line:<10} {token.column:<10}")
+
     print("="*80)
+    return {
+        "visible_count": count_visible,
+        "lex_errors": lex_errors,
+        "last_line": last_line
+    }
 
 def main():
     print("=" * 80)
@@ -82,20 +103,31 @@ def main():
         traceback.print_exc()
         sys.exit(1)
 
-    print_tokens(tokens)
+    stats = print_tokens_single_pass(tokens)
 
-    lex_errors = [t for t in tokens if _type_str(t) == TokenType.error]
+    # Combine token-produced lexical errors and lexer-reported errors, then print once
+    token_errors = stats["lex_errors"]
+    all_errors = []
+    all_errors.extend(token_errors)
+    all_errors.extend(errors or [])
 
-    if lex_errors or errors:
+    if all_errors:
         print("\nLexical Errors Found:\n")
-        for i, error in enumerate(lex_errors, 1):
-            print(f"  {i}. Line {error.line}, Column {error.column}: {error.value}")
-        for i, err in enumerate(errors, 1):
-            print(f"  E{i}. {err.as_string()}")
+        # all_errors may contain Token instances (from token_errors) and error objects (from errors)
+        for i, err in enumerate(all_errors, 1):
+            if hasattr(err, "line") and hasattr(err, "column"):
+                # Token error
+                print(f"  {i}. Line {err.line}, Column {err.column}: {err.value}")
+            elif hasattr(err, "as_string"):
+                print(f"  {i}. {err.as_string()}")
+            else:
+                print(f"  {i}. {err}")
         print("\nLexical analysis failed.")
         sys.exit(1)
     else:
         print("\nLexical analysis completed successfully.")
+        print(f"  Visible tokens: {stats['visible_count']}")
+        print(f"  Lines processed: {stats['last_line']}")
         print("Compilation stopped after lexical analysis (parser not yet implemented)")
         print("=" * 80)
         sys.exit(0)
