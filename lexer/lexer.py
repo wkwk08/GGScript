@@ -856,7 +856,7 @@ class Lexer:
             if is_float:
                 try:
                     value = float(num_str)
-                    tokens.append(Token(TokenType.float_, value, start_pos.ln, start_pos.col))
+                    tokens.append(Token(TokenType.float, value, start_pos.ln, start_pos.col))
                 except ValueError:
                     errors.append(LexicalError(start_pos, f"Invalid float literal '{num_str}'"))
             else:
@@ -928,7 +928,7 @@ class Lexer:
                 if self.current_char is None or self.current_char in FLT_LIT_DLM:
                     try:
                         value = float(num_str)
-                        tokens.append(Token(TokenType.float_, value, start_pos.ln, start_pos.col))
+                        tokens.append(Token(TokenType.float, value, start_pos.ln, start_pos.col))
                     except ValueError:
                         errors.append(LexicalError(start_pos, f"Invalid float '{num_str}'"))
                 else:
@@ -984,7 +984,7 @@ class Lexer:
                 if self.current_char is None or self.current_char in FLT_LIT_DLM:
                     try:
                         value = float(num_str)
-                        tokens.append(Token(TokenType.float_, value, start_pos.ln, start_pos.col))
+                        tokens.append(Token(TokenType.float, value, start_pos.ln, start_pos.col))
                     except ValueError:
                         errors.append(LexicalError(start_pos, f"Invalid float '{num_str}'"))
                 else:
