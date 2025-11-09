@@ -1,0 +1,5 @@
+frag lobby() {
+    ign message = "GG WP!";
+    shout message;
+    ggwp;
+}
