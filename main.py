@@ -14,7 +14,7 @@ def print_tokens(tokens, show_details=True):
             value_str = str(token.value) if token.value is not None else ''
             if len(value_str) > 23:
                 value_str = value_str[:20] + '...'
-            print(f"{token.type.name:<25} {value_str:<25} {token.line:<10} {token.column:<10}")
+            print(f"{token.type:<25} {value_str:<25} {token.line:<10} {token.column:<10}")
     
     print("="*80)
     
