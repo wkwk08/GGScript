@@ -1078,28 +1078,38 @@ class Lexer:
 
     def make_comment_or_div_or_div_assign(self, tokens, errors):
         start_pos = self.pos.copy()
-        self.advance()  # /
-        if self.current_char == '*':
-            self.advance()  # *
-            while self.current_char:
+        self.advance()  # consume first '/'
+
+        # Reject double slash (//)
+        if self.current_char == '/':
+            errors.append(LexicalError(start_pos, "Invalid comment syntax: use /* for single-line comments"))
+            self.advance()
+            return
+
+        # Handle GGScript-style comment /* ... */
+        elif self.current_char == '*':
+            self.advance()  # consume '*'
+            while self.current_char is not None:
+                if self.current_char == '\n':
+                    return  # auto-close single-line comment
                 if self.current_char == '*' and self.peek() == '/':
-                    self.advance()  # *
-                    self.advance()  # /
-                    break
-                elif self.current_char == '\n':
-                    break
+                    self.advance()
+                    self.advance()
+                    return
                 self.advance()
+            errors.append(LexicalError(start_pos, "Unterminated multi-line comment"))
+            return
+
+        # Handle division assignment '/='
         elif self.current_char == '=':
             self.advance()
-            if self.current_char is None or self.current_char in SYMBOL_DLM:
-                tokens.append(Token(TokenType.div_assign, '/=', start_pos.ln, start_pos.col))
-            else:
-                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '/='"))
+            tokens.append(Token(TokenType.div_assign, '/=', start_pos.ln, start_pos.col))
+            return
+
+        # Handle division operator '/'
         else:
-            if self.current_char is None or self.current_char in SYMBOL_DLM:
-                tokens.append(Token(TokenType.div, '/', start_pos.ln, start_pos.col))
-            else:
-                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '/'"))
+            tokens.append(Token(TokenType.div, '/', start_pos.ln, start_pos.col))
+            return
 
     def make_mul_or_mul_assign(self, tokens, errors):
         start_pos = self.pos.copy()
