@@ -1,110 +1,174 @@
-from enum import Enum, auto
-
-class TokenType(Enum):
+class TokenType:
     # Data Types (page 42)
-    frag = auto()      # int
-    elo = auto()       # float
-    ign = auto()       # string
-    surebol = auto()   # boolean
-    tag = auto()       # char
+    FRAG = "frag"          # int
+    ELO = "elo"           # float
+    IGN = "ign"           # string
+    SUREBOL = "surebol"   # boolean
+    TAG = "tag"           # char
 
     # Control Flow (page 42-43)
-    clutch = auto()         # if
-    choke = auto()          # else
-    choke_clutch = auto()   # else if
-    pick = auto()           # switch
-    role = auto()           # case
-    noob = auto()           # default
-    grind = auto()          # for
-    retry = auto()          # while
-    try_ = auto()           # do
-    afk = auto()            # break
-    hop = auto()            # continue
+    CLUTCH = "clutch"         # if
+    CHOKE = "choke"          # else
+    CHOKE_CLUTCH = "choke_clutch"   # else if
+    PICK = "pick"           # switch
+    ROLE = "role"           # case
+    NOOB = "noob"           # default
+    GRIND = "grind"          # for
+    RETRY = "retry"          # while
+    TRY = "try"           # do
+    AFK = "afk"            # break
+    HOP = "hop"            # continue
 
     # I/O (page 43)
-    comsat = auto()    # scanf/input
-    shout = auto()     # printf/output
+    COMSAT = "comsat"    # scanf/input
+    SHOUT = "shout"     # printf/output
 
     # Functions (page 43-44)
-    build = auto()     # function declaration
-    lobby = auto()     # main
-    dodge = auto()     # void
-    ggwp = auto()      # return
+    BUILD = "build"     # function declaration
+    LOBBY = "lobby"     # main
+    DODGE = "dodge"     # void
+    GGWP = "ggwp"      # return
 
     # Modifiers (page 44)
-    stun = auto()      # const
+    STUN = "stun"      # const
 
     # Boolean Literals (page 44)
-    buff = auto()      # true
-    nerf = auto()      # false
+    BUFF = "buff"      # true
+    NERF = "nerf"      # false
 
     # Array Operations (page 44)
-    stack = auto()     # append
-    craft = auto()     # insert
-    drop = auto()      # pop
-    count = auto()     # length
-    split = auto()     # split
+    STACK = "stack"     # append
+    CRAFT = "craft"     # insert
+    DROP = "drop"      # pop
+    COUNT = "count"     # length
+    SPLIT = "split"     # split
 
     # Arithmetic Operators (page 45)
-    plus = auto()          # +
-    minus = auto()         # -
-    mul = auto()           # *
-    div = auto()           # /
-    mod = auto()           # %
+    PLUS = "+"          # +
+    MINUS = "-"         # -
+    MUL = "*"           # *
+    DIV = "/"           # /
+    MOD = "%"           # %
 
     # Relational Operators (page 45)
-    eq = auto()            # ==
-    neq = auto()           # !=
-    lt = auto()            # <
-    gt = auto()            # >
-    lte = auto()           # <=
-    gte = auto()           # >=
+    EQ = "=="            # ==
+    NEQ = "!="           # !=
+    LT = "<"            # <
+    GT = ">"            # >
+    LTE = "<="           # <=
+    GTE = ">="           # >=
 
     # Assignment Operators (page 46)
-    assign = auto()        # =
-    plus_assign = auto()   # +=
-    minus_assign = auto()  # -=
-    mul_assign = auto()    # *=
-    div_assign = auto()    # /=
-    mod_assign = auto()    # %=
+    ASSIGN = "="        # =
+    PLUS_ASSIGN = "+="   # +=
+    MINUS_ASSIGN = "-="  # -=
+    MUL_ASSIGN = "*="    # *=
+    DIV_ASSIGN = "/="    # /
+    MOD_ASSIGN = "%="    # %=
 
     # Logical Operators (page 46)
-    and_ = auto()          # &&
-    or_ = auto()           # ||
-    not_ = auto()          # !
+    AND = "&&"          # &&
+    OR = "||"           # ||
+    NOT = "!"          # !
 
     # Unary Operators (page 47)
-    increment = auto()     # ++
-    decrement = auto()     # --
+    INCREMENT = "++"     # ++
+    DECREMENT = "--"     # --
 
     # Delimiters (page 47)
-    lparen = auto()        # (
-    rparen = auto()        # )
-    lbrace = auto()        # {
-    rbrace = auto()        # }
-    lbracket = auto()      # [
-    rbracket = auto()      # ]
-    comma = auto()         # ,
-    semicolon = auto()     # ;
-    colon = auto()         # :
-    dot = auto()           # .
+    LPAREN = "("        # (
+    RPAREN = ")"        # )
+    LBRACE = "{"        # {
+    RBRACE = "}"        # }
+    LBRACKET = "["      # [
+    RBRACKET = "]"      # ]
+    COMMA = ","         # ,
+    SEMICOLON = ";"     # ;
+    COLON = ":"         # :
+    DOT = "."           # .
 
     # Literals
-    integer = auto()       # frag literal
-    float_ = auto()        # elo literal
-    string = auto()        # ign literal
-    char = auto()          # tag literal
+    INTEGER = "INTEGER"       # frag literal
+    FLOAT = "FLOAT"        # elo literal
+    STRING = "STRING"        # ign literal
+    CHAR = "CHAR"          # tag literal
 
     # Identifiers
-    identifier = auto()    # variable names, function names
+    IDENTIFIER = "IDENTIFIER"    # variable names, function names
 
     # Special
-    eof = auto()           # End of file
-    error = auto()         # Lexical error
-    comment = auto()       # Comments
-    whitespace = auto()    # Spaces, tabs, newlines
-    newline = auto()       # Newline character
+    EOF = "EOF"           # End of file
+    ERROR = "ERROR"         # Lexical error
+    COMMENT = "COMMENT"       # Comments
+    WHITESPACE = "WHITESPACE"    # Spaces, tabs, newlines
+    NEWLINE = "NEWLINE"       # Newline character
 
-    def __str__(self):
-        """String representation for debugging"""
-        return self.name
+# Symbol mapping
+SYMBOL_TO_TOKEN = {
+    '+': TokenType.PLUS,
+    '-': TokenType.MINUS,
+    '*': TokenType.MUL,
+    '/': TokenType.DIV,
+    '%': TokenType.MOD,
+    '==': TokenType.EQ,
+    '!=': TokenType.NEQ,
+    '<': TokenType.LT,
+    '>': TokenType.GT,
+    '<=': TokenType.LTE,
+    '>=': TokenType.GTE,
+    '=': TokenType.ASSIGN,
+    '+=': TokenType.PLUS_ASSIGN,
+    '-=': TokenType.MINUS_ASSIGN,
+    '*=': TokenType.MUL_ASSIGN,
+    '/=': TokenType.DIV_ASSIGN,
+    '%=': TokenType.MOD_ASSIGN,
+    '&&': TokenType.AND,
+    '||': TokenType.OR,
+    '!': TokenType.NOT,
+    '++': TokenType.INCREMENT,
+    '--': TokenType.DECREMENT,
+    '(': TokenType.LPAREN,
+    ')': TokenType.RPAREN,
+    '{': TokenType.LBRACE,
+    '}': TokenType.RBRACE,
+    '[': TokenType.LBRACKET,
+    ']': TokenType.RBRACKET,
+    ',': TokenType.COMMA,
+    ';': TokenType.SEMICOLON,
+    ':': TokenType.COLON,
+    '.': TokenType.DOT,
+}
+
+# Keyword mapping
+KEYWORD_TO_TOKEN = {
+    'afk': TokenType.AFK,
+    'buff': TokenType.BUFF,
+    'build': TokenType.BUILD,
+    'choke': TokenType.CHOKE,
+    'choke_clutch': TokenType.CHOKE_CLUTCH,
+    'clutch': TokenType.CLUTCH,
+    'comsat': TokenType.COMSAT,
+    'count': TokenType.COUNT,
+    'craft': TokenType.CRAFT,
+    'dodge': TokenType.DODGE,
+    'drop': TokenType.DROP,
+    'elo': TokenType.ELO,
+    'frag': TokenType.FRAG,
+    'ggwp': TokenType.GGWP,
+    'grind': TokenType.GRIND,
+    'hop': TokenType.HOP,
+    'ign': TokenType.IGN,
+    'lobby': TokenType.LOBBY,
+    'nerf': TokenType.NERF,
+    'noob': TokenType.NOOB,
+    'pick': TokenType.PICK,
+    'retry': TokenType.RETRY,
+    'role': TokenType.ROLE,
+    'shout': TokenType.SHOUT,
+    'split': TokenType.SPLIT,
+    'stack': TokenType.STACK,
+    'stun': TokenType.STUN,
+    'surebol': TokenType.SUREBOL,
+    'tag': TokenType.TAG,
+    'try': TokenType.TRY,
+}
