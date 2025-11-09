@@ -1078,33 +1078,51 @@ class Lexer:
 
     def make_comment_or_div_or_div_assign(self, tokens, errors):
         start_pos = self.pos.copy()
-        self.advance()  # consume first '/'
+        self.advance()  # consume '/'
 
-        # Reject double slash (//)
+        # Reject C-style //
         if self.current_char == '/':
-            errors.append(LexicalError(start_pos, "Invalid comment syntax: use /* for single-line comments"))
+            errors.append(LexicalError(start_pos, "Invalid comment syntax: use /* ... */ only"))
             self.advance()
             return
 
-        # Handle GGScript-style comment /* ... */
-        elif self.current_char == '*':
+        # Handle /* ... */
+        if self.current_char == '*':
             self.advance()  # consume '*'
+            comment_start_line = self.pos.ln
+
+            # Read until find '*/' or end of input
+            content = ''
             while self.current_char is not None:
                 if self.current_char == '*' and self.peek() == '/':
-                    self.advance()  # consume '*'
-                    self.advance()  # consume '/'
-                    return  # Exit — comment successfully closed
+                    self.advance()  # *
+                    self.advance()  # /
+                    return  # Multi-line closed successfully
+                content += self.current_char
                 self.advance()
-            errors.append(LexicalError(start_pos, "Unterminated multi-line comment"))
-            return
 
-        # Handle division assignment '/='
+            # Reached EOF — now decide: single-line or unterminated multi-line?
+            lines_in_comment = content.count('\n') + 1
+            if lines_in_comment == 1:
+                # Only one line → valid single-line comment (even if no */)
+                return  # No token, just skip
+            else:
+                # Spans multiple lines but no closing */ → error
+                errors.append(LexicalError(
+                    start_pos,
+                    "Unterminated multi-line comment (started at line {}, spans {} lines)".format(
+                        comment_start_line, lines_in_comment
+                    )
+                ))
+                return
+
+        # Handle /= (division assignment)
         elif self.current_char == '=':
             self.advance()
             tokens.append(Token(TokenType.div_assign, '/=', start_pos.ln, start_pos.col))
             return
 
-        # Handle division operator '/'
+        # Handle / (division)
         else:
             tokens.append(Token(TokenType.div, '/', start_pos.ln, start_pos.col))
             return
