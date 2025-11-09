@@ -14,6 +14,16 @@ ASCII = ALPHANUM + PUNCTUATIONS
 OPER = '+-/*%<>=!&|'
 WHTSPC = ' \t\n'
 
+RESERVED_KEYWORDS = {
+    'frag', 'elo', 'ign', 'surebol', 'tag', 'stun',
+    'buff', 'nerf', 'afk', 'ggwp', 'hop',
+    'build', 'grind', 'retry', 'try',
+    'clutch', 'choke', 'choke clutch',
+    'pick', 'role', 'noob',
+    'comsat', 'shout', 'drop', 'craft', 'count', 'split',
+    'lobby'
+}
+
 # Delimiters
 WHTSPC_DLM = ' \t\n' 
 TERMI_DLM = WHTSPC_DLM
@@ -798,6 +808,11 @@ class Lexer:
             while self.current_char and (self.current_char.isalnum() or self.current_char == '_'):
                 ident_str += self.current_char
                 self.advance()
+
+            # Reserved keyword protection
+            if ident_str in RESERVED_KEYWORDS:
+                errors.append(LexicalError(start_pos, f"'{ident_str}' is a reserved keyword and cannot be used as an identifier"))
+                return
 
             # Validate identifier rules
             if (
