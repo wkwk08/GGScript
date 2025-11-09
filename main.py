@@ -13,10 +13,34 @@ def _type_str(token):
         return t.name
     return str(t)
 
+def token_category(tt: str) -> str:
+    KEYWORDS = {
+        'afk', 'buff', 'build', 'choke', 'choke_clutch', 'clutch', 'comsat',
+        'count', 'craft', 'dodge', 'drop', 'elo', 'frag', 'ggwp', 'grind',
+        'hop', 'ign', 'lobby', 'nerf', 'noob', 'pick', 'retry', 'role',
+        'shout', 'split', 'stack', 'stun', 'surebol', 'tag', 'try'
+    }
+    if tt in KEYWORDS:
+        return "KEYWORD"
+    if tt == "identifier":
+        return "IDENTIFIER"
+    if tt in ("integer", "float", "string", "char"):
+        return "LITERAL"
+    if tt in {
+        '+', '-', '*', '/', '%', '=', '+=', '-=', '*=', '/=', '%=',
+        '++', '--', '<', '>', '<=', '>=', '==', '!=', '!', '&&', '||'
+    }:
+        return "OPERATOR"
+    if tt in {
+        '(', ')', '[', ']', '{', '}', ',', ';', ':', '.',
+    }:
+        return "DELIMITER"
+    return "OTHER"
+
 def print_tokens_single_pass(tokens):
-    """Print tokens and collect lexical error tokens in a single pass."""
+    """Print tokens (LEXEME, TOKEN, TYPE) and collect lexical error tokens in a single pass."""
     print("\n" + "="*80)
-    print(f"{'TOKEN TYPE':<25} {'VALUE':<25} {'LINE':<10} {'COLUMN':<10}")
+    print(f"{'LEXEME':<40} {'TOKEN':<25} {'TYPE':<12}")
     print("="*80)
 
     lex_errors = []
@@ -26,23 +50,26 @@ def print_tokens_single_pass(tokens):
     for token in tokens:
         tstr = _type_str(token)
         last_line = getattr(token, "line", last_line)
+
         # skip EOF entirely
         if tstr == TokenType.eof:
             continue
-        # skip invisible tokens in the table
-        if tstr in (TokenType.whitespace, TokenType.comment):
-            # still collect lexical error tokens if they are marked as error type
-            if tstr == TokenType.error:
-                lex_errors.append(token)
-            continue
-        # count visible
-        count_visible += 1
+
+        # always collect error tokens
         if tstr == TokenType.error:
             lex_errors.append(token)
-        value_str = str(token.value) if token.value is not None else ""
-        if len(value_str) > 23:
-            value_str = value_str[:20] + "..."
-        print(f"{tstr:<25} {value_str:<25} {token.line:<10} {token.column:<10}")
+
+        # skip invisible tokens in the table (but errors already collected)
+        if tstr in (TokenType.whitespace, TokenType.comment, TokenType.newline):
+            continue
+
+        # visible token
+        count_visible += 1
+        lexeme = token.value if token.value is not None else tstr
+        lexeme = str(lexeme).replace("\n", "\\n").replace("\t", "\\t").replace("\r", "\\r")
+        if len(lexeme) > 38:
+            lexeme = lexeme[:35] + "..."
+        print(f"{lexeme:<40} {tstr:<25} {token_category(tstr):<12}")
 
     print("="*80)
     return {
@@ -113,10 +140,8 @@ def main():
 
     if all_errors:
         print("\nLexical Errors Found:\n")
-        # all_errors may contain Token instances (from token_errors) and error objects (from errors)
         for i, err in enumerate(all_errors, 1):
             if hasattr(err, "line") and hasattr(err, "column"):
-                # Token error
                 print(f"  {i}. Line {err.line}, Column {err.column}: {err.value}")
             elif hasattr(err, "as_string"):
                 print(f"  {i}. {err.as_string()}")
