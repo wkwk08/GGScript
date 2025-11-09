@@ -116,7 +116,7 @@ class Lexer:
         while self.current_char is not None:
             if self.current_char.isspace():
                 if self.current_char == '\n':
-                    tokens.append(Token(TokenType.NEWLINE, '\\n', self.pos.ln, self.pos.col))
+                    tokens.append(Token(TokenType.newline, '\\n', self.pos.ln, self.pos.col))
                 self.advance()
                 continue
 
@@ -219,7 +219,7 @@ class Lexer:
             errors.append(LexicalError(self.pos.copy(), f"Invalid character '{self.current_char}'"))
             self.advance()
 
-        tokens.append(Token(TokenType.EOF, None, self.pos.ln, self.pos.col))
+        tokens.append(Token(TokenType.eof, None, self.pos.ln, self.pos.col))
         return tokens, errors
 
     def make_identifier_or_keyword(self, tokens, errors):
@@ -249,7 +249,7 @@ class Lexer:
                     previous_char = self.current_char
                     self.advance()
                     if self.current_char is None or self.current_char in JUMP_DLM:
-                        tokens.append(Token(TokenType.AFK, ident_str, start_pos.ln, start_pos.col))
+                        tokens.append(Token(TokenType.afk, ident_str, start_pos.ln, start_pos.col))
                         matched = True
                     # No else for invalid dlm here, handled below if not matched
         elif self.current_char == 'b':
@@ -269,7 +269,7 @@ class Lexer:
                         previous_char = self.current_char
                         self.advance()
                         if self.current_char is None or self.current_char in BOOL_DLM:
-                            tokens.append(Token(TokenType.BUFF, ident_str, start_pos.ln, start_pos.col))
+                            tokens.append(Token(TokenType.buff, ident_str, start_pos.ln, start_pos.col))
                             matched = True
                 elif self.current_char == 'i':
                     ident_str += self.current_char
@@ -284,7 +284,7 @@ class Lexer:
                             previous_char = self.current_char
                             self.advance()
                             if self.current_char is None or self.current_char in LOOP_FUNC_DLM:
-                                tokens.append(Token(TokenType.BUILD, ident_str, start_pos.ln, start_pos.col))
+                                tokens.append(Token(TokenType.build, ident_str, start_pos.ln, start_pos.col))
                                 matched = True
         elif self.current_char == 'c':
             ident_str += self.current_char
@@ -316,7 +316,7 @@ class Lexer:
                                     self.advance()
                                 if clutch_str == 'clutch':
                                     if self.current_char is None or self.current_char in COND_DLM:
-                                        tokens.append(Token(TokenType.CHOKE_CLUTCH, 'choke clutch', start_pos.ln, start_pos.col))
+                                        tokens.append(Token(TokenType.choke_clutch, 'choke clutch', start_pos.ln, start_pos.col))
                                         matched = True
                                     else:
                                         errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after 'choke clutch'"))
@@ -326,7 +326,7 @@ class Lexer:
                                     matched = True
                             else:
                                 if self.current_char is None or self.current_char in DO_ELSE_DLM:
-                                    tokens.append(Token(TokenType.CHOKE, ident_str, start_pos.ln, start_pos.col))
+                                    tokens.append(Token(TokenType.choke, ident_str, start_pos.ln, start_pos.col))
                                     matched = True
                 elif self.current_char == 'u':
                     ident_str += self.current_char
@@ -345,7 +345,7 @@ class Lexer:
                                 previous_char = self.current_char
                                 self.advance()
                                 if self.current_char is None or self.current_char in COND_DLM:
-                                    tokens.append(Token(TokenType.CLUTCH, ident_str, start_pos.ln, start_pos.col))
+                                    tokens.append(Token(TokenType.clutch, ident_str, start_pos.ln, start_pos.col))
                                     matched = True
             elif self.current_char == 'o':
                 ident_str += self.current_char
@@ -368,7 +368,7 @@ class Lexer:
                                 previous_char = self.current_char
                                 self.advance()
                                 if self.current_char is None or self.current_char in IO_ARRAY_DLM:
-                                    tokens.append(Token(TokenType.COMSAT, ident_str, start_pos.ln, start_pos.col))
+                                    tokens.append(Token(TokenType.comsat, ident_str, start_pos.ln, start_pos.col))
                                     matched = True
                 elif self.current_char == 'u':
                     ident_str += self.current_char
@@ -383,7 +383,7 @@ class Lexer:
                             previous_char = self.current_char
                             self.advance()
                             if self.current_char is None or self.current_char in METHOD_DLM:
-                                tokens.append(Token(TokenType.COUNT, ident_str, start_pos.ln, start_pos.col))
+                                tokens.append(Token(TokenType.count, ident_str, start_pos.ln, start_pos.col))
                                 matched = True
             elif self.current_char == 'r':
                 ident_str += self.current_char
@@ -402,7 +402,7 @@ class Lexer:
                             previous_char = self.current_char
                             self.advance()
                             if self.current_char is None or self.current_char in IO_ARRAY_DLM:
-                                tokens.append(Token(TokenType.CRAFT, ident_str, start_pos.ln, start_pos.col))
+                                tokens.append(Token(TokenType.craft, ident_str, start_pos.ln, start_pos.col))
                                 matched = True
         elif self.current_char == 'd':
             ident_str += self.current_char
@@ -425,7 +425,7 @@ class Lexer:
                             previous_char = self.current_char
                             self.advance()
                             if self.current_char is None or self.current_char in DATATYPE_DLM:
-                                tokens.append(Token(TokenType.DODGE, ident_str, start_pos.ln, start_pos.col))
+                                tokens.append(Token(TokenType.dodge, ident_str, start_pos.ln, start_pos.col))
                                 matched = True
             elif self.current_char == 'r':
                 ident_str += self.current_char
@@ -440,7 +440,7 @@ class Lexer:
                         previous_char = self.current_char
                         self.advance()
                         if self.current_char is None or self.current_char in IO_ARRAY_DLM:
-                            tokens.append(Token(TokenType.DROP, ident_str, start_pos.ln, start_pos.col))
+                            tokens.append(Token(TokenType.drop, ident_str, start_pos.ln, start_pos.col))
                             matched = True
         elif self.current_char == 'e':
             ident_str += self.current_char
@@ -455,7 +455,7 @@ class Lexer:
                     previous_char = self.current_char
                     self.advance()
                     if self.current_char is None or self.current_char in DATATYPE_DLM:
-                        tokens.append(Token(TokenType.ELO, ident_str, start_pos.ln, start_pos.col))
+                        tokens.append(Token(TokenType.elo, ident_str, start_pos.ln, start_pos.col))
                         matched = True
         elif self.current_char == 'f':
             ident_str += self.current_char
@@ -474,7 +474,7 @@ class Lexer:
                         previous_char = self.current_char
                         self.advance()
                         if self.current_char is None or self.current_char in DATATYPE_DLM:
-                            tokens.append(Token(TokenType.FRAG, ident_str, start_pos.ln, start_pos.col))
+                            tokens.append(Token(TokenType.frag, ident_str, start_pos.ln, start_pos.col))
                             matched = True
         elif self.current_char == 'g':
             ident_str += self.current_char
@@ -497,7 +497,7 @@ class Lexer:
                             previous_char = self.current_char
                             self.advance()
                             if self.current_char is None or self.current_char in LOOP_FUNC_DLM:
-                                tokens.append(Token(TokenType.GRIND, ident_str, start_pos.ln, start_pos.col))
+                                tokens.append(Token(TokenType.grind, ident_str, start_pos.ln, start_pos.col))
                                 matched = True
             elif self.current_char == 'g':
                 ident_str += self.current_char
@@ -512,7 +512,7 @@ class Lexer:
                         previous_char = self.current_char
                         self.advance()
                         if self.current_char is None or self.current_char in JUMP_DLM:
-                            tokens.append(Token(TokenType.GGWP, ident_str, start_pos.ln, start_pos.col))
+                            tokens.append(Token(TokenType.ggwp, ident_str, start_pos.ln, start_pos.col))
                             matched = True
         elif self.current_char == 'h':
             ident_str += self.current_char
@@ -527,7 +527,7 @@ class Lexer:
                     previous_char = self.current_char
                     self.advance()
                     if self.current_char is None or self.current_char in JUMP_DLM:
-                        tokens.append(Token(TokenType.HOP, ident_str, start_pos.ln, start_pos.col))
+                        tokens.append(Token(TokenType.hop, ident_str, start_pos.ln, start_pos.col))
                         matched = True
         elif self.current_char == 'i':
             ident_str += self.current_char
@@ -542,7 +542,7 @@ class Lexer:
                     previous_char = self.current_char
                     self.advance()
                     if self.current_char is None or self.current_char in DATATYPE_DLM:
-                        tokens.append(Token(TokenType.IGN, ident_str, start_pos.ln, start_pos.col))
+                        tokens.append(Token(TokenType.ign, ident_str, start_pos.ln, start_pos.col))
                         matched = True
         elif self.current_char == 'l':
             ident_str += self.current_char
@@ -565,7 +565,7 @@ class Lexer:
                             previous_char = self.current_char
                             self.advance()
                             if self.current_char is None or self.current_char in LOOP_FUNC_DLM:
-                                tokens.append(Token(TokenType.LOBBY, ident_str, start_pos.ln, start_pos.col))
+                                tokens.append(Token(TokenType.lobby, ident_str, start_pos.ln, start_pos.col))
                                 matched = True
         elif self.current_char == 'n':
             ident_str += self.current_char
@@ -584,7 +584,7 @@ class Lexer:
                         previous_char = self.current_char
                         self.advance()
                         if self.current_char is None or self.current_char in BOOL_DLM:
-                            tokens.append(Token(TokenType.NERF, ident_str, start_pos.ln, start_pos.col))
+                            tokens.append(Token(TokenType.nerf, ident_str, start_pos.ln, start_pos.col))
                             matched = True
             elif self.current_char == 'o':
                 ident_str += self.current_char
@@ -599,7 +599,7 @@ class Lexer:
                         previous_char = self.current_char
                         self.advance()
                         if self.current_char is None or self.current_char in CASE_DLM:
-                            tokens.append(Token(TokenType.NOOB, ident_str, start_pos.ln, start_pos.col))
+                            tokens.append(Token(TokenType.noob, ident_str, start_pos.ln, start_pos.col))
                             matched = True
         elif self.current_char == 'p':
             ident_str += self.current_char
@@ -618,7 +618,7 @@ class Lexer:
                         previous_char = self.current_char
                         self.advance()
                         if self.current_char is None or self.current_char in COND_DLM:
-                            tokens.append(Token(TokenType.PICK, ident_str, start_pos.ln, start_pos.col))
+                            tokens.append(Token(TokenType.pick, ident_str, start_pos.ln, start_pos.col))
                             matched = True
         elif self.current_char == 'r':
             ident_str += self.current_char
@@ -637,7 +637,7 @@ class Lexer:
                         previous_char = self.current_char
                         self.advance()
                         if self.current_char is None or self.current_char in CASE_DLM:
-                            tokens.append(Token(TokenType.ROLE, ident_str, start_pos.ln, start_pos.col))
+                            tokens.append(Token(TokenType.role, ident_str, start_pos.ln, start_pos.col))
                             matched = True
             elif self.current_char == 'e':
                 ident_str += self.current_char
@@ -656,7 +656,7 @@ class Lexer:
                             previous_char = self.current_char
                             self.advance()
                             if self.current_char is None or self.current_char in LOOP_FUNC_DLM:
-                                tokens.append(Token(TokenType.RETRY, ident_str, start_pos.ln, start_pos.col))
+                                tokens.append(Token(TokenType.retry, ident_str, start_pos.ln, start_pos.col))
                                 matched = True
         elif self.current_char == 's':
             ident_str += self.current_char
@@ -687,7 +687,7 @@ class Lexer:
                                     previous_char = self.current_char
                                     self.advance()
                                     if self.current_char is None or self.current_char in DATATYPE_DLM:
-                                        tokens.append(Token(TokenType.SUREBOL, ident_str, start_pos.ln, start_pos.col))
+                                        tokens.append(Token(TokenType.surebol, ident_str, start_pos.ln, start_pos.col))
                                         matched = True
             elif self.current_char == 'h':
                 ident_str += self.current_char
@@ -706,7 +706,7 @@ class Lexer:
                             previous_char = self.current_char
                             self.advance()
                             if self.current_char is None or self.current_char in IO_ARRAY_DLM:
-                                tokens.append(Token(TokenType.SHOUT, ident_str, start_pos.ln, start_pos.col))
+                                tokens.append(Token(TokenType.shout, ident_str, start_pos.ln, start_pos.col))
                                 matched = True
             elif self.current_char == 't':
                 ident_str += self.current_char
@@ -721,7 +721,7 @@ class Lexer:
                         previous_char = self.current_char
                         self.advance()
                         if self.current_char is None or self.current_char in DATATYPE_DLM:
-                            tokens.append(Token(TokenType.STUN, ident_str, start_pos.ln, start_pos.col))
+                            tokens.append(Token(TokenType.stun, ident_str, start_pos.ln, start_pos.col))
                             matched = True
             elif self.current_char == 't':
                 ident_str += self.current_char
@@ -740,7 +740,7 @@ class Lexer:
                             previous_char = self.current_char
                             self.advance()
                             if self.current_char is None or self.current_char in IO_ARRAY_DLM:
-                                tokens.append(Token(TokenType.STACK, ident_str, start_pos.ln, start_pos.col))
+                                tokens.append(Token(TokenType.stack, ident_str, start_pos.ln, start_pos.col))
                                 matched = True
             elif self.current_char == 'p':
                 ident_str += self.current_char
@@ -759,7 +759,7 @@ class Lexer:
                             previous_char = self.current_char
                             self.advance()
                             if self.current_char is None or self.current_char in METHOD_DLM:
-                                tokens.append(Token(TokenType.SPLIT, ident_str, start_pos.ln, start_pos.col))
+                                tokens.append(Token(TokenType.split, ident_str, start_pos.ln, start_pos.col))
                                 matched = True
         elif self.current_char == 't':
             ident_str += self.current_char
@@ -774,7 +774,7 @@ class Lexer:
                     previous_char = self.current_char
                     self.advance()
                     if self.current_char is None or self.current_char in DATATYPE_DLM:
-                        tokens.append(Token(TokenType.TAG, ident_str, start_pos.ln, start_pos.col))
+                        tokens.append(Token(TokenType.tag, ident_str, start_pos.ln, start_pos.col))
                         matched = True
             elif self.current_char == 'r':
                 ident_str += self.current_char
@@ -785,7 +785,7 @@ class Lexer:
                     previous_char = self.current_char
                     self.advance()
                     if self.current_char is None or self.current_char in DO_ELSE_DLM:
-                        tokens.append(Token(TokenType.TRY, ident_str, start_pos.ln, start_pos.col))
+                        tokens.append(Token(TokenType.try_, ident_str, start_pos.ln, start_pos.col))
                         matched = True
         # For letters without keywords (e.g., 'q', 'v', etc.), just build identifier
         else:
@@ -811,7 +811,7 @@ class Lexer:
             elif underscore_count > MAX_UNDERSCORES:
                 errors.append(LexicalError(start_pos, f"Max {MAX_UNDERSCORES} '_' allowed"))
             elif self.current_char is None or self.current_char in IDFR_DLM:
-                tokens.append(Token(TokenType.IDENTIFIER, ident_str, start_pos.ln, start_pos.col))
+                tokens.append(Token(TokenType.identifier, ident_str, start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after identifier '{ident_str}'"))
 
@@ -860,7 +860,7 @@ class Lexer:
             if is_float:
                 try:
                     value = float(num_str)
-                    tokens.append(Token(TokenType.FLOAT, value, start_pos.ln, start_pos.col))
+                    tokens.append(Token(TokenType.float_, value, start_pos.ln, start_pos.col))
                 except ValueError:
                     errors.append(LexicalError(start_pos, f"Invalid float literal '{num_str}'"))
             else:
@@ -869,7 +869,7 @@ class Lexer:
                     if value < MIN_INTEGER or value > MAX_INTEGER:
                         errors.append(LexicalError(start_pos, f"Integer out of range (±{MAX_INTEGER}): '{num_str}'"))
                     else:
-                        tokens.append(Token(TokenType.INTEGER, value, start_pos.ln, start_pos.col))
+                        tokens.append(Token(TokenType.integer, value, start_pos.ln, start_pos.col))
                 except ValueError:
                     errors.append(LexicalError(start_pos, f"Invalid integer literal '{num_str}'"))
         else:
@@ -883,14 +883,14 @@ class Lexer:
             if self.current_char == '+':
                 self.advance()
                 if self.current_char is None or self.current_char in SYMBOL_DLM:
-                    tokens.append(Token(TokenType.INCREMENT, '++', start_pos.ln, start_pos.col))
+                    tokens.append(Token(TokenType.increment, '++', start_pos.ln, start_pos.col))
                 else:
                     errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '++'"))
                 return
             elif self.current_char == '=':
                 self.advance()
                 if self.current_char is None or self.current_char in SYMBOL_DLM:
-                    tokens.append(Token(TokenType.PLUS_ASSIGN, '+=', start_pos.ln, start_pos.col))
+                    tokens.append(Token(TokenType.plus_assign, '+=', start_pos.ln, start_pos.col))
                 else:
                     errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '+='"))
                 return
@@ -923,7 +923,7 @@ class Lexer:
                 if self.current_char is None or self.current_char in FLT_LIT_DLM:
                     try:
                         value = float(num_str)
-                        tokens.append(Token(TokenType.FLOAT, value, start_pos.ln, start_pos.col))
+                        tokens.append(Token(TokenType.float_, value, start_pos.ln, start_pos.col))
                     except ValueError:
                         errors.append(LexicalError(start_pos, f"Invalid float '{num_str}'"))
                 else:
@@ -931,7 +931,7 @@ class Lexer:
                 return
             else:
                 if self.current_char is None or self.current_char in SYMBOL_DLM:
-                    tokens.append(Token(TokenType.PLUS, '+', start_pos.ln, start_pos.col))
+                    tokens.append(Token(TokenType.plus, '+', start_pos.ln, start_pos.col))
                 else:
                     errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '+'"))
                 return
@@ -939,14 +939,14 @@ class Lexer:
             if self.current_char == '-':
                 self.advance()
                 if self.current_char is None or self.current_char in SYMBOL_DLM:
-                    tokens.append(Token(TokenType.DECREMENT, '--', start_pos.ln, start_pos.col))
+                    tokens.append(Token(TokenType.decrement, '--', start_pos.ln, start_pos.col))
                 else:
                     errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '--'"))
                 return
             elif self.current_char == '=':
                 self.advance()
                 if self.current_char is None or self.current_char in SYMBOL_DLM:
-                    tokens.append(Token(TokenType.MINUS_ASSIGN, '-=', start_pos.ln, start_pos.col))
+                    tokens.append(Token(TokenType.minus_assign, '-=', start_pos.ln, start_pos.col))
                 else:
                     errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '-='"))
                 return
@@ -979,7 +979,7 @@ class Lexer:
                 if self.current_char is None or self.current_char in FLT_LIT_DLM:
                     try:
                         value = float(num_str)
-                        tokens.append(Token(TokenType.FLOAT, value, start_pos.ln, start_pos.col))
+                        tokens.append(Token(TokenType.float_, value, start_pos.ln, start_pos.col))
                     except ValueError:
                         errors.append(LexicalError(start_pos, f"Invalid float '{num_str}'"))
                 else:
@@ -987,7 +987,7 @@ class Lexer:
                 return
             else:
                 if self.current_char is None or self.current_char in SYMBOL_DLM:
-                    tokens.append(Token(TokenType.MINUS, '-', start_pos.ln, start_pos.col))
+                    tokens.append(Token(TokenType.minus, '-', start_pos.ln, start_pos.col))
                 else:
                     errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '-'"))
                 return
@@ -1015,7 +1015,7 @@ class Lexer:
         if self.current_char == '"':
             self.advance()
             if self.current_char is None or self.current_char in STRG_DLM:
-                tokens.append(Token(TokenType.STRING, string_value, start_pos.ln, start_pos.col))
+                tokens.append(Token(TokenType.string, string_value, start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after string"))
         else:
@@ -1050,7 +1050,7 @@ class Lexer:
                 errors.append(LexicalError(start_pos, "Character literal must be a single character"))
                 return
             if self.current_char is None or self.current_char in STRG_DLM:  # Reuse STRG_DLM for char
-                tokens.append(Token(TokenType.CHAR, char_value, start_pos.ln, start_pos.col))
+                tokens.append(Token(TokenType.char, char_value, start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after character literal"))
         else:
@@ -1072,12 +1072,12 @@ class Lexer:
         elif self.current_char == '=':
             self.advance()
             if self.current_char is None or self.current_char in SYMBOL_DLM:
-                tokens.append(Token(TokenType.DIV_ASSIGN, '/=', start_pos.ln, start_pos.col))
+                tokens.append(Token(TokenType.div_assign, '/=', start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '/='"))
         else:
             if self.current_char is None or self.current_char in SYMBOL_DLM:
-                tokens.append(Token(TokenType.DIV, '/', start_pos.ln, start_pos.col))
+                tokens.append(Token(TokenType.div, '/', start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '/'"))
 
@@ -1087,12 +1087,12 @@ class Lexer:
         if self.current_char == '=':
             self.advance()
             if self.current_char is None or self.current_char in SYMBOL_DLM:
-                tokens.append(Token(TokenType.MUL_ASSIGN, '*=', start_pos.ln, start_pos.col))
+                tokens.append(Token(TokenType.mul_assign, '*=', start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '*='"))
         else:
             if self.current_char is None or self.current_char in SYMBOL_DLM:
-                tokens.append(Token(TokenType.MUL, '*', start_pos.ln, start_pos.col))
+                tokens.append(Token(TokenType.mul, '*', start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '*'"))
 
@@ -1102,12 +1102,12 @@ class Lexer:
         if self.current_char == '=':
             self.advance()
             if self.current_char is None or self.current_char in SYMBOL_DLM:
-                tokens.append(Token(TokenType.MOD_ASSIGN, '%=', start_pos.ln, start_pos.col))
+                tokens.append(Token(TokenType.mod_assign, '%=', start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '%='"))
         else:
             if self.current_char is None or self.current_char in SYMBOL_DLM:
-                tokens.append(Token(TokenType.MOD, '%', start_pos.ln, start_pos.col))
+                tokens.append(Token(TokenType.mod, '%', start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '%'"))
 
@@ -1117,12 +1117,12 @@ class Lexer:
         if self.current_char == '=':
             self.advance()
             if self.current_char is None or self.current_char in SYMBOL_DLM:
-                tokens.append(Token(TokenType.EQ, '==', start_pos.ln, start_pos.col))
+                tokens.append(Token(TokenType.eq, '==', start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '=='"))
         else:
             if self.current_char is None or self.current_char in SYMBOL_DLM:
-                tokens.append(Token(TokenType.ASSIGN, '=', start_pos.ln, start_pos.col))
+                tokens.append(Token(TokenType.assign, '=', start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '='"))
 
@@ -1132,12 +1132,12 @@ class Lexer:
         if self.current_char == '=':
             self.advance()
             if self.current_char is None or self.current_char in SYMBOL_DLM:
-                tokens.append(Token(TokenType.LTE, '<=', start_pos.ln, start_pos.col))
+                tokens.append(Token(TokenType.lte, '<=', start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '<='"))
         else:
             if self.current_char is None or self.current_char in SYMBOL_DLM:
-                tokens.append(Token(TokenType.LT, '<', start_pos.ln, start_pos.col))
+                tokens.append(Token(TokenType.lt, '<', start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '<'"))
 
@@ -1147,12 +1147,12 @@ class Lexer:
         if self.current_char == '=':
             self.advance()
             if self.current_char is None or self.current_char in SYMBOL_DLM:
-                tokens.append(Token(TokenType.GTE, '>=', start_pos.ln, start_pos.col))
+                tokens.append(Token(TokenType.gte, '>=', start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '>='"))
         else:
             if self.current_char is None or self.current_char in SYMBOL_DLM:
-                tokens.append(Token(TokenType.GT, '>', start_pos.ln, start_pos.col))
+                tokens.append(Token(TokenType.gt, '>', start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '>'"))
 
@@ -1162,12 +1162,12 @@ class Lexer:
         if self.current_char == '=':
             self.advance()
             if self.current_char is None or self.current_char in SYMBOL_DLM:
-                tokens.append(Token(TokenType.NEQ, '!=', start_pos.ln, start_pos.col))
+                tokens.append(Token(TokenType.neq, '!=', start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '!='"))
         else:
             if self.current_char is None or self.current_char in SYMBOL_DLM:
-                tokens.append(Token(TokenType.NOT, '!', start_pos.ln, start_pos.col))
+                tokens.append(Token(TokenType.not_, '!', start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '!'"))
 
@@ -1177,7 +1177,7 @@ class Lexer:
         if self.current_char == '&':
             self.advance()
             if self.current_char is None or self.current_char in SYMBOL_DLM:
-                tokens.append(Token(TokenType.AND, '&&', start_pos.ln, start_pos.col))
+                tokens.append(Token(TokenType.and_, '&&', start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '&&'"))
         else:
@@ -1189,7 +1189,7 @@ class Lexer:
         if self.current_char == '|':
             self.advance()
             if self.current_char is None or self.current_char in SYMBOL_DLM:
-                tokens.append(Token(TokenType.OR, '||', start_pos.ln, start_pos.col))
+                tokens.append(Token(TokenType.or_, '||', start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '||'"))
         else:
@@ -1199,7 +1199,7 @@ class Lexer:
         start_pos = self.pos.copy()
         self.advance()  # ,
         if self.current_char is None or self.current_char in SYMBOL_DLM:
-            tokens.append(Token(TokenType.COMMA, ',', start_pos.ln, start_pos.col))
+            tokens.append(Token(TokenType.comma, ',', start_pos.ln, start_pos.col))
         else:
             errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after ','"))
 
@@ -1207,7 +1207,7 @@ class Lexer:
         start_pos = self.pos.copy()
         self.advance()  # ;
         if self.current_char is None or self.current_char in SEMI_SYM_DLM:
-            tokens.append(Token(TokenType.SEMICOLON, ';', start_pos.ln, start_pos.col))
+            tokens.append(Token(TokenType.semicolon, ';', start_pos.ln, start_pos.col))
         else:
             errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after ';'"))
 
@@ -1215,7 +1215,7 @@ class Lexer:
         start_pos = self.pos.copy()
         self.advance()  # :
         if self.current_char is None or self.current_char in COLON_DLM:
-            tokens.append(Token(TokenType.COLON, ':', start_pos.ln, start_pos.col))
+            tokens.append(Token(TokenType.colon, ':', start_pos.ln, start_pos.col))
         else:
             errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after ':'"))
 
@@ -1247,7 +1247,7 @@ class Lexer:
             if self.current_char is None or self.current_char in FLT_LIT_DLM:
                 try:
                     value = float(num_str)
-                    tokens.append(Token(TokenType.FLOAT, value, start_pos.ln, start_pos.col))
+                    tokens.append(Token(TokenType.float_, value, start_pos.ln, start_pos.col))
                 except ValueError:
                     errors.append(LexicalError(start_pos, f"Invalid float '{num_str}'"))
             else:
@@ -1255,7 +1255,7 @@ class Lexer:
         else:
             self.advance()  # .
             if self.current_char is None or self.current_char in DOT_DLM:
-                tokens.append(Token(TokenType.DOT, '.', start_pos.ln, start_pos.col))
+                tokens.append(Token(TokenType.dot, '.', start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '.'"))
 
@@ -1263,7 +1263,7 @@ class Lexer:
         start_pos = self.pos.copy()
         self.advance()  # (
         if self.current_char is None or self.current_char in PAREN_DLM:
-            tokens.append(Token(TokenType.LPAREN, '(', start_pos.ln, start_pos.col))
+            tokens.append(Token(TokenType.lparen, '(', start_pos.ln, start_pos.col))
         else:
             errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '('"))
 
@@ -1271,7 +1271,7 @@ class Lexer:
         start_pos = self.pos.copy()
         self.advance()  # )
         if self.current_char is None or self.current_char in PAREN_DLM:
-            tokens.append(Token(TokenType.RPAREN, ')', start_pos.ln, start_pos.col))
+            tokens.append(Token(TokenType.rparen, ')', start_pos.ln, start_pos.col))
         else:
             errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after ')'"))
 
@@ -1279,7 +1279,7 @@ class Lexer:
         start_pos = self.pos.copy()
         self.advance()  # [
         if self.current_char is None or self.current_char in PAREN_DLM:
-            tokens.append(Token(TokenType.LBRACKET, '[', start_pos.ln, start_pos.col))
+            tokens.append(Token(TokenType.lbracket, '[', start_pos.ln, start_pos.col))
         else:
             errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '['"))
 
@@ -1287,7 +1287,7 @@ class Lexer:
         start_pos = self.pos.copy()
         self.advance()  # ]
         if self.current_char is None or self.current_char in PAREN_DLM:
-            tokens.append(Token(TokenType.RBRACKET, ']', start_pos.ln, start_pos.col))
+            tokens.append(Token(TokenType.rbracket, ']', start_pos.ln, start_pos.col))
         else:
             errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after ']'"))
 
@@ -1295,7 +1295,7 @@ class Lexer:
         start_pos = self.pos.copy()
         self.advance()  # {
         if self.current_char is None or self.current_char in PAREN_DLM:
-            tokens.append(Token(TokenType.LBRACE, '{', start_pos.ln, start_pos.col))
+            tokens.append(Token(TokenType.lbrace, '{', start_pos.ln, start_pos.col))
         else:
             errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '{{'"))
 
@@ -1303,6 +1303,6 @@ class Lexer:
         start_pos = self.pos.copy()
         self.advance()  # }
         if self.current_char is None or self.current_char in PAREN_DLM:
-            tokens.append(Token(TokenType.RBRACE, '}', start_pos.ln, start_pos.col))
+            tokens.append(Token(TokenType.rbrace, '}', start_pos.ln, start_pos.col))
         else:
             errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '}}'"))
