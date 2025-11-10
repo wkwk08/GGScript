@@ -1278,43 +1278,31 @@ class Lexer:
 
     def make_dot_or_fractional(self, tokens, errors):
         start_pos = self.pos.copy()
-        if self.peek() and self.peek().isdigit():
-            num_str = '0.'
-            self.advance()  # .
-            frac_count = 0
-            while self.current_char and self.current_char.isdigit():
-                num_str += self.current_char
-                frac_count += 1
+        self.advance()  # consume '.'
+
+        if self.current_char and self.current_char.isdigit():
+            # It's a float literal continuation (e.g., 3.14)
+            self.pos.index -= 1  # backtrack so make_number can handle it
+            self.current_char = '.'
+            self.make_number(tokens, errors, positive=True)
+            return
+
+        if self.current_char and self.current_char.isalpha():
+            # It's a method call like .split or .count
+            method_str = ''
+            while self.current_char and (self.current_char.isalnum() or self.current_char == '_'):
+                method_str += self.current_char
                 self.advance()
-                if frac_count > MAX_FRACTIONAL_DIGITS:
-                    errors.append(LexicalError(start_pos, f"Fractional part too long (max {MAX_FRACTIONAL_DIGITS} digits)"))
-                    return
-            if self.current_char and self.current_char.lower() == 'e':
-                num_str += self.current_char
-                self.advance()
-                if self.current_char in '+-':
-                    num_str += self.current_char
-                    self.advance()
-                if not self.current_char or not self.current_char.isdigit():
-                    errors.append(LexicalError(start_pos, "Expected digits after 'e'"))
-                    return
-                while self.current_char and self.current_char.isdigit():
-                    num_str += self.current_char
-                    self.advance()
-            if self.current_char is None or self.current_char in FLT_LIT_DLM:
-                try:
-                    value = float(num_str)
-                    tokens.append(Token(TokenType.float_, value, start_pos.ln, start_pos.col))
-                except ValueError:
-                    errors.append(LexicalError(start_pos, f"Invalid float '{num_str}'"))
-            else:
-                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after float '{num_str}'"))
-        else:
-            self.advance()  # .
-            if self.current_char is None or self.current_char in DOT_DLM:
+
+            if method_str in {'split', 'count'}:
                 tokens.append(Token(TokenType.dot, '.', start_pos.ln, start_pos.col))
+                tokens.append(Token(getattr(TokenType, method_str), method_str, start_pos.ln, start_pos.col + 1))
             else:
-                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '.'"))
+                errors.append(LexicalError(start_pos, f"Unknown method '{method_str}' after '.'"))
+            return
+
+        # If it's not a digit or letter, treat as standalone dot
+        tokens.append(Token(TokenType.dot, '.', start_pos.ln, start_pos.col))
 
     def make_lparen(self, tokens, errors):
         start_pos = self.pos.copy()
