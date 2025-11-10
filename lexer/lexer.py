@@ -1308,18 +1308,30 @@ class Lexer:
     def make_lparen(self, tokens, errors):
         start_pos = self.pos.copy()
         self.advance()  # (
-        if self.current_char is None or self.current_char in PAREN_DLM:
-            tokens.append(Token(TokenType.lparen, '(', start_pos.ln, start_pos.col))
-        else:
-            errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '('"))
+
+        # Validate what comes after '('
+        if self.current_char not in ALPHANUM + PUNCTUATIONS + WHTSPC:
+                errors.append(LexicalError(
+                    self.pos.copy(),
+                    f"Invalid character '{self.current_char}' after '('"
+                ))
+                return
+        
+        tokens.append(Token(TokenType.lparen, '(', start_pos.ln, start_pos.col))
 
     def make_rparen(self, tokens, errors):
         start_pos = self.pos.copy()
         self.advance()  # )
-        if self.current_char is None or self.current_char in PAREN_DLM:
-            tokens.append(Token(TokenType.rparen, ')', start_pos.ln, start_pos.col))
-        else:
-            errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after ')'"))
+
+        # Validate what comes after ')'
+        if self.current_char not in ALPHANUM + PUNCTUATIONS + WHTSPC:
+            errors.append(LexicalError(
+                self.pos.copy(),
+                f"Invalid character '{self.current_char}' after ')'"
+                ))
+            return
+            
+        tokens.append(Token(TokenType.rparen, ')', start_pos.ln, start_pos.col))
 
     def make_lbracket(self, tokens, errors):
         start_pos = self.pos.copy()
