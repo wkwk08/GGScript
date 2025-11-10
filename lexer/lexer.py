@@ -878,9 +878,7 @@ class Lexer:
                 num_str += self.current_char
                 self.advance()
 
-        dlm = FLT_LIT_DLM if is_float else INT_DLM
-        dlm += SEMI_DLM
-        if self.current_char is None or self.current_char in dlm:
+        if self.current_char is None or self.current_char in ALPHANUM + PUNCTUATIONS + WHTSPC:
             if is_float:
                 try:
                     value = float(num_str)
