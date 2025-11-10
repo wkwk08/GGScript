@@ -1347,7 +1347,7 @@ class Lexer:
     def make_lbracket(self, tokens, errors):
         start_pos = self.pos.copy()
         self.advance()  # [
-        if self.current_char is None or self.current_char in PAREN_DLM:
+        if self.current_char is None or self.current_char in ALPHANUM + PUNCTUATIONS + WHTSPC:
             tokens.append(Token(TokenType.lbracket, '[', start_pos.ln, start_pos.col))
         else:
             errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '['"))
@@ -1355,7 +1355,7 @@ class Lexer:
     def make_rbracket(self, tokens, errors):
         start_pos = self.pos.copy()
         self.advance()  # ]
-        if self.current_char is None or self.current_char in PAREN_DLM:
+        if self.current_char is None or self.current_char in ALPHANUM + PUNCTUATIONS + WHTSPC:
             tokens.append(Token(TokenType.rbracket, ']', start_pos.ln, start_pos.col))
         else:
             errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after ']'"))
@@ -1363,7 +1363,7 @@ class Lexer:
     def make_lbrace(self, tokens, errors):
         start_pos = self.pos.copy()
         self.advance()  # {
-        if self.current_char is None or self.current_char in PAREN_DLM:
+        if self.current_char is None or self.current_char in ALPHANUM + PUNCTUATIONS + WHTSPC:
             tokens.append(Token(TokenType.lbrace, '{', start_pos.ln, start_pos.col))
         else:
             errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '{{'"))
@@ -1371,7 +1371,7 @@ class Lexer:
     def make_rbrace(self, tokens, errors):
         start_pos = self.pos.copy()
         self.advance()  # }
-        if self.current_char is None or self.current_char in PAREN_DLM:
+        if self.current_char is None or self.current_char in ALPHANUM + PUNCTUATIONS + WHTSPC:
             tokens.append(Token(TokenType.rbrace, '}', start_pos.ln, start_pos.col))
         else:
             errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '}}'"))
