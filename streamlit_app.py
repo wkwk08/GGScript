@@ -118,8 +118,6 @@ with st.container():
                         "TYPE": st.column_config.TextColumn("TYPE", width="small"),
                     }
                 )
-            else:
-                st.info("No visible tokens (only comments/whitespace?).")
 
     else:
         st.info("Paste code and click **Analyze** to see tokens.")
