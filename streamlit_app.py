@@ -91,9 +91,10 @@ with st.container():
                 if t.type in (TokenType.eof, TokenType.newline):
                     continue
                 lexeme = str(t.value).replace("\n", "\\n").replace("\t", "\\t").replace("\r", "\\r")
+                token_display = lexeme if t.type == "comment" else t.type
                 rows.append({
                     "LEXEME": lexeme,
-                    "TOKEN": t.type,  # Removed .name
+                    "TOKEN": token_display,
                     "TYPE": token_category(t.type)
                 })
 
