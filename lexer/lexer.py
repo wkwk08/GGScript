@@ -1100,32 +1100,24 @@ class Lexer:
         # Handle /* ... */
         if self.current_char == '*':
             self.advance()  # consume '*'
-            comment_start_line = self.pos.ln
-
-            # Read until find '*/' or end of input
-            content = ''
+            comment_str = '/*'
             while self.current_char is not None:
                 if self.current_char == '*' and self.peek() == '/':
-                    self.advance()  # *
-                    self.advance()  # /
-                    return  # Multi-line closed successfully
-                content += self.current_char
+                    comment_str += '*'
+                    self.advance()  # consume '*'
+                    comment_str += '/'
+                    self.advance()  # consume '/'
+                    tokens.append(Token(TokenType.comment, comment_str, start_pos.ln, start_pos.col))
+                    return
+                comment_str += self.current_char
                 self.advance()
 
-            # Reached EOF — now decide: single-line or unterminated multi-line?
-            lines_in_comment = content.count('\n') + 1
-            if lines_in_comment == 1:
-                # Only one line → valid single-line comment (even if no */)
-                return  # No token, just skip
-            else:
-                # Spans multiple lines but no closing */ → error
-                errors.append(LexicalError(
-                    start_pos,
-                    "Unterminated multi-line comment (started at line {}, spans {} lines)".format(
-                        comment_start_line, lines_in_comment
-                    )
-                ))
-                return
+            # If we reach here, comment was unterminated
+            errors.append(LexicalError(
+                start_pos,
+                "Unterminated multi-line comment"
+            ))
+            return
 
         # Handle /= (division assignment)
         elif self.current_char == '=':
