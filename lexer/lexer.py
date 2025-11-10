@@ -1091,41 +1091,58 @@ class Lexer:
         start_pos = self.pos.copy()
         self.advance()  # consume '/'
 
-        # Reject C-style //
-        if self.current_char == '/':
-            errors.append(LexicalError(start_pos, "Invalid comment syntax: use /* ... */ only"))
-            self.advance()
-            return
-
-        # Handle /* ... */
         if self.current_char == '*':
             self.advance()  # consume '*'
+
+            # Handle stray */ as standalone comment
+            if self.current_char == '/':
+                self.advance()
+                tokens.append(Token(TokenType.comment, '*/', start_pos.ln, start_pos.col))
+                return
+
             comment_str = '/*'
+
+            # If next char is newline → single-line comment
+            if self.current_char == '\n':
+                tokens.append(Token(TokenType.comment, comment_str, start_pos.ln, start_pos.col))
+                return
+
+            # Otherwise → scan for multi-line comment
             while self.current_char is not None:
                 if self.current_char == '*' and self.peek() == '/':
                     comment_str += '*'
-                    self.advance()  # consume '*'
+                    self.advance()
                     comment_str += '/'
-                    self.advance()  # consume '/'
+                    self.advance()
                     tokens.append(Token(TokenType.comment, comment_str, start_pos.ln, start_pos.col))
                     return
+
+                # If newline appears before closure → treat as single-line comment
+                if self.current_char == '\n':
+                    tokens.append(Token(TokenType.comment, comment_str, start_pos.ln, start_pos.col))
+                    return
+
                 comment_str += self.current_char
                 self.advance()
 
-            # If we reach here, comment was unterminated
-            errors.append(LexicalError(
-                start_pos,
-                "Unterminated multi-line comment"
-            ))
+            # If EOF reached without closure
+            tokens.append(Token(TokenType.comment, comment_str, start_pos.ln, start_pos.col))
             return
 
-        # Handle /= (division assignment)
+        elif self.current_char == '*':
+            self.advance()
+            if self.current_char == '/':
+                self.advance()
+                tokens.append(Token(TokenType.comment, '*/', start_pos.ln, start_pos.col))
+            else:
+                tokens.append(Token(TokenType.mul, '*', start_pos.ln, start_pos.col))
+            return
+
         elif self.current_char == '=':
             self.advance()
             tokens.append(Token(TokenType.div_assign, '/=', start_pos.ln, start_pos.col))
             return
 
-        # Handle / (division)
         else:
             tokens.append(Token(TokenType.div, '/', start_pos.ln, start_pos.col))
             return
