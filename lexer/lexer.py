@@ -1149,18 +1149,21 @@ class Lexer:
 
     def make_mul_or_mul_assign(self, tokens, errors):
         start_pos = self.pos.copy()
-        self.advance()  # *
-        if self.current_char == '=':
+        self.advance()  # consume '*'
+
+        if self.current_char == '/':
             self.advance()
-            if self.current_char is None or self.current_char in SYMBOL_DLM:
-                tokens.append(Token(TokenType.mul_assign, '*=', start_pos.ln, start_pos.col))
-            else:
-                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '*='"))
+            tokens.append(Token(TokenType.comment, '*/', start_pos.ln, start_pos.col))
+            return
+
+        elif self.current_char == '=':
+            self.advance()
+            tokens.append(Token(TokenType.mul_assign, '*=', start_pos.ln, start_pos.col))
+            return
+
         else:
-            if self.current_char is None or self.current_char in SYMBOL_DLM:
-                tokens.append(Token(TokenType.mul, '*', start_pos.ln, start_pos.col))
-            else:
-                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '*'"))
+            tokens.append(Token(TokenType.mul, '*', start_pos.ln, start_pos.col))
+            return
 
     def make_mod_or_mod_assign(self, tokens, errors):
         start_pos = self.pos.copy()
