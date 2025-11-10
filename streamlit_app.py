@@ -30,6 +30,8 @@ def token_category(tt: str) -> str:
         return "IDENTIFIER"
     if tt in ("integer", "float", "string", "char"):
         return "LITERAL"
+    if tt == "comment":
+        return "COMMENT"
     if tt in {
         '+', '-', '*', '/', '%', '=', '+=', '-=', '*=', '/=', '%=',
         '++', '--', '<', '>', '<=', '>=', '==', '!=', '!', '&&', '||'
