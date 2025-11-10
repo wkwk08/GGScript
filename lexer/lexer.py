@@ -300,7 +300,37 @@ class Lexer:
             ident_str += self.current_char
             previous_char = self.current_char
             self.advance()
-            if self.current_char == 'h':
+
+            # clutch branch (starts with 'cl')
+            if self.current_char == 'l':
+                ident_str += self.current_char
+                previous_char = self.current_char
+                self.advance()
+                if self.current_char == 'u':
+                    ident_str += self.current_char
+                    previous_char = self.current_char
+                    self.advance()
+                    if self.current_char == 't':
+                        ident_str += self.current_char
+                        previous_char = self.current_char
+                        self.advance()
+                        if self.current_char == 'c':
+                            ident_str += self.current_char
+                            previous_char = self.current_char
+                            self.advance()
+                            if self.current_char == 'h':
+                                ident_str += self.current_char
+                                previous_char = self.current_char
+                                self.advance()
+                                if self.current_char is None or self.current_char in COND_DLM:
+                                    tokens.append(Token(TokenType.clutch, ident_str, start_pos.ln, start_pos.col))
+                                    matched = True
+                                else:
+                                    errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after 'clutch'"))
+                                    matched = True
+
+            # choke branch (starts with 'ch')
+            elif self.current_char == 'h':
                 ident_str += self.current_char
                 previous_char = self.current_char
                 self.advance()
@@ -316,6 +346,8 @@ class Lexer:
                             ident_str += self.current_char
                             previous_char = self.current_char
                             self.advance()
+
+                            # peek ahead for compound 'choke clutch'
                             next_word = self.peek_word()
                             if next_word == 'clutch':
                                 while self.current_char and self.current_char.isspace():
@@ -337,26 +369,7 @@ class Lexer:
                             else:
                                 if self.current_char is None or self.current_char in DO_ELSE_DLM:
                                     tokens.append(Token(TokenType.choke, ident_str, start_pos.ln, start_pos.col))
-                                    matched = True
-                elif self.current_char == 'u':
-                    ident_str += self.current_char
-                    previous_char = self.current_char
-                    self.advance()
-                    if self.current_char == 't':
-                        ident_str += self.current_char
-                        previous_char = self.current_char
-                        self.advance()
-                        if self.current_char == 'c':
-                            ident_str += self.current_char
-                            previous_char = self.current_char
-                            self.advance()
-                            if self.current_char == 'h':
-                                ident_str += self.current_char
-                                previous_char = self.current_char
-                                self.advance()
-                                if self.current_char is None or self.current_char in COND_DLM:
-                                    tokens.append(Token(TokenType.clutch, ident_str, start_pos.ln, start_pos.col))
-                                    matched = True
+                                    matched = True                      
             elif self.current_char == 'o':
                 ident_str += self.current_char
                 previous_char = self.current_char
