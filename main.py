@@ -3,8 +3,11 @@ import os
 from lexer.lexer import Lexer
 from lexer.token_types import TokenType
 
-def _type_str(token):
-    t = token.type
+# ------------------------------------------------------------------
+#  Token → string helper
+# ------------------------------------------------------------------
+def _token_str(tok):
+    t = tok.type
     if isinstance(t, str):
         return t
     if hasattr(t, "value"):
@@ -13,6 +16,9 @@ def _type_str(token):
         return t.name
     return str(t)
 
+# ------------------------------------------------------------------
+#  Token categories
+# ------------------------------------------------------------------
 def token_category(tt: str) -> str:
     KEYWORDS = {
         'afk', 'buff', 'build', 'choke', 'choke_clutch', 'clutch', 'comsat',
@@ -26,63 +32,77 @@ def token_category(tt: str) -> str:
         return "IDENTIFIER"
     if tt in ("integer", "float", "string", "char"):
         return "LITERAL"
+    if tt == "comment":
+        return "COMMENT"
     if tt in {
         '+', '-', '*', '/', '%', '=', '+=', '-=', '*=', '/=', '%=',
         '++', '--', '<', '>', '<=', '>=', '==', '!=', '!', '&&', '||'
     }:
         return "OPERATOR"
-    if tt in {
-        '(', ')', '[', ']', '{', '}', ',', ';', ':', '.',
-    }:
+    if tt in { '(', ')', '[', ']', '{', '}', ',', ';', ':', '.' }:
         return "DELIMITER"
     return "OTHER"
 
-def print_tokens_single_pass(tokens):
-    """Print tokens (LEXEME, TOKEN, TYPE) and collect lexical error tokens in a single pass."""
-    print("\n" + "="*80)
+# ------------------------------------------------------------------
+#  Print token table
+# ------------------------------------------------------------------
+def print_token_table(tokens):
+    print("\n" + "═" * 90)
     print(f"{'LEXEME':<40} {'TOKEN':<25} {'TYPE':<12}")
-    print("="*80)
+    print("─" * 90)
 
-    lex_errors = []
-    count_visible = 0
+    visible = 0
     last_line = 0
 
-    for token in tokens:
-        tstr = _type_str(token)
-        last_line = getattr(token, "line", last_line)
+    for t in tokens:
+        tstr = _token_str(t)
+        last_line = getattr(t, "line", last_line)
 
-        # skip EOF entirely
-        if tstr == TokenType.eof:
+        # Skip invisible tokens
+        if tstr in (TokenType.eof, TokenType.newline, TokenType.whitespace):
+            continue
+        if tstr == TokenType.comment:
             continue
 
-        # always collect error tokens
-        if tstr == TokenType.error:
-            lex_errors.append(token)
-
-        # skip invisible tokens in the table (but errors already collected)
-        if tstr in (TokenType.whitespace, TokenType.comment, TokenType.newline):
-            continue
-
-        # visible token
-        count_visible += 1
-        lexeme = token.value if token.value is not None else tstr
+        visible += 1
+        lexeme = t.value if t.value is not None else tstr
         lexeme = str(lexeme).replace("\n", "\\n").replace("\t", "\\t").replace("\r", "\\r")
         if len(lexeme) > 38:
             lexeme = lexeme[:35] + "..."
-        print(f"{lexeme:<40} {tstr:<25} {token_category(tstr):<12}")
 
-    print("="*80)
-    return {
-        "visible_count": count_visible,
-        "lex_errors": lex_errors,
-        "last_line": last_line
-    }
+        token_display = tstr if tstr != "comment" else lexeme
+        print(f"{lexeme:<40} {token_display:<25} {token_category(tstr):<12}")
 
+    print("═" * 90)
+    return {"visible": visible, "lines": last_line}
+
+# ------------------------------------------------------------------
+#  Print lexical errors
+# ------------------------------------------------------------------
+def print_errors(errors):
+    if not errors:
+        return
+    print("\nLexical Errors Found:\n")
+    for i, e in enumerate(errors, 1):
+        if hasattr(e, "as_string"):
+            print(f"  {i}. {e.as_string()}")
+        elif hasattr(e, "line") and hasattr(e, "column"):
+            print(f"  {i}. Line {e.line}, Col {e.column}: {e.value}")
+        else:
+            print(f"  {i}. {e}")
+    print()
+
+# ------------------------------------------------------------------
+#  Main – lexical analysis only
+# ------------------------------------------------------------------
 def main():
-    print("=" * 80)
-    print("GGScript Lexical Analyzer".center(80))
-    print("=" * 80)
+    # ----- header -----
+    print("═" * 90)
+    print("GGScript Lexical Analyzer".center(90))
+    print("Automata Theory and Formal Languages".center(90))
+    print("═" * 90)
 
+    # ----- input handling -----
     if len(sys.argv) < 2:
         print("\nError: No input file specified")
         print("\nUsage:")
@@ -90,72 +110,53 @@ def main():
         print("  python main.py --interactive")
         sys.exit(1)
 
-    if sys.argv[1] == '--interactive':
+    if sys.argv[1] == "--interactive":
         print("\nInteractive Mode")
-        print("Enter your GGScript code (press Ctrl+Z then Enter on Windows when done):\n")
-        try:
-            source_code = sys.stdin.read()
-        except KeyboardInterrupt:
-            print("\nInterrupted by user")
-            sys.exit(0)
+        print("Enter GGScript code (Ctrl+D / Ctrl+Z+Enter to finish):\n")
+        source = sys.stdin.read()
     else:
-        filename = sys.argv[1]
-        if not os.path.exists(filename):
-            print(f"\nError: File '{filename}' not found")
+        path = sys.argv[1]
+        if not os.path.exists(path):
+            print(f"\nError: File '{path}' not found")
             sys.exit(1)
-        try:
-            with open(filename, 'r', encoding='utf-8') as f:
-                source_code = f.read()
-            print(f"\nAnalyzing file: {filename}")
-            print(f"File size: {len(source_code)} characters")
-        except Exception as e:
-            print(f"\nError reading file: {e}")
-            sys.exit(1)
+        with open(path, "r", encoding="utf-8") as f:
+            source = f.read()
+        print(f"\nAnalyzing: {path}")
+        print(f"Size: {len(source)} characters")
 
-    print("\n" + "=" * 80)
+    # ----- run lexer -----
+    print("\n" + "═" * 90)
     print("Lexical Analysis")
-    print("=" * 80)
+    print("═" * 90)
 
     try:
-        lexer = Lexer(source_code)
+        lexer = Lexer(source)
         result = lexer.make_tokens() if hasattr(lexer, "make_tokens") else lexer.tokenize()
-        if isinstance(result, tuple) and len(result) == 2:
-            tokens, errors = result
-        else:
-            tokens = result
-            errors = []
-    except Exception as e:
-        print(f"\nLexer error: {e}")
+        tokens, lexer_errors = (result, []) if not isinstance(result, tuple) else result
+    except Exception as exc:
+        print(f"\nLexer crashed: {exc}")
         import traceback
         traceback.print_exc()
         sys.exit(1)
 
-    stats = print_tokens_single_pass(tokens)
+    # ----- collect all errors (token stream + lexer-reported) -----
+    token_errors = [t for t in tokens if _token_str(t) == TokenType.error]
+    all_errors = token_errors + (lexer_errors or [])
 
-    # Combine token-produced lexical errors and lexer-reported errors, then print once
-    token_errors = stats["lex_errors"]
-    all_errors = []
-    all_errors.extend(token_errors)
-    all_errors.extend(errors or [])
-
+    # ----- output -----
     if all_errors:
-        print("\nLexical Errors Found:\n")
-        for i, err in enumerate(all_errors, 1):
-            if hasattr(err, "line") and hasattr(err, "column"):
-                print(f"  {i}. Line {err.line}, Column {err.column}: {err.value}")
-            elif hasattr(err, "as_string"):
-                print(f"  {i}. {err.as_string()}")
-            else:
-                print(f"  {i}. {err}")
-        print("\nLexical analysis failed.")
+        print_errors(all_errors)
+        print_token_table(tokens)          # show table for context
+        print("Lexical analysis failed.")
         sys.exit(1)
     else:
-        print("\nLexical analysis completed successfully.")
-        print(f"  Visible tokens: {stats['visible_count']}")
-        print(f"  Lines processed: {stats['last_line']}")
-        print("Compilation stopped after lexical analysis (parser not yet implemented)")
-        print("=" * 80)
+        stats = print_token_table(tokens)
+        print(f"\nLexical analysis successful!")
+        print(f"  Visible tokens : {stats['visible']}")
+        print(f"  Lines processed: {stats['lines']}")
+        print("═" * 90)
         sys.exit(0)
+
 
 if __name__ == "__main__":
     main()
