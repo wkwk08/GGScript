@@ -1,0 +1,4 @@
+elo prices[3] = {19.99, 29.50, 15.75};
+frag total = 0;
+clutch(total == 0);
+total = total + prices[1];

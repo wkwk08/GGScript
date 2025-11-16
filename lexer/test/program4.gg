@@ -1,0 +1,4 @@
+ign name = "Jullayne";
+tag initial = 'J';
+tag invalid = 'Aug'   // should error: char > 1 length
+elo discount = 0000000000009888.99;

@@ -1,0 +1,5 @@
+frag level = 100;
+elo discount = 9.999999;   // 7‑digit precision OK
+tag grade = 'A';
+ign nickname = "champ";
+level = level + 50;

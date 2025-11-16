@@ -1,0 +1,3 @@
+frag _score = 10;
+elo price = 19.223829;   // error: 8 digits precision 
+ign name = "Ch4knu";

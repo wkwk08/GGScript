@@ -1,0 +1,4 @@
+frag scores = 98;
+elo average = 19.99;
+ign playerName = "Kuku^";
+scores = scores + 2 * 3;
