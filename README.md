@@ -1,4 +1,5 @@
 # GGScript Programming Language
+Automata Theory and Formal Languages
 
 ## Prerequisites
 - Python 3.8+
