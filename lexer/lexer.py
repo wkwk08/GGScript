@@ -235,6 +235,24 @@ class Lexer:
 
         tokens.append(Token(TokenType.eof, None, self.pos.ln, self.pos.col))
         return tokens, errors
+    
+    def make_plus_or_increment(self, tokens, errors):
+        start_pos = self.pos.copy()
+        self.advance()
+        if self.current_char == '+':
+            tokens.append(Token(TokenType.increment, '++', start_pos.ln, start_pos.col))
+            self.advance()
+        else:
+            tokens.append(Token(TokenType.plus, '+', start_pos.ln, start_pos.col))
+
+    def make_minus_or_decrement(self, tokens, errors):
+        start_pos = self.pos.copy()
+        self.advance()
+        if self.current_char == '-':
+            tokens.append(Token(TokenType.decrement, '--', start_pos.ln, start_pos.col))
+            self.advance()
+        else:
+            tokens.append(Token(TokenType.minus, '-', start_pos.ln, start_pos.col))
 
     def make_identifier_or_keyword(self, tokens, errors):
         start_pos = self.pos.copy()
