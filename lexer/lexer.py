@@ -40,7 +40,7 @@ COLON_DLM = WHTSPC_DLM + ':'
 DOT_DLM = '.();\n'
 PRN_BLCK_DLM = WHTSPC_DLM + '(){ }'
 PRN_BRC_DLM = WHTSPC_DLM + '({'
-PRN_DLM = WHTSPC_DLM + '();'
+PRN_DLM = WHTSPC_DLM + '('
 SEMI_DLM = ';' + WHTSPC_DLM
 
 # Group delimiters
