@@ -138,8 +138,12 @@ class Lexer:
                 self.make_number(tokens, errors, positive=True)
                 continue
 
-            if self.current_char in '+-':
-                self.make_signed_number_or_operator(tokens, errors)
+            if self.current_char in '+':
+                self.make_plus_or_increment(tokens, errors)
+                continue
+
+            if self.current_char == '-':
+                self.make_minus_or_decrement(tokens, errors)
                 continue
 
             if self.current_char == '"':
