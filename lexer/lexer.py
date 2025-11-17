@@ -707,6 +707,7 @@ class Lexer:
             ident_str += self.current_char
             previous_char = self.current_char
             self.advance()
+
             if self.current_char == 'u':
                 ident_str += self.current_char
                 previous_char = self.current_char
@@ -734,6 +735,7 @@ class Lexer:
                                     if self.current_char is None or self.current_char in DATATYPE_DLM:
                                         tokens.append(Token(TokenType.surebol, ident_str, start_pos.ln, start_pos.col))
                                         matched = True
+
             elif self.current_char == 'h':
                 ident_str += self.current_char
                 previous_char = self.current_char
@@ -753,6 +755,7 @@ class Lexer:
                             if self.current_char is None or self.current_char in IO_ARRAY_DLM:
                                 tokens.append(Token(TokenType.shout, ident_str, start_pos.ln, start_pos.col))
                                 matched = True
+
             elif self.current_char == 't':
                 ident_str += self.current_char
                 previous_char = self.current_char
@@ -768,11 +771,8 @@ class Lexer:
                         if self.current_char is None or self.current_char in DATATYPE_DLM:
                             tokens.append(Token(TokenType.stun, ident_str, start_pos.ln, start_pos.col))
                             matched = True
-            elif self.current_char == 't':
-                ident_str += self.current_char
-                previous_char = self.current_char
-                self.advance()
-                if self.current_char == 'a':
+
+                elif self.current_char == 'a':
                     ident_str += self.current_char
                     previous_char = self.current_char
                     self.advance()
@@ -787,6 +787,7 @@ class Lexer:
                             if self.current_char is None or self.current_char in IO_ARRAY_DLM:
                                 tokens.append(Token(TokenType.stack, ident_str, start_pos.ln, start_pos.col))
                                 matched = True
+
             elif self.current_char == 'p':
                 ident_str += self.current_char
                 previous_char = self.current_char
