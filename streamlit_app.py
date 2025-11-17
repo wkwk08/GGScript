@@ -19,7 +19,7 @@ st.markdown("<p style='text-align: center; color: #888; font-size: 0.9rem;'>Auto
 # ------------------------------------------------------------------
 def token_category(tt: str) -> str:
     KEYWORDS = {
-        'afk', 'buff', 'build', 'choke', 'choke_clutch', 'clutch', 'comsat',
+        'afk', 'buff', 'build', 'choke', 'choke clutch', 'clutch', 'comsat',
         'count', 'craft', 'dodge', 'drop', 'elo', 'frag', 'ggwp', 'grind',
         'hop', 'ign', 'lobby', 'nerf', 'noob', 'pick', 'retry', 'role',
         'shout', 'split', 'stack', 'stun', 'surebol', 'tag', 'try'
@@ -93,7 +93,7 @@ with st.container():
                 if t.type in (TokenType.eof, TokenType.newline):
                     continue
                 lexeme = str(t.value).replace("\n", "\\n").replace("\t", "\\t").replace("\r", "\\r")
-                token_display = lexeme if t.type in {"comment", "terminator", "separator", "bracket"} else t.type
+                token_display = "choke clutch" if t.type == "choke_clutch" else lexeme if t.type in {"comment", "terminator", "separator", "bracket"} else t.type
                 rows.append({
                     "LEXEME": lexeme,
                     "TOKEN": token_display,
