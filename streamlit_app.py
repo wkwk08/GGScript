@@ -37,10 +37,12 @@ def token_category(tt: str) -> str:
         '++', '--', '<', '>', '<=', '>=', '==', '!=', '!', '&&', '||'
     }:
         return "OPERATOR"
-    if tt in {
-        '(', ')', '[', ']', '{', '}', ',', ';', ':', '.'
-    }:
-        return "DELIMITER"
+    if tt == "terminator":
+        return "TERMINATOR"
+    if tt == "separator":
+        return "SEPARATOR"
+    if tt == "bracket":
+        return "BRACKET"
     return "OTHER"
 
 
@@ -91,7 +93,7 @@ with st.container():
                 if t.type in (TokenType.eof, TokenType.newline):
                     continue
                 lexeme = str(t.value).replace("\n", "\\n").replace("\t", "\\t").replace("\r", "\\r")
-                token_display = lexeme if t.type == "comment" else t.type
+                token_display = lexeme if t.type in {"comment", "terminator", "separator", "bracket"} else t.type
                 rows.append({
                     "LEXEME": lexeme,
                     "TOKEN": token_display,
