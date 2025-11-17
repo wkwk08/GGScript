@@ -87,6 +87,11 @@ class TokenType:
     colon = ":"         # :
     dot = "."           # .
 
+    # New unified delimiter types
+    terminator = "terminator"  # ;
+    separator = "separator"    # ,
+    bracket = "bracket"        # (), {}, [], "
+
     # Literals
     integer = "integer"       # frag literal
     float = "float"        # elo literal
@@ -137,6 +142,19 @@ SYMBOL_TO_TOKEN = {
     ';': TokenType.semicolon,
     ':': TokenType.colon,
     '.': TokenType.dot,
+
+    # New unified mappings
+    ';': TokenType.terminator,
+    ',': TokenType.separator,
+    '(': TokenType.bracket,
+    ')': TokenType.bracket,
+    '{': TokenType.bracket,
+    '}': TokenType.bracket,
+    '[': TokenType.bracket,
+    ']': TokenType.bracket,
+    '"': TokenType.bracket,
+    ':': TokenType.bracket,
+    '.': TokenType.bracket,
 }
 
 # Keyword mapping
