@@ -758,6 +758,9 @@ class Lexer:
                             if self.current_char is None or self.current_char in IO_ARRAY_DLM:
                                 tokens.append(Token(TokenType.shout, ident_str, start_pos.ln, start_pos.col))
                                 matched = True
+                            else: 
+                                errors.append(LexicalError(start_pos, f"'{ident_str}' is a reserved keyword and cannot be followed by '{self.current_char}'"))
+                                matched = True
 
             elif self.current_char == 't':
                 ident_str += self.current_char
