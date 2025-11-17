@@ -20,7 +20,7 @@ RESERVED_KEYWORDS = {
     'build', 'grind', 'retry', 'try',
     'clutch', 'choke', 'choke clutch',
     'pick', 'role', 'noob',
-    'comsat', 'shout', 'drop', 'craft', 'count', 'split',
+    'comsat', 'stack', 'shout', 'drop', 'craft', 'count', 'split',
     'lobby'
 }
 
