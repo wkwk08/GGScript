@@ -21,7 +21,7 @@ def _token_str(tok):
 # ------------------------------------------------------------------
 def token_category(tt: str) -> str:
     KEYWORDS = {
-        'afk', 'buff', 'build', 'choke', 'choke_clutch', 'clutch', 'comsat',
+        'afk', 'buff', 'build', 'choke', 'choke clutch', 'clutch', 'comsat',
         'count', 'craft', 'dodge', 'drop', 'elo', 'frag', 'ggwp', 'grind',
         'hop', 'ign', 'lobby', 'nerf', 'noob', 'pick', 'retry', 'role',
         'shout', 'split', 'stack', 'stun', 'surebol', 'tag', 'try'
@@ -39,8 +39,12 @@ def token_category(tt: str) -> str:
         '++', '--', '<', '>', '<=', '>=', '==', '!=', '!', '&&', '||'
     }:
         return "OPERATOR"
-    if tt in { '(', ')', '[', ']', '{', '}', ',', ';', ':', '.' }:
-        return "DELIMITER"
+    if tt == "terminator":
+        return "TERMINATOR"
+    if tt == "separator":
+        return "SEPARATOR"
+    if tt == "bracket":
+        return "BRACKET"
     return "OTHER"
 
 # ------------------------------------------------------------------
@@ -61,8 +65,6 @@ def print_token_table(tokens):
         # Skip invisible tokens
         if tstr in (TokenType.eof, TokenType.newline, TokenType.whitespace):
             continue
-        if tstr == TokenType.comment:
-            continue
 
         visible += 1
         lexeme = t.value if t.value is not None else tstr
@@ -70,8 +72,15 @@ def print_token_table(tokens):
         if len(lexeme) > 38:
             lexeme = lexeme[:35] + "..."
 
-        token_display = tstr if tstr != "comment" else lexeme
-        print(f"{lexeme:<40} {token_display:<25} {token_category(tstr):<12}")
+        # Normalize display for choke_clutch
+        if tstr == "choke_clutch":
+            token_display = "choke clutch"
+        elif tstr in {"comment", "terminator", "separator", "bracket"}:
+            token_display = lexeme
+        else:
+            token_display = tstr
+
+        print(f"{lexeme:<40} {token_display:<25} {token_category(token_display):<12}")
 
     print("═" * 90)
     return {"visible": visible, "lines": last_line}
