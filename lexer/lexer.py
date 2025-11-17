@@ -1046,7 +1046,7 @@ class Lexer:
         if self.current_char == '"':
             self.advance()
             if self.current_char is None or self.current_char in STRG_DLM:
-                tokens.append(Token(TokenType.string, string_value, start_pos.ln, start_pos.col))
+                tokens.append(Token(TokenType.bracket, string_value, start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after string"))
         else:
@@ -1268,7 +1268,7 @@ class Lexer:
         start_pos = self.pos.copy()
         self.advance()  # ,
         if self.current_char is None or self.current_char in SYMBOL_DLM:
-            tokens.append(Token(TokenType.comma, ',', start_pos.ln, start_pos.col))
+            tokens.append(Token(TokenType.separator, ',', start_pos.ln, start_pos.col))
         else:
             errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after ','"))
 
@@ -1276,7 +1276,7 @@ class Lexer:
         start_pos = self.pos.copy()
         self.advance()  # ;
         if self.current_char is None or self.current_char in SEMI_SYM_DLM:
-            tokens.append(Token(TokenType.semicolon, ';', start_pos.ln, start_pos.col))
+            tokens.append(Token(TokenType.terminator, ';', start_pos.ln, start_pos.col))
         else:
             errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after ';'"))
 
@@ -1284,7 +1284,7 @@ class Lexer:
         start_pos = self.pos.copy()
         self.advance()  # :
         if self.current_char is None or self.current_char in COLON_DLM:
-            tokens.append(Token(TokenType.colon, ':', start_pos.ln, start_pos.col))
+            tokens.append(Token(TokenType.separator, ':', start_pos.ln, start_pos.col))
         else:
             errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after ':'"))
 
@@ -1307,14 +1307,14 @@ class Lexer:
                 self.advance()
 
             if method_str in {'split', 'count'}:
-                tokens.append(Token(TokenType.dot, '.', start_pos.ln, start_pos.col))
+                tokens.append(Token(TokenType.separator, '.', start_pos.ln, start_pos.col))
                 tokens.append(Token(getattr(TokenType, method_str), method_str, start_pos.ln, start_pos.col + 1))
             else:
                 errors.append(LexicalError(start_pos, f"Unknown method '{method_str}' after '.'"))
             return
 
         # If it's not a digit or letter, treat as standalone dot
-        tokens.append(Token(TokenType.dot, '.', start_pos.ln, start_pos.col))
+        tokens.append(Token(TokenType.separator, '.', start_pos.ln, start_pos.col))
 
     def make_lparen(self, tokens, errors):
         start_pos = self.pos.copy()
@@ -1328,7 +1328,7 @@ class Lexer:
                 ))
                 return
         
-        tokens.append(Token(TokenType.lparen, '(', start_pos.ln, start_pos.col))
+        tokens.append(Token(TokenType.bracket, '(', start_pos.ln, start_pos.col))
 
     def make_rparen(self, tokens, errors):
         start_pos = self.pos.copy()
@@ -1342,13 +1342,13 @@ class Lexer:
                 ))
             return
             
-        tokens.append(Token(TokenType.rparen, ')', start_pos.ln, start_pos.col))
+        tokens.append(Token(TokenType.bracket, ')', start_pos.ln, start_pos.col))
 
     def make_lbracket(self, tokens, errors):
         start_pos = self.pos.copy()
         self.advance()  # [
         if self.current_char is None or self.current_char in ALPHANUM + PUNCTUATIONS + WHTSPC:
-            tokens.append(Token(TokenType.lbracket, '[', start_pos.ln, start_pos.col))
+            tokens.append(Token(TokenType.bracket, '[', start_pos.ln, start_pos.col))
         else:
             errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '['"))
 
@@ -1356,7 +1356,7 @@ class Lexer:
         start_pos = self.pos.copy()
         self.advance()  # ]
         if self.current_char is None or self.current_char in ALPHANUM + PUNCTUATIONS + WHTSPC:
-            tokens.append(Token(TokenType.rbracket, ']', start_pos.ln, start_pos.col))
+            tokens.append(Token(TokenType.bracket, ']', start_pos.ln, start_pos.col))
         else:
             errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after ']'"))
 
@@ -1364,7 +1364,7 @@ class Lexer:
         start_pos = self.pos.copy()
         self.advance()  # {
         if self.current_char is None or self.current_char in ALPHANUM + PUNCTUATIONS + WHTSPC:
-            tokens.append(Token(TokenType.lbrace, '{', start_pos.ln, start_pos.col))
+            tokens.append(Token(TokenType.bracket, '{', start_pos.ln, start_pos.col))
         else:
             errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '{{'"))
 
@@ -1372,6 +1372,6 @@ class Lexer:
         start_pos = self.pos.copy()
         self.advance()  # }
         if self.current_char is None or self.current_char in ALPHANUM + PUNCTUATIONS + WHTSPC:
-            tokens.append(Token(TokenType.rbrace, '}', start_pos.ln, start_pos.col))
+            tokens.append(Token(TokenType.bracket, '}', start_pos.ln, start_pos.col))
         else:
             errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '}}'"))
