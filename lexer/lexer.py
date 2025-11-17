@@ -869,18 +869,28 @@ class Lexer:
             # Reserved keyword protection
             if ident_str in RESERVED_KEYWORDS:
                 errors.append(LexicalError(start_pos, f"'{ident_str}' is a reserved keyword and cannot be used as an identifier"))
-                return
+                matched = True
 
             # Validate identifier rules
-            if (
-                ident_str[0] in ALPHA and
-                all(c in ALPHANUM + '_' for c in ident_str) and
-                MIN_ID_LENGTH <= len(ident_str) <= MAX_ID_LENGTH and
-                ident_str.count('_') <= MAX_UNDERSCORES
-            ):
-                tokens.append(Token(TokenType.identifier, ident_str, start_pos.ln, start_pos.col))
+            elif not ident_str[0].isalpha():
+                errors.append(LexicalError(start_pos, f"Identifier '{ident_str}' must start with a letter"))
+                matched = True
+
+            elif len(ident_str) < MIN_ID_LENGTH or len(ident_str) > MAX_ID_LENGTH:
+                errors.append(LexicalError(start_pos, f"Identifier '{ident_str}' length must be between {MIN_ID_LENGTH} and {MAX_ID_LENGTH} characters"))
+                matched = True
+
+            elif ident_str.count('_') > MAX_UNDERSCORES:
+                errors.append(LexicalError(start_pos, f"Identifier '{ident_str}' has too many underscores (max {MAX_UNDERSCORES})"))
+                matched = True
+
+            elif not all(c in ALPHANUM + '_' for c in ident_str):
+                errors.append(LexicalError(start_pos, f"Identifier '{ident_str}' contains invalid characters"))
+                matched = True
+
             else:
-                errors.append(LexicalError(start_pos, f"Invalid identifier '{ident_str}'"))
+                tokens.append(Token(TokenType.identifier, ident_str, start_pos.ln, start_pos.col))
+                matched = True
        
     def make_number(self, tokens, errors, positive=True):
         start_pos = self.pos.copy()
