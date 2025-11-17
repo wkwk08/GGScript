@@ -1026,6 +1026,12 @@ class Lexer:
     def make_string(self, tokens, errors):
         start_pos = self.pos.copy()
         self.advance()  # "
+
+        # Handle standalone quote
+        if self.current_char is None or self.current_char in WHTSPC:
+            tokens.append(Token(TokenType.bracket, '', start_pos.ln, start_pos.col))
+            return
+        
         string_value = ''
         while self.current_char and self.current_char != '"':
             if self.current_char == '\\':
