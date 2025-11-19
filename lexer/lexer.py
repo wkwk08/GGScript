@@ -1348,7 +1348,12 @@ class Lexer:
             if self.current_char is None or self.current_char in SYMBOL_DLM:
                 tokens.append(Token(TokenType.or_, '||', start_pos.ln, start_pos.col))
             else:
-                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '||'"))
+                pipe_count = 2
+                while self.current_char == '|':
+                    pipe_count += 1
+                    self.advance()
+                errors.append(LexicalError(start_pos, f"Invalid operator '{'|' * pipe_count}' (only '||' is valid)"))
+                return
         else:
             errors.append(LexicalError(start_pos, "Invalid '|' (expected '||')"))
 
