@@ -1211,6 +1211,15 @@ class Lexer:
             self.advance()
             tokens.append(Token(TokenType.div_assign, '/=', start_pos.ln, start_pos.col))
             return
+        
+        elif self.current_char == '/':
+            slash_count = 1
+            self.advance()
+            while self.current_char == '/':
+                slash_count += 1
+                self.advance()
+            errors.append(LexicalError(start_pos, f"Invalid operator '{'/' * slash_count}' (only '/' is valid, or use '/* */')"))
+            return
 
         else:
             tokens.append(Token(TokenType.div, '/', start_pos.ln, start_pos.col))
