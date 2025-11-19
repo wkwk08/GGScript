@@ -1251,7 +1251,7 @@ class Lexer:
 
     def make_assign_or_eq(self, tokens, errors):
         start_pos = self.pos.copy()
-        self.advance()
+        self.advance()  # =
         if self.current_char == '=':
             self.advance()
             if self.current_char is None or self.current_char in SYMBOL_DLM + WHTSPC_DLM + SEMI_DLM:
@@ -1309,7 +1309,7 @@ class Lexer:
 
     def make_and(self, tokens, errors):
         start_pos = self.pos.copy()
-        self.advance()
+        self.advance()  # &
         if self.current_char == '&':
             self.advance()
             if self.current_char is None or self.current_char in SYMBOL_DLM + WHTSPC_DLM + SEMI_DLM:
