@@ -240,8 +240,13 @@ class Lexer:
         start_pos = self.pos.copy()
         self.advance()
         if self.current_char == '+':
-            tokens.append(Token(TokenType.increment, '++', start_pos.ln, start_pos.col))
             self.advance()
+            # Check delimiter after '++'
+            if self.current_char is None or self.current_char in SYMBOL_DLM + WHTSPC_DLM + SEMI_DLM:
+                tokens.append(Token(TokenType.increment, '++', start_pos.ln, start_pos.col))
+            else:
+                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '++'"))
+                self.advance()
         else:
             tokens.append(Token(TokenType.plus, '+', start_pos.ln, start_pos.col))
 
