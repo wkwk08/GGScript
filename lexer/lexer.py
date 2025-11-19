@@ -1238,6 +1238,16 @@ class Lexer:
             self.advance()
             tokens.append(Token(TokenType.mul_assign, '*=', start_pos.ln, start_pos.col))
             return
+        
+        elif self.current_char == '*':
+            # Reject '**', '***', etc. as invalid
+            star_count = 2
+            self.advance()
+            while self.current_char == '*':
+                star_count += 1
+                self.advance()
+            errors.append(LexicalError(start_pos, f"Invalid operator '{'*' * star_count}' (only '*', '*=', or '*/' are valid)"))
+            return
 
         else:
             tokens.append(Token(TokenType.mul, '*', start_pos.ln, start_pos.col))
