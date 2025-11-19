@@ -1251,18 +1251,16 @@ class Lexer:
 
     def make_assign_or_eq(self, tokens, errors):
         start_pos = self.pos.copy()
-        self.advance()  # =
+        self.advance()
         if self.current_char == '=':
             self.advance()
-            if self.current_char is None or self.current_char in SYMBOL_DLM:
+            if self.current_char is None or self.current_char in SYMBOL_DLM + WHTSPC_DLM + SEMI_DLM:
                 tokens.append(Token(TokenType.eq, '==', start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '=='"))
+                self.advance()
         else:
-            if self.current_char is None or self.current_char in SYMBOL_DLM:
-                tokens.append(Token(TokenType.assign, '=', start_pos.ln, start_pos.col))
-            else:
-                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '='"))
+            tokens.append(Token(TokenType.assign, '=', start_pos.ln, start_pos.col))
 
     def make_lt_or_lte(self, tokens, errors):
         start_pos = self.pos.copy()
