@@ -32,7 +32,11 @@ CLBRCKT_DLM = WHTSPC_DLM + ALPHANUM + ')'   # close brackets
 OPRTR_DLM = ALPHANUM + WHTSPC_DLM
 CMPLX_DLM = WHTSPC_DLM + ',;) }'
 COMM_STRt_DLM = WHTSPC_DLM + ASCII
-IDFR_DLM = WHTSPC_DLM + OPER + ';,.:()[]{}'
+ARITH_OPRTR = ['+', '-', '*', '/', '%']
+REL_OPRTR = ['<', '<=', '>', '>=', '==', '!=']
+ASSGN_OPRTR = ['=', '+=', '-=', '*=', '/=', '%=']
+LOGIC_OPRTR = ['!', '&&', '||']
+IDFR_DLM = WHTSPC_DLM + ARITH_OPRTR + REL_OPRTR + LOGIC_OPRTR
 INT_DLM = ' ' + OPER
 FLT_LIT_DLM = ' ' + PUNCTUATIONS + OPER + ALPHA
 STRG_DLM = WHTSPC_DLM + '; ,'
