@@ -1168,10 +1168,19 @@ class Lexer:
             # Handle stray */ as standalone comment
             if self.current_char == '/':
                 self.advance()
-                tokens.append(Token(TokenType.comment, '*/', start_pos.ln, start_pos.col))
+                # validate after '*/' using COMM_END_DLM
+                if self.current_char is None or self.current_char in WHTSPC_DLM:
+                    tokens.append(Token(TokenType.comment, '*/', start_pos.ln, start_pos.col))
+                else:
+                    errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '*/'"))
                 return
 
             comment_str = '/*'
+
+            # comm_strt_dlm check: after '/*' must be whitespace or alphanum
+            if not (self.current_char is None or self.current_char in WHTSPC_DLM + ALPHANUM):
+                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '/*'"))
+                return
 
             # If next char is newline → single-line comment
             if self.current_char == '\n':
@@ -1185,7 +1194,11 @@ class Lexer:
                     self.advance()
                     comment_str += '/'
                     self.advance()
-                    tokens.append(Token(TokenType.comment, comment_str, start_pos.ln, start_pos.col))
+                    # comm_end_dlm check: after '*/' must be whitespace
+                    if self.current_char is None or self.current_char in WHTSPC_DLM:
+                        tokens.append(Token(TokenType.comment, comment_str, start_pos.ln, start_pos.col))
+                    else:
+                        errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '*/'"))
                     return
 
                 # If newline appears before closure → treat as single-line comment
@@ -1204,7 +1217,11 @@ class Lexer:
             self.advance()
             if self.current_char == '/':
                 self.advance()
-                tokens.append(Token(TokenType.comment, '*/', start_pos.ln, start_pos.col))
+                # validate after '*/' using COMM_END_DLM
+                if self.current_char is None or self.current_char in WHTSPC_DLM:
+                    tokens.append(Token(TokenType.comment, '*/', start_pos.ln, start_pos.col))
+                else:
+                    errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '*/'"))
             else:
                 tokens.append(Token(TokenType.mul, '*', start_pos.ln, start_pos.col))
             return
