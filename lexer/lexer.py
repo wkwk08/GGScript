@@ -1169,7 +1169,7 @@ class Lexer:
             if self.current_char == '/':
                 self.advance()
                 # validate after '*/' using COMM_END_DLM
-                if self.current_char is None or self.current_char in WHTSPC_DLM:
+                if self.current_char is None or self.current_char in COMM_END_DLM:
                     tokens.append(Token(TokenType.comment, '*/', start_pos.ln, start_pos.col))
                 else:
                     errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '*/'"))
@@ -1178,7 +1178,7 @@ class Lexer:
             comment_str = '/*'
 
             # comm_strt_dlm check: after '/*' must be whitespace or alphanum
-            if not (self.current_char is None or self.current_char in WHTSPC_DLM + ALPHANUM):
+            if not (self.current_char is None or self.current_char in COMM_STRt_DLM):
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '/*'"))
                 return
 
@@ -1195,7 +1195,7 @@ class Lexer:
                     comment_str += '/'
                     self.advance()
                     # comm_end_dlm check: after '*/' must be whitespace
-                    if self.current_char is None or self.current_char in WHTSPC_DLM:
+                    if self.current_char is None or self.current_char in COMM_END_DLM:
                         tokens.append(Token(TokenType.comment, comment_str, start_pos.ln, start_pos.col))
                     else:
                         errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '*/'"))
@@ -1217,8 +1217,8 @@ class Lexer:
             self.advance()
             if self.current_char == '/':
                 self.advance()
-                # validate after '*/' using COMM_END_DLM
-                if self.current_char is None or self.current_char in WHTSPC_DLM:
+                # comm_end_dlm check
+                if self.current_char is None or self.current_char in COMM_END_DLM:
                     tokens.append(Token(TokenType.comment, '*/', start_pos.ln, start_pos.col))
                 else:
                     errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '*/'"))
