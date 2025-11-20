@@ -913,6 +913,7 @@ class Lexer:
         digit_count = 0
         is_float = False
 
+        # Integer part
         while self.current_char and self.current_char.isdigit():
             num_str += self.current_char
             digit_count += 1
@@ -921,6 +922,7 @@ class Lexer:
                 errors.append(LexicalError(start_pos, f"Integer part too long (max {MAX_INTEGER_DIGITS} digits)"))
                 return
 
+        # Fractional part
         if self.current_char == '.':
             is_float = True
             num_str += '.'
@@ -934,6 +936,7 @@ class Lexer:
                     errors.append(LexicalError(start_pos, f"Fractional part too long (max {MAX_FRACTIONAL_DIGITS} digits)"))
                     return
 
+        # Scientific notation
         if is_float and self.current_char and self.current_char.lower() == 'e':
             num_str += self.current_char
             self.advance()
@@ -947,6 +950,7 @@ class Lexer:
                 num_str += self.current_char
                 self.advance()
 
+        # Validate delimiter using INT_DLM / FLT_LIT_DLM
         if self.current_char is None or self.current_char in (INT_DLM if not is_float else FLT_LIT_DLM):
             if is_float:
                 try:
