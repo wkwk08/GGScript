@@ -261,7 +261,7 @@ class Lexer:
         self.advance()
         if self.current_char == '-':
             self.advance()
-            if self.current_char in CMPLX_DLM + CLBRCKT_DLM + WHTSPC_DLM or self.current_char is None:
+            if self.current_char in CMPLX_DLM + WHTSPC_DLM or self.current_char is None:
                 tokens.append(Token(TokenType.decrement, '--', start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '--'"))
