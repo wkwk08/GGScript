@@ -48,7 +48,7 @@ SEMI_DLM = ';' + WHTSPC_DLM
 # Group delimiters
 DATATYPE_DLM = WHTSPC_DLM              # frag, elo, ign, surebol, tag, stun
 COND_DLM = WHTSPC_DLM + '({'           # clutch, choke clutch, pick, dodge
-LOOP_FUNC_DLM = WHTSPC_DLM + '({'      # build, grind, lobby, retry
+LOOP_FUNC_DLM = WHTSPC_DLM + '(){}'    # build, grind, lobby, retry
 JUMP_DLM = SEMI_DLM                    # afk, ggwp, hop
 BOOL_DLM = CMPLX_DLM                   # buff, nerf
 DO_ELSE_DLM = WHTSPC_DLM + '{'         # choke, try
