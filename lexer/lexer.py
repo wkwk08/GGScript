@@ -1300,15 +1300,16 @@ class Lexer:
 
     def make_lt_or_lte(self, tokens, errors):
         start_pos = self.pos.copy()
-        self.advance()  # <
-        if self.current_char == '=':
+        self.advance()  # consume '<'
+
+        if self.current_char == '=':  # <=
             self.advance()
-            if self.current_char is None or self.current_char in SYMBOL_DLM:
+            if self.current_char is None or self.current_char in OPRTR_DLM:
                 tokens.append(Token(TokenType.lte, '<=', start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '<='"))
-        else:
-            if self.current_char is None or self.current_char in SYMBOL_DLM:
+        else:  # <
+            if self.current_char is None or self.current_char in OPRTR_DLM:
                 tokens.append(Token(TokenType.lt, '<', start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '<'"))
