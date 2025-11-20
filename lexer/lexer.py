@@ -1449,7 +1449,7 @@ class Lexer:
     def make_rbracket(self, tokens, errors):
         start_pos = self.pos.copy()
         self.advance()  # ]
-        if self.current_char is None or self.current_char in ALPHANUM + PUNCTUATIONS + WHTSPC:
+        if self.current_char is None or self.current_char in OPBRCKT_DLM:
             tokens.append(Token(TokenType.bracket, ']', start_pos.ln, start_pos.col))
         else:
             errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after ']'"))
