@@ -1429,7 +1429,7 @@ class Lexer:
         self.advance()  # )
 
         # Validate what comes after ')'
-        if self.current_char not in ALPHANUM + PUNCTUATIONS + WHTSPC:
+        if self.current_char is None or self.current_char in OPBRCKT_DLM:
             errors.append(LexicalError(
                 self.pos.copy(),
                 f"Invalid character '{self.current_char}' after ')'"
