@@ -32,6 +32,7 @@ CLBRCKT_DLM = WHTSPC_DLM + ALPHANUM + ')'   # close brackets
 OPRTR_DLM = ALPHANUM + WHTSPC_DLM
 CMPLX_DLM = WHTSPC_DLM + ',;) }'
 COMM_STRt_DLM = WHTSPC_DLM + ASCII
+COMM_END_DLM = WHTSPC_DLM
 ARITH_OPRTR = '+-*/%'
 REL_OPRTR   = '<>!='   # raw chars; compound handled in make_* methods
 ASSGN_OPRTR = '='      # compound handled in make_* methods
