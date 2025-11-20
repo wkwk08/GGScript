@@ -1168,42 +1168,30 @@ class Lexer:
             # Handle stray */ as standalone comment
             if self.current_char == '/':
                 self.advance()
-                # validate after '*/' using COMM_END_DLM
                 if self.current_char is None or self.current_char in COMM_END_DLM:
                     tokens.append(Token(TokenType.comment, '*/', start_pos.ln, start_pos.col))
                 else:
                     errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '*/'"))
                 return
 
-            comment_str = '/*'
-
-            # comm_strt_dlm check: after '/*' must be whitespace or alphanum
+            # Validate comment start delimiter
             if not (self.current_char is None or self.current_char in COMM_STRt_DLM):
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '/*'"))
                 return
 
-            # If next char is newline → single-line comment
-            if self.current_char == '\n':
-                tokens.append(Token(TokenType.comment, comment_str, start_pos.ln, start_pos.col))
-                return
+            comment_str = '/*'
 
-            # Otherwise → scan for multi-line comment
+            # Scan until '*/'
             while self.current_char is not None:
                 if self.current_char == '*' and self.peek() == '/':
                     comment_str += '*'
                     self.advance()
                     comment_str += '/'
                     self.advance()
-                    # comm_end_dlm check: after '*/' must be whitespace
                     if self.current_char is None or self.current_char in COMM_END_DLM:
                         tokens.append(Token(TokenType.comment, comment_str, start_pos.ln, start_pos.col))
                     else:
                         errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '*/'"))
-                    return
-
-                # If newline appears before closure → treat as single-line comment
-                if self.current_char == '\n':
-                    tokens.append(Token(TokenType.comment, comment_str, start_pos.ln, start_pos.col))
                     return
 
                 comment_str += self.current_char
@@ -1217,7 +1205,6 @@ class Lexer:
             self.advance()
             if self.current_char == '/':
                 self.advance()
-                # comm_end_dlm check
                 if self.current_char is None or self.current_char in COMM_END_DLM:
                     tokens.append(Token(TokenType.comment, '*/', start_pos.ln, start_pos.col))
                 else:
@@ -1230,7 +1217,7 @@ class Lexer:
             self.advance()
             tokens.append(Token(TokenType.div_assign, '/=', start_pos.ln, start_pos.col))
             return
-        
+
         elif self.current_char == '/':
             slash_count = 1
             self.advance()
