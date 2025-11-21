@@ -21,7 +21,7 @@ def _token_str(tok):
 # ------------------------------------------------------------------
 def token_category(tt: str) -> str:
     KEYWORDS = {
-        'afk', 'buff', 'build', 'choke', 'choke clutch', 'clutch', 'comsat',
+        'afk', 'buff', 'build', 'choke', 'choke_clutch', 'clutch', 'comsat',
         'count', 'craft', 'dodge', 'drop', 'elo', 'frag', 'ggwp', 'grind',
         'hop', 'ign', 'lobby', 'nerf', 'noob', 'pick', 'retry', 'role',
         'shout', 'split', 'stack', 'stun', 'surebol', 'tag', 'try'
@@ -30,8 +30,14 @@ def token_category(tt: str) -> str:
         return "KEYWORD"
     if tt == "identifier":
         return "IDENTIFIER"
-    if tt in ("integer", "float", "string", "char"):
-        return "LITERAL"
+    if tt == "integer":
+        return "INTEGER LITERAL"
+    if tt == "float":
+        return "FLOAT LITERAL"
+    if tt == "string":
+        return "STRING LITERAL"
+    if tt == "char":
+        return "CHAR LITERAL"
     if tt == "comment":
         return "COMMENT"
     if tt in {
@@ -45,7 +51,7 @@ def token_category(tt: str) -> str:
         return "SEPARATOR"
     if tt == "bracket":
         return "BRACKET"
-    return "OTHER"
+    return "Undetermined"
 
 # ------------------------------------------------------------------
 #  Print token table
