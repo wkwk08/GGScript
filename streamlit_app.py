@@ -43,7 +43,7 @@ def token_category(tt: str) -> str:
         return "SEPARATOR"
     if tt == "bracket":
         return "BRACKET"
-    return "OTHER"
+    return "Undetermined"
 
 
 # ------------------------------------------------------------------
