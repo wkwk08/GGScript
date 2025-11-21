@@ -986,14 +986,14 @@ class Lexer:
         if sign == '+':
             if self.current_char == '+':
                 self.advance()
-                if self.current_char is None or self.current_char in SYMBOL_DLM:
+                if self.current_char is None or self.current_char in OPRTR_DLM:
                     tokens.append(Token(TokenType.increment, '++', start_pos.ln, start_pos.col))
                 else:
                     errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '++'"))
                 return
             elif self.current_char == '=':
                 self.advance()
-                if self.current_char is None or self.current_char in SYMBOL_DLM:
+                if self.current_char is None or self.current_char in OPRTR_DLM:
                     tokens.append(Token(TokenType.plus_assign, '+=', start_pos.ln, start_pos.col))
                 else:
                     errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '+='"))
@@ -1034,7 +1034,7 @@ class Lexer:
                     errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after float '{num_str}'"))
                 return
             else:
-                if self.current_char is None or self.current_char in SYMBOL_DLM:
+                if self.current_char is None or self.current_char in OPRTR_DLM:
                     tokens.append(Token(TokenType.plus, '+', start_pos.ln, start_pos.col))
                 else:
                     errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '+'"))
@@ -1042,14 +1042,14 @@ class Lexer:
         elif sign == '-':
             if self.current_char == '-':
                 self.advance()
-                if self.current_char is None or self.current_char in SYMBOL_DLM:
+                if self.current_char is None or self.current_char in OPRTR_DLM:
                     tokens.append(Token(TokenType.decrement, '--', start_pos.ln, start_pos.col))
                 else:
                     errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '--'"))
                 return
             elif self.current_char == '=':
                 self.advance()
-                if self.current_char is None or self.current_char in SYMBOL_DLM:
+                if self.current_char is None or self.current_char in OPRTR_DLM:
                     tokens.append(Token(TokenType.minus_assign, '-=', start_pos.ln, start_pos.col))
                 else:
                     errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '-='"))
@@ -1090,7 +1090,7 @@ class Lexer:
                     errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after float '{num_str}'"))
                 return
             else:
-                if self.current_char is None or self.current_char in SYMBOL_DLM:
+                if self.current_char is None or self.current_char in OPRTR_DLM:
                     tokens.append(Token(TokenType.minus, '-', start_pos.ln, start_pos.col))
                 else:
                     errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '-'"))
