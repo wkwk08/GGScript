@@ -27,8 +27,8 @@ RESERVED_KEYWORDS = {
 # Delimiters
 WHTSPC_DLM = ' \t\n' 
 TERMI_DLM = WHTSPC_DLM
-OPBRCKT_DLM = WHTSPC_DLM + ALPHANUM + '('   # open brackets
-CLBRCKT_DLM = WHTSPC_DLM + ALPHANUM + ')'   # close brackets
+OPBRCKT_DLM = WHTSPC_DLM + '('   # open brackets
+CLBRCKT_DLM = WHTSPC_DLM + ')'   # close brackets
 OPRTR_DLM = ALPHANUM + WHTSPC_DLM
 CMPLX_DLM = WHTSPC_DLM + ',;)]}'
 COMM_STRt_DLM = WHTSPC_DLM + ASCII
@@ -1447,30 +1447,30 @@ class Lexer:
 
     def make_lparen(self, tokens, errors):
         start_pos = self.pos.copy()
-        self.advance()  # (
+        self.advance()  # consume '('
 
-        # Validate what comes after '('
-        if self.current_char is None or self.current_char in OPBRCKT_DLM:
-                errors.append(LexicalError(
-                    self.pos.copy(),
-                    f"Invalid character '{self.current_char}' after '('"
-                ))
-                return
-        
+        # Accept if next char is valid or None
+        if self.current_char is not None and self.current_char not in ALPHA + NUM + WHTSPC + ')':
+            errors.append(LexicalError(
+                self.pos.copy(),
+                f"Invalid character '{self.current_char}' after '('"
+            ))
+            return
+
         tokens.append(Token(TokenType.bracket, '(', start_pos.ln, start_pos.col))
 
     def make_rparen(self, tokens, errors):
         start_pos = self.pos.copy()
-        self.advance()  # )
+        self.advance()  # consume ')'
 
-        # Validate what comes after ')'
-        if self.current_char is None or self.current_char in CLBRCKT_DLM:
+        # Accept if next char is valid or None
+        if self.current_char is not None and self.current_char not in WHTSPC + ALPHA + NUM + ';':
             errors.append(LexicalError(
                 self.pos.copy(),
                 f"Invalid character '{self.current_char}' after ')'"
-                ))
+            ))
             return
-            
+
         tokens.append(Token(TokenType.bracket, ')', start_pos.ln, start_pos.col))
 
     def make_lbracket(self, tokens, errors):
