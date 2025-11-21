@@ -1171,84 +1171,95 @@ class Lexer:
         self.advance()  # consume '/'
 
         if self.current_char == '*':
+            # Comment detected: either single-line or multi-line
             self.advance()  # consume '*'
-
-            # Handle stray */ as standalone comment
-            if self.current_char == '/':
-                self.advance()
-                if self.current_char is None or self.current_char in COMM_END_DLM:
-                    tokens.append(Token(TokenType.comment, '*/', start_pos.ln, start_pos.col))
-                else:
-                    errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '*/'"))
-                return
-
-            # Validate comment start delimiter
-            if not (self.current_char is None or self.current_char in COMM_STRt_DLM):
-                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '/*'"))
-                return
-
-            comment_str = '/*'
-
-            # Scan until '*/'
+            comment_str = "/*"
+            has_content_on_first_line = False
+            seen_first_newline = False
+            
             while self.current_char is not None:
-                if self.current_char == '*' and self.peek() == '/':
-                    comment_str += '*'
-                    self.advance()
-                    comment_str += '/'
-                    self.advance()
-                    if self.current_char is None or self.current_char in COMM_END_DLM:
-                        tokens.append(Token(TokenType.comment, comment_str, start_pos.ln, start_pos.col))
-                    else:
-                        errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '*/'"))
+                # Check for nested comment start (not allowed)
+                if self.current_char == '/' and self.peek() == '*':
+                    errors.append(LexicalError(start_pos, "Nested comments are not allowed"))
                     return
-
+                
+                # Check for closing */
+                if self.current_char == '*' and self.peek() == '/':
+                    comment_str += "*/"
+                    self.advance()  # consume '*'
+                    self.advance()  # consume '/'
+                    # Multi-line comment (has closing */)
+                    tokens.append(Token(TokenType.comment, comment_str, start_pos.ln, start_pos.col))
+                    return
+                
+                # Check for newline
+                if self.current_char == '\n':
+                    if not seen_first_newline:
+                        # First newline encountered
+                        seen_first_newline = True
+                        
+                        if has_content_on_first_line:
+                            # Single-line: /* content with no */ before newline
+                            tokens.append(Token(TokenType.comment, comment_str, start_pos.ln, start_pos.col))
+                            return
+                        else:
+                            # Multi-line: /* with no content on first line
+                            # Continue looking for */
+                            comment_str += self.current_char
+                            self.advance()
+                            continue
+                    else:
+                        # Already saw first newline, this is a continuation of multi-line
+                        comment_str += self.current_char
+                        self.advance()
+                        continue
+                
+                # Track non-whitespace content on first line only
+                if not seen_first_newline and not self.current_char.isspace():
+                    has_content_on_first_line = True
+                
                 comment_str += self.current_char
                 self.advance()
-
-            # If EOF reached without closure
-            tokens.append(Token(TokenType.comment, comment_str, start_pos.ln, start_pos.col))
-            return
-
-        elif self.current_char == '*':
-            self.advance()
-            if self.current_char == '/':
-                self.advance()
-                if self.current_char is None or self.current_char in COMM_END_DLM:
-                    tokens.append(Token(TokenType.comment, '*/', start_pos.ln, start_pos.col))
-                else:
-                    errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '*/'"))
+            
+            # Reached end of file without finding */
+            if has_content_on_first_line and not seen_first_newline:
+                # Had content on same line as /*, never hit newline, treat as single-line
+                tokens.append(Token(TokenType.comment, comment_str, start_pos.ln, start_pos.col))
+            elif not has_content_on_first_line and seen_first_newline:
+                # /* with no content, expected */ but reached EOF
+                errors.append(LexicalError(start_pos, "Unterminated multi-line comment"))
             else:
-                tokens.append(Token(TokenType.mul, '*', start_pos.ln, start_pos.col))
+                # Other edge cases - treat as single-line
+                tokens.append(Token(TokenType.comment, comment_str, start_pos.ln, start_pos.col))
             return
 
         elif self.current_char == '=':
+            # Division assignment /=
             self.advance()
             tokens.append(Token(TokenType.div_assign, '/=', start_pos.ln, start_pos.col))
             return
 
         elif self.current_char == '/':
-            slash_count = 1
+            # Invalid: consecutive slashes
+            slash_count = 2
             self.advance()
             while self.current_char == '/':
                 slash_count += 1
                 self.advance()
-            errors.append(LexicalError(start_pos, f"Invalid operator '{'/' * slash_count}' (only '/' is valid, or use '/* */')"))
+            errors.append(LexicalError(start_pos, f"Invalid operator '{'/' * slash_count}'"))
             return
 
         else:
+            # Division operator /
             tokens.append(Token(TokenType.div, '/', start_pos.ln, start_pos.col))
             return
+
 
     def make_mul_or_mul_assign(self, tokens, errors):
         start_pos = self.pos.copy()
         self.advance()  # consume '*'
-
-        if self.current_char == '/':
-            self.advance()
-            tokens.append(Token(TokenType.comment, '*/', start_pos.ln, start_pos.col))
-            return
-
-        elif self.current_char == '=':
+        
+        if self.current_char == '=':
             self.advance()
             tokens.append(Token(TokenType.mul_assign, '*=', start_pos.ln, start_pos.col))
             return
@@ -1260,10 +1271,17 @@ class Lexer:
             while self.current_char == '*':
                 star_count += 1
                 self.advance()
-            errors.append(LexicalError(start_pos, f"Invalid operator '{'*' * star_count}' (only '*', '*=', or '*/' are valid)"))
+            errors.append(LexicalError(start_pos, f"Invalid operator '{'*' * star_count}'"))
+            return
+        
+        elif self.current_char == '/':
+            # This is */ outside of a comment context - INVALID
+            errors.append(LexicalError(start_pos, "Unexpected '*/' outside of comment"))
+            self.advance()
             return
 
         else:
+            # Normal multiplication operator
             tokens.append(Token(TokenType.mul, '*', start_pos.ln, start_pos.col))
             return
 
