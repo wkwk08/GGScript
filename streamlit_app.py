@@ -28,8 +28,14 @@ def token_category(tt: str) -> str:
         return "KEYWORD"
     if tt == "identifier":
         return "IDENTIFIER"
-    if tt in ("integer", "float", "string", "char"):
-        return "LITERAL"
+    if tt == "integer":
+        return "INTEGER LITERAL"
+    if tt == "float":
+        return "FLOAT LITERAL"
+    if tt == "string":
+        return "STRING LITERAL"
+    if tt == "char":
+        return "CHAR LITERAL"
     if tt == "comment":
         return "COMMENT"
     if tt in {
