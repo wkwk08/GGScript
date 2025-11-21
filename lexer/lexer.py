@@ -1125,7 +1125,7 @@ class Lexer:
         if self.current_char == '"':
             self.advance()
             if self.current_char is None or self.current_char in STRG_DLM:
-                tokens.append(Token(TokenType.bracket, string_value, start_pos.ln, start_pos.col))
+                tokens.append(Token(TokenType.string, string_value, start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after string"))
         else:
