@@ -1363,7 +1363,7 @@ class Lexer:
         self.advance()  # |
         if self.current_char == '|':
             self.advance()
-            if self.current_char is None or self.current_char in SYMBOL_DLM:
+            if self.current_char is None or self.current_char in OPRTR_DLM:
                 tokens.append(Token(TokenType.or_, '||', start_pos.ln, start_pos.col))
             else:
                 pipe_count = 2
