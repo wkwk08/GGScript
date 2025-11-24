@@ -27,8 +27,8 @@ RESERVED_KEYWORDS = {
 # Delimiters
 WHTSPC_DLM = ' \t\n' 
 TERMI_DLM = WHTSPC_DLM
-OPBRCKT_DLM = WHTSPC_DLM + '('   # open brackets
-CLBRCKT_DLM = WHTSPC_DLM + ')'   # close brackets
+OPBRCKT_DLM = WHTSPC_DLM + ALPHANUM + '('  # open brackets
+CLBRCKT_DLM = WHTSPC_DLM + ALPHANUM + ')'   # close brackets
 OPRTR_DLM = ALPHANUM + WHTSPC_DLM
 CMPLX_DLM = WHTSPC_DLM + ',;)]}'
 COMM_STRt_DLM = WHTSPC_DLM + ASCII
