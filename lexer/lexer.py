@@ -913,9 +913,18 @@ class Lexer:
        
     def make_number(self, tokens, errors, positive=True):
         start_pos = self.pos.copy()
-        num_str = '' if positive else '-'
+        num_str = '' 
         digit_count = 0
         is_float = False
+
+        # Preserve sign from previous character
+        prev_char = self.source_code[self.pos.index - 1]
+        if not positive:
+            num_str = '-'
+        elif prev_char == '+':
+            num_str = '+'
+        else:
+            num_str = ''
 
         # Integer part
         while self.current_char and self.current_char.isdigit():
