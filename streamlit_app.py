@@ -72,10 +72,14 @@ frag lobby() {
 # ------------------------------------------------------------------
 #  Layout: Centered Input + Output
 # ------------------------------------------------------------------
+if "code_text" not in st.session_state:
+    st.session_state.code_text = sample_code
+
 with st.container():
     code = st.text_area(
         "Enter GGScript code:",
-        value=sample_code,
+        key="code_area",  # widget key separate from session var
+        value=st.session_state.code_text,
         height=300,
         label_visibility="collapsed",
         placeholder="/* Paste or write your GGScript code here..."
@@ -86,11 +90,11 @@ with st.container():
         analyze = st.button("Analyze", type="primary", use_container_width=True)
     with col_btn2:
         if st.button("Clear", use_container_width=True):
-            st.session_state.code = ""
-            st.rerun()
+            st.session_state.code_text = ""   # reset stored value
+            st.rerun()                        # rerun to refresh text_area
 
-    if 'code' in st.session_state:
-        code = st.session_state.code
+    # Keep session state in sync with current text_area content
+    st.session_state.code_text = code
 
     if analyze:
         if not code.strip():
