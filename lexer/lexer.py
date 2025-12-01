@@ -253,6 +253,8 @@ class Lexer:
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '++'"))
                 self.advance()
+        elif self.current_char in NUM or self.current_char == '.':
+            self.make_number(tokens, errors, positive=True)
         else:
             tokens.append(Token(TokenType.plus, '+', start_pos.ln, start_pos.col))
 
@@ -266,6 +268,8 @@ class Lexer:
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '--'"))
                 self.advance()
+        elif self.current_char in NUM or self.current_char == '.':
+            self.make_number(tokens, errors, positive=False)
         else:
             tokens.append(Token(TokenType.minus, '-', start_pos.ln, start_pos.col))
 
