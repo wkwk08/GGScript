@@ -78,7 +78,7 @@ with st.container():
         value=sample_code,
         height=300,
         label_visibility="collapsed",
-        placeholder="// Paste or write your GGScript code here..."
+        placeholder="/* Paste or write your GGScript code here..."
     )
 
     col_btn1, col_btn2, _ = st.columns([1, 1, 3])
