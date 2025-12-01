@@ -1177,7 +1177,8 @@ class Lexer:
             return
 
         if self.current_char is None or self.current_char in STRG_DLM:
-            tokens.append(Token(TokenType.char, char_value, start_pos.ln, start_pos.col))
+            # Valid character literal
+            tokens.append(Token(TokenType.char, f"'{char_value}'", start_pos.ln, start_pos.col))
         else:
             errors.append(LexicalError(start_pos, "Invalid delimiter after character literal"))
 
