@@ -78,15 +78,25 @@ def print_token_table(tokens):
         if len(lexeme) > 38:
             lexeme = lexeme[:35] + "..."
 
-        # Normalize display for choke_clutch
+        # Normalize display for TOKEN column
         if tstr == "choke_clutch":
             token_display = "choke clutch"
         elif tstr in {"comment", "terminator", "separator", "bracket"}:
             token_display = lexeme
+        elif tstr == "char":
+            token_display = "Character"
+        elif tstr == "string":
+            token_display = "String"
+        elif tstr == "integer":
+            token_display = "Integer"
+        elif tstr == "float":
+            token_display = "Float"
+        elif tstr == "identifier":
+            token_display = "Identifier"
         else:
-            token_display = tstr
+            token_display = tstr  # keywords and operators stay as-is
 
-        print(f"{lexeme:<40} {token_display:<25} {token_category(token_display):<12}")
+        print(f"{lexeme:<40} {token_display:<25} {token_category(tstr):<12}")
 
     print("═" * 90)
     return {"visible": visible, "lines": last_line}
