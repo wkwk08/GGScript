@@ -1111,9 +1111,9 @@ class Lexer:
         start_pos = self.pos.copy()
         self.advance()  # "
 
-        # Handle standalone quote
-        if self.current_char is None or self.current_char in WHTSPC:
-            tokens.append(Token(TokenType.bracket, '', start_pos.ln, start_pos.col))
+        # Handle standalone or unterminated quote
+        if self.current_char is None or self.current_char == '\n':
+            errors.append(LexicalError(start_pos, "Unterminated string literal"))
             return
         
         string_value = ''
