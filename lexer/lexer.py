@@ -967,8 +967,8 @@ class Lexer:
         if self.current_char is None or self.current_char in (INT_DLM if not is_float else FLT_LIT_DLM):
             if is_float:
                 try:
-                    value = float(num_str)
-                    tokens.append(Token(TokenType.float, value, start_pos.ln, start_pos.col))
+                    float(num_str)  # validate
+                    tokens.append(Token(TokenType.float, num_str, start_pos.ln, start_pos.col))
                 except ValueError:
                     errors.append(LexicalError(start_pos, f"Invalid float literal '{num_str}'"))
             else:
@@ -977,11 +977,9 @@ class Lexer:
                     if value < MIN_INTEGER or value > MAX_INTEGER:
                         errors.append(LexicalError(start_pos, f"Integer out of range (±{MAX_INTEGER}): '{num_str}'"))
                     else:
-                        tokens.append(Token(TokenType.integer, value, start_pos.ln, start_pos.col))
+                        tokens.append(Token(TokenType.integer, num_str, start_pos.ln, start_pos.col))
                 except ValueError:
-                    errors.append(LexicalError(start_pos, f"Invalid integer literal '{num_str}'"))
-        else:
-            errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after number '{num_str}'"))
+                    errors.append(LexicalError(start_pos, f"Invalid integer literal '{num_str}'"))            
             
     def validate_number_limits(num_str, is_integer, start_pos, errors):
         if is_integer:
