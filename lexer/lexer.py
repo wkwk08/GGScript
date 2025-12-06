@@ -38,8 +38,7 @@ REL_OPRTR   = '<>!='   # raw chars; compound handled in make_* methods
 ASSGN_OPRTR = '='      # compound handled in make_* methods
 LOGIC_OPRTR = '!&|'
 IDFR_DLM = WHTSPC_DLM + ARITH_OPRTR + REL_OPRTR + LOGIC_OPRTR
-INT_DLM  = WHTSPC_DLM + ARITH_OPRTR + REL_OPRTR + LOGIC_OPRTR + ';' + ','
-FLT_LIT_DLM = WHTSPC_DLM + ARITH_OPRTR + REL_OPRTR + ';' + ','
+INT_FLT_DLM = WHTSPC_DLM + ARITH_OPRTR + REL_OPRTR + LOGIC_OPRTR + ';' + ','
 STRG_DLM = WHTSPC_DLM + ';,)'
 BRC_DLM = WHTSPC_DLM + '{'
 COLON_DLM = WHTSPC_DLM + ':'
