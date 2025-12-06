@@ -968,7 +968,7 @@ class Lexer:
                 self.advance()
 
         # Validate delimiter using INT_DLM / FLT_LIT_DLM
-        if self.current_char is None or self.current_char in (INT_DLM if not is_float else FLT_LIT_DLM):
+        if self.current_char is None or self.current_char in INT_FLT_DLM:
             if is_float:
                 try:
                     float(num_str)  # validate
@@ -1039,7 +1039,7 @@ class Lexer:
                     while self.current_char and self.current_char.isdigit():
                         num_str += self.current_char
                         self.advance()
-                if self.current_char is None or self.current_char in FLT_LIT_DLM:
+                if self.current_char is None or self.current_char in INT_FLT_DLM:
                     try:
                         value = float(num_str)
                         tokens.append(Token(TokenType.float, value, start_pos.ln, start_pos.col))
@@ -1095,7 +1095,7 @@ class Lexer:
                     while self.current_char and self.current_char.isdigit():
                         num_str += self.current_char
                         self.advance()
-                if self.current_char is None or self.current_char in FLT_LIT_DLM:
+                if self.current_char is None or self.current_char in INT_FLT_DLM:
                     try:
                         value = float(num_str)
                         tokens.append(Token(TokenType.float, value, start_pos.ln, start_pos.col))
