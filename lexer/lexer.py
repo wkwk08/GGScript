@@ -953,20 +953,6 @@ class Lexer:
                     errors.append(LexicalError(start_pos, f"Fractional part too long (max {MAX_FRACTIONAL_DIGITS} digits)"))
                     return
 
-        # Scientific notation
-        if is_float and self.current_char and self.current_char.lower() == 'e':
-            num_str += self.current_char
-            self.advance()
-            if self.current_char in '+-':
-                num_str += self.current_char
-                self.advance()
-            if not self.current_char or not self.current_char.isdigit():
-                errors.append(LexicalError(start_pos, "Expected digits after 'e' in scientific notation"))
-                return
-            while self.current_char and self.current_char.isdigit():
-                num_str += self.current_char
-                self.advance()
-
         # Validate delimiter using INT_DLM / FLT_LIT_DLM
         if self.current_char is None or self.current_char in INT_FLT_DLM:
             if is_float:
