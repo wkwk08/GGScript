@@ -56,7 +56,7 @@ LOOP_FUNC_DLM = WHTSPC_DLM + '(){}'    # build, grind, lobby, retry
 JUMP_DLM = SEMI_DLM                    # afk, ggwp, hop
 BOOL_DLM = CMPLX_DLM                   # buff, nerf
 DO_ELSE_DLM = WHTSPC_DLM + '{'         # choke, try
-IO_ARRAY_DLM = WHTSPC_DLM + '("'       # comsat, craft, drop, shout, stack
+OP_PRN_DLM = WHTSPC_DLM + '("'         # comsat, craft, drop, shout, stack
 METHOD_DLM = WHTSPC_DLM + '.'          # count, split
 CASE_DLM = WHTSPC_DLM + ':'            # noob, role
 SYMBOL_DLM = OPRTR_DLM # plus, minus, mul, div, mod, assign, lt, gt, eq, neq, and, or
@@ -436,7 +436,7 @@ class Lexer:
                                 ident_str += self.current_char
                                 previous_char = self.current_char
                                 self.advance()
-                                if self.current_char is None or self.current_char in IO_ARRAY_DLM:
+                                if self.current_char is None or self.current_char in OP_PRN_DLM:
                                     tokens.append(Token(TokenType.comsat, ident_str, start_pos.ln, start_pos.col))
                                     matched = True
                                 else:
@@ -473,7 +473,7 @@ class Lexer:
                             ident_str += self.current_char
                             previous_char = self.current_char
                             self.advance()
-                            if self.current_char is None or self.current_char in IO_ARRAY_DLM:
+                            if self.current_char is None or self.current_char in OP_PRN_DLM:
                                 tokens.append(Token(TokenType.craft, ident_str, start_pos.ln, start_pos.col))
                                 matched = True
                             else:
@@ -517,7 +517,7 @@ class Lexer:
                         ident_str += self.current_char
                         previous_char = self.current_char
                         self.advance()
-                        if self.current_char is None or self.current_char in IO_ARRAY_DLM:
+                        if self.current_char is None or self.current_char in OP_PRN_DLM:
                             tokens.append(Token(TokenType.drop, ident_str, start_pos.ln, start_pos.col))
                             matched = True
                         else: 
@@ -791,7 +791,7 @@ class Lexer:
                             ident_str += self.current_char
                             previous_char = self.current_char
                             self.advance()
-                            if self.current_char is None or self.current_char in IO_ARRAY_DLM:
+                            if self.current_char is None or self.current_char in OP_PRN_DLM:
                                 tokens.append(Token(TokenType.shout, ident_str, start_pos.ln, start_pos.col))
                                 matched = True
                             else: 
@@ -826,7 +826,7 @@ class Lexer:
                             ident_str += self.current_char
                             previous_char = self.current_char
                             self.advance()
-                            if self.current_char is None or self.current_char in IO_ARRAY_DLM:
+                            if self.current_char is None or self.current_char in OP_PRN_DLM:
                                 tokens.append(Token(TokenType.stack, ident_str, start_pos.ln, start_pos.col))
                                 matched = True
                             else:
