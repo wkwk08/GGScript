@@ -248,7 +248,9 @@ class Lexer:
         if self.current_char == '+':
             self.advance()
             # Check delimiter after '++'
-            if self.current_char in CMPLX_DLM + WHTSPC_DLM or self.current_char is None:
+            if (self.current_char is None or
+                self.current_char in CMPLX_DLM + WHTSPC_DLM or
+                self.current_char.isalpha() or self.current_char == '_'):
                 tokens.append(Token(TokenType.increment, '++', start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '++'"))
