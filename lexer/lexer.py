@@ -1465,6 +1465,12 @@ class Lexer:
         start_pos = self.pos.copy()
         self.advance()  # consume '('
 
+        # If immediately followed by a string, handle it
+        if self.current_char == '"':
+            tokens.append(Token(TokenType.bracket, '(', start_pos.ln, start_pos.col))
+            self.make_string(tokens, errors)
+            return
+
         # Accept if next char is valid or None
         if self.current_char is not None and self.current_char not in ALPHA + NUM + WHTSPC + ')':
             errors.append(LexicalError(
