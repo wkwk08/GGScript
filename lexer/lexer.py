@@ -254,6 +254,9 @@ class Lexer:
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '++'"))
                 self.advance()
+        elif self.current_char == '=':   # <-- new branch
+            self.advance()
+            tokens.append(Token(TokenType.plus_assign, '+=', start_pos.ln, start_pos.col))
         elif self.current_char in NUM or self.current_char == '.':
             self.make_number(tokens, errors, positive=True)
         else:
