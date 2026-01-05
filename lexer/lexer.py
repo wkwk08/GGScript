@@ -15,13 +15,10 @@ OPER = '+-/*%<>=!&|'
 WHTSPC = ' \t\n'
 
 RESERVED_KEYWORDS = {
-    'frag', 'elo', 'ign', 'surebol', 'tag', 'stun',
-    'buff', 'nerf', 'afk', 'ggwp', 'hop',
-    'build', 'grind', 'retry', 'try',
-    'clutch', 'choke', 'choke clutch',
-    'pick', 'role', 'noob',
-    'comsat', 'stack', 'shout', 'drop', 'craft', 'count', 'split',
-    'lobby'
+    'afk', 'buff', 'build', 'choke', 'choke clutch', 'clutch', 'comsat',
+    'count', 'craft', 'dodge', 'drop', 'elo', 'frag', 'ggwp', 'grind',
+    'hop', 'ign', 'lobby', 'nerf', 'noob', 'pick', 'retry',
+    'role', 'shout', 'split', 'stack', 'stun', 'surebol', 'tag', 'try'
 }
 
 # Delimiters
