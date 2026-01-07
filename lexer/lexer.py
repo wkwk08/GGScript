@@ -265,24 +265,28 @@ class Lexer:
 
     def make_minus_or_decrement(self, tokens, errors):
         start_pos = self.pos.copy()
-        self.advance()
-        if self.current_char == '-':
+        self.advance()  # consume '-'
+        if self.current_char == '-':  # decrement
             self.advance()
-            # Check delimiter after '--'
-            if (self.current_char is None or
-                self.current_char in CMPLX_DLM + WHTSPC_DLM or
-                self.current_char.isalpha() or self.current_char == '_'):
+            if self.current_char is None or self.current_char in CMPLX_DLM:
                 tokens.append(Token(TokenType.decrement, '--', start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '--'"))
-                self.advance()
-        elif self.current_char == '=':   # <-- new branch
+        elif self.current_char == '=':  # minus-assign
             self.advance()
-            tokens.append(Token(TokenType.minus_assign, '-=', start_pos.ln, start_pos.col))
-        elif self.current_char in NUM or self.current_char == '.':
+            if self.current_char is None or self.current_char in OPRTR_DLM:
+                tokens.append(Token(TokenType.minus_assign, '-=', start_pos.ln, start_pos.col))
+            else:
+                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '-='"))
+                self.advance()
+        elif self.current_char in NUM or self.current_char == '.':  # negative number literal
             self.make_number(tokens, errors, positive=False)
-        else:
-            tokens.append(Token(TokenType.minus, '-', start_pos.ln, start_pos.col))
+        else:  # plain '-'
+            if self.current_char is None or self.current_char in OPRTR_DLM:
+                tokens.append(Token(TokenType.minus, '-', start_pos.ln, start_pos.col))
+            else:
+                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '-'"))
+                self.advance()
 
     def make_identifier_or_keyword(self, tokens, errors):
         start_pos = self.pos.copy()
