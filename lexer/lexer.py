@@ -1361,10 +1361,6 @@ class Lexer:
                 tokens.append(Token(TokenType.and_, '&&', start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '&&'"))
-                self.advance()
-        else:
-            errors.append(LexicalError(start_pos, "Invalid '&' (expected '&&')"))
-            self.advance()
 
     def make_or(self, tokens, errors):
         start_pos = self.pos.copy()
