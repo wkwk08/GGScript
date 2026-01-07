@@ -1257,32 +1257,24 @@ class Lexer:
     def make_mul_or_mul_assign(self, tokens, errors):
         start_pos = self.pos.copy()
         self.advance()  # consume '*'
-        
-        if self.current_char == '=':
+        if self.current_char == '=':  # mul-assign
             self.advance()
-            tokens.append(Token(TokenType.mul_assign, '*=', start_pos.ln, start_pos.col))
-            return
-        
-        elif self.current_char == '*':
-            # Reject '**', '***', etc. as invalid
-            star_count = 2
-            self.advance()
-            while self.current_char == '*':
-                star_count += 1
-                self.advance()
-            errors.append(LexicalError(start_pos, f"Invalid operator '{'*' * star_count}'"))
-            return
-        
-        elif self.current_char == '/':
-            # This is */ outside of a comment context - INVALID
+            if self.current_char is None or self.current_char in OPRTR_DLM:
+                tokens.append(Token(TokenType.mul_assign, '*=', start_pos.ln, start_pos.col))
+            else:
+                # Invalid delimiter after '*='
+                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '*='"))
+        elif self.current_char == '*':  # invalid '**'
+            errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '*'"))
+        elif self.current_char == '/':  # invalid '*/' outside comment
             errors.append(LexicalError(start_pos, "Unexpected '*/' outside of comment"))
             self.advance()
-            return
-
-        else:
-            # Normal multiplication operator
-            tokens.append(Token(TokenType.mul, '*', start_pos.ln, start_pos.col))
-            return
+        else:  # plain multiplication
+            if self.current_char is None or self.current_char in OPRTR_DLM:
+                tokens.append(Token(TokenType.mul, '*', start_pos.ln, start_pos.col))
+            else:
+                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '*'"))
+                self.advance()
 
     def make_mod_or_mod_assign(self, tokens, errors):
         start_pos = self.pos.copy()
