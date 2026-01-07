@@ -1364,20 +1364,19 @@ class Lexer:
 
     def make_or(self, tokens, errors):
         start_pos = self.pos.copy()
-        self.advance()  # |
-        if self.current_char == '|':
-            self.advance()
+        self.advance()  # consume first '|'
+        if self.current_char == '|':  # saw '||'
+            self.advance()  # consume second '|'
             if self.current_char is None or self.current_char in OPRTR_DLM:
                 tokens.append(Token(TokenType.or_, '||', start_pos.ln, start_pos.col))
             else:
-                pipe_count = 2
-                while self.current_char == '|':
-                    pipe_count += 1
-                    self.advance()
-                errors.append(LexicalError(start_pos, f"Invalid operator '{'|' * pipe_count}' (only '||' is valid)"))
-                return
-        else:
-            errors.append(LexicalError(start_pos, "Invalid '|' (expected '||')"))
+                errors.append(LexicalError(start_pos, "Invalid operator '||'"))
+        else:  # single '|' is invalid
+            if self.current_char is None or self.current_char in OPRTR_DLM:
+                errors.append(LexicalError(start_pos, "Invalid '|' (expected '||')"))
+            else:
+                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '|'"))
+                self.advance()
 
     def make_comma(self, tokens, errors):
         start_pos = self.pos.copy()
