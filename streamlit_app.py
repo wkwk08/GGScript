@@ -15,10 +15,6 @@ st.markdown(
     f"<h1 style='text-align: center; margin-top: -10px;'><img src='{logo_url}' width='120'> GGScript Lexical Analyzer</h1>",
     unsafe_allow_html=True
 )
-st.markdown(
-    "<p style='text-align: center; color: #888; font-size: 0.9rem;'>Automata Theory and Formal Languages</p>",
-    unsafe_allow_html=True
-)
 
 # ------------------------------------------------------------------
 #  Token Category Helper
