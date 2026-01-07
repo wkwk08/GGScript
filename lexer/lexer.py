@@ -1388,7 +1388,7 @@ class Lexer:
     def make_comma(self, tokens, errors):
         start_pos = self.pos.copy()
         self.advance()  # ,
-        if self.current_char is None or self.current_char in CMPLX_DLM or self.current_char in NUM:
+        if self.current_char is None or self.current_char in OPRTR_DLM:
             tokens.append(Token(TokenType.separator, ',', start_pos.ln, start_pos.col))
         else:
             errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after ','"))
