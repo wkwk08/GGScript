@@ -373,9 +373,6 @@ class Lexer:
                                 if self.current_char is None or self.current_char in COND_DLM:
                                     tokens.append(Token(TokenType.clutch, ident_str, start_pos.ln, start_pos.col))
                                     matched = True
-                                else:
-                                    errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after 'clutch'"))
-                                    matched = True
 
             # choke branch (starts with 'ch')
             elif self.current_char == 'h':
