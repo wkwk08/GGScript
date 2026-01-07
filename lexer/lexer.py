@@ -35,7 +35,7 @@ REL_OPRTR   = '<>!='   # raw chars; compound handled in make_* methods
 ASSGN_OPRTR = '='      # compound handled in make_* methods
 LOGIC_OPRTR = '!&|'
 IDFR_DLM = WHTSPC_DLM + ARITH_OPRTR + REL_OPRTR + LOGIC_OPRTR
-INT_FLT_DLM = WHTSPC_DLM + ARITH_OPRTR + REL_OPRTR + LOGIC_OPRTR + ';' + ','
+INT_FLT_DLM = WHTSPC_DLM + ARITH_OPRTR + REL_OPRTR + LOGIC_OPRTR + ';' + ',' + ')]}'
 STRG_DLM = WHTSPC_DLM + ';,)'
 BRC_DLM = WHTSPC_DLM + '{'
 COLON_DLM = WHTSPC_DLM + ':'
@@ -1440,65 +1440,69 @@ class Lexer:
     def make_lparen(self, tokens, errors):
         start_pos = self.pos.copy()
         self.advance()  # consume '('
-
         # If immediately followed by a string, handle it
         if self.current_char == '"':
             tokens.append(Token(TokenType.bracket, '(', start_pos.ln, start_pos.col))
             self.make_string(tokens, errors)
             return
-
-        # Accept if next char is valid or None
+        # Validate next char
         if self.current_char is not None and self.current_char not in OP_PRN_DLM:
             errors.append(LexicalError(
                 self.pos.copy(),
                 f"Invalid character '{self.current_char}' after '('"
             ))
             return
-
         tokens.append(Token(TokenType.bracket, '(', start_pos.ln, start_pos.col))
+        return
 
     def make_rparen(self, tokens, errors):
         start_pos = self.pos.copy()
         self.advance()  # consume ')'
-
-        # Accept if next char is valid or None
         if self.current_char is not None and self.current_char not in CLBRCKT_DLM:
             errors.append(LexicalError(
                 self.pos.copy(),
                 f"Invalid character '{self.current_char}' after ')'"
             ))
             return
-
         tokens.append(Token(TokenType.bracket, ')', start_pos.ln, start_pos.col))
+        return
 
     def make_lbracket(self, tokens, errors):
         start_pos = self.pos.copy()
-        self.advance()  # [
-        if self.current_char is None or self.current_char in OPBRCKT_DLM:
-            tokens.append(Token(TokenType.bracket, '[', start_pos.ln, start_pos.col))
-        else:
-            errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '['"))
+        self.advance()  # consume '['
+        if self.current_char is not None and self.current_char not in OPBRCKT_DLM:
+            errors.append(LexicalError(start_pos,
+                f"Invalid delimiter '{self.current_char}' after '['"))
+            return
+        tokens.append(Token(TokenType.bracket, '[', start_pos.ln, start_pos.col))
+        return 
 
     def make_rbracket(self, tokens, errors):
         start_pos = self.pos.copy()
-        self.advance()  # ]
-        if self.current_char is None or self.current_char in CLBRCKT_DLM:
-            tokens.append(Token(TokenType.bracket, ']', start_pos.ln, start_pos.col))
-        else:
-            errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after ']'"))
+        self.advance()  # consume ']'
+        if self.current_char is not None and self.current_char not in CLBRCKT_DLM:
+            errors.append(LexicalError(start_pos,
+                f"Invalid delimiter '{self.current_char}' after ']'"))
+            return
+        tokens.append(Token(TokenType.bracket, ']', start_pos.ln, start_pos.col))
+        return  
 
     def make_lbrace(self, tokens, errors):
         start_pos = self.pos.copy()
-        self.advance()  # {
-        if self.current_char is None or self.current_char in OPBRCKT_DLM:
-            tokens.append(Token(TokenType.bracket, '{', start_pos.ln, start_pos.col))
-        else:
-            errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '{{'"))
+        self.advance()  # consume '{'
+        if self.current_char is not None and self.current_char not in OPBRCKT_DLM:
+            errors.append(LexicalError(start_pos,
+                f"Invalid delimiter '{self.current_char}' after '{{'"))
+            return
+        tokens.append(Token(TokenType.bracket, '{', start_pos.ln, start_pos.col))
+        return
 
     def make_rbrace(self, tokens, errors):
         start_pos = self.pos.copy()
-        self.advance()  # }
-        if self.current_char is None or self.current_char in CLBRCKT_DLM:
-            tokens.append(Token(TokenType.bracket, '}', start_pos.ln, start_pos.col))
-        else:
-            errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '}}'"))
+        self.advance()  # consume '}'
+        if self.current_char is not None and self.current_char not in CLBRCKT_DLM:
+            errors.append(LexicalError(start_pos,
+                f"Invalid delimiter '{self.current_char}' after '}}'"))
+            return
+        tokens.append(Token(TokenType.bracket, '}', start_pos.ln, start_pos.col))
+        return 
