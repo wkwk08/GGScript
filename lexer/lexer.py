@@ -1235,22 +1235,23 @@ class Lexer:
         elif self.current_char == '=':
             # Division assignment /=
             self.advance()
-            tokens.append(Token(TokenType.div_assign, '/=', start_pos.ln, start_pos.col))
+            if self.current_char is None or self.current_char in OPRTR_DLM:
+                tokens.append(Token(TokenType.div_assign, '/=', start_pos.ln, start_pos.col))
+            else:
+                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '/='"))
             return
 
-        elif self.current_char == '/':
-            # Invalid: consecutive slashes
-            slash_count = 2
-            self.advance()
-            while self.current_char == '/':
-                slash_count += 1
-                self.advance()
-            errors.append(LexicalError(start_pos, f"Invalid operator '{'/' * slash_count}'"))
+        elif self.current_char == '/': # invalid '//'
+            errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '/'"))
             return
 
         else:
             # Division operator /
-            tokens.append(Token(TokenType.div, '/', start_pos.ln, start_pos.col))
+            if self.current_char is None or self.current_char in OPRTR_DLM:
+                tokens.append(Token(TokenType.div, '/', start_pos.ln, start_pos.col))
+            else:
+                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '/'"))
+                self.advance()
             return
 
 
