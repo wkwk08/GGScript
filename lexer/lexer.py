@@ -1462,7 +1462,7 @@ class Lexer:
         self.advance()  # consume ')'
 
         # Accept if next char is valid or None
-        if self.current_char is not None and self.current_char not in WHTSPC + ALPHA + NUM + ';':
+        if self.current_char is not None and self.current_char not in CLBRCKT_DLM:
             errors.append(LexicalError(
                 self.pos.copy(),
                 f"Invalid character '{self.current_char}' after ')'"
