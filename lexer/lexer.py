@@ -52,7 +52,7 @@ LOOP_FUNC_DLM = WHTSPC_DLM + '(){}'    # build, grind, lobby, retry
 JUMP_DLM = SEMI_DLM                    # afk, ggwp, hop
 BOOL_DLM = CMPLX_DLM                   # buff, nerf
 DO_ELSE_DLM = WHTSPC_DLM + '{'         # choke, try
-OP_PRN_DLM = WHTSPC_DLM + '("'         # comsat, craft, drop, shout, stack
+OP_PRN_DLM = WHTSPC_DLM + ALPHANUM + '()"' # comsat, craft, drop, shout, stack
 METHOD_DLM = WHTSPC_DLM + '.'          # count, split
 CASE_DLM = WHTSPC_DLM + ':'            # noob, role
 SYMBOL_DLM = OPRTR_DLM # plus, minus, mul, div, mod, assign, lt, gt, eq, neq, and, or
@@ -1448,7 +1448,7 @@ class Lexer:
             return
 
         # Accept if next char is valid or None
-        if self.current_char is not None and self.current_char not in ALPHA + NUM + WHTSPC + ')':
+        if self.current_char is not None and self.current_char not in OP_PRN_DLM:
             errors.append(LexicalError(
                 self.pos.copy(),
                 f"Invalid character '{self.current_char}' after '('"
