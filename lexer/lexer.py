@@ -1354,13 +1354,20 @@ class Lexer:
 
     def make_and(self, tokens, errors):
         start_pos = self.pos.copy()
-        self.advance()  # &
-        if self.current_char == '&':
-            self.advance()
+        self.advance()  # consume first '&'
+
+        if self.current_char == '&':  # saw '&&'
+            self.advance()  # consume second '&'
             if self.current_char is None or self.current_char in OPRTR_DLM:
                 tokens.append(Token(TokenType.and_, '&&', start_pos.ln, start_pos.col))
             else:
-                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '&&'"))
+                errors.append(LexicalError(start_pos, "Invalid operator '&&'"))
+        else:  # single '&' is invalid
+            if self.current_char is None or self.current_char in OPRTR_DLM:
+                errors.append(LexicalError(start_pos, "Invalid '&' (expected '&&')"))
+            else:
+                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '&'"))
+                self.advance()
 
     def make_or(self, tokens, errors):
         start_pos = self.pos.copy()
