@@ -240,24 +240,28 @@ class Lexer:
     
     def make_plus_or_increment(self, tokens, errors):
         start_pos = self.pos.copy()
-        self.advance()
-        if self.current_char == '+':
+        self.advance()  # consume '+'
+        if self.current_char == '+':  # increment
             self.advance()
-            # Check delimiter after '++'
-            if (self.current_char is None or
-                self.current_char in CMPLX_DLM + WHTSPC_DLM or
-                self.current_char.isalpha() or self.current_char == '_'):
+            if self.current_char is None or self.current_char in CMPLX_DLM:
                 tokens.append(Token(TokenType.increment, '++', start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '++'"))
-                self.advance()
-        elif self.current_char == '=':   # <-- new branch
+        elif self.current_char == '=':  # plus-assign
             self.advance()
-            tokens.append(Token(TokenType.plus_assign, '+=', start_pos.ln, start_pos.col))
-        elif self.current_char in NUM or self.current_char == '.':
+            if self.current_char is None or self.current_char in OPRTR_DLM:
+                tokens.append(Token(TokenType.plus_assign, '+=', start_pos.ln, start_pos.col))
+            else:
+                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '+='"))
+                self.advance()
+        elif self.current_char in NUM or self.current_char == '.':  # positive number literal
             self.make_number(tokens, errors, positive=True)
-        else:
-            tokens.append(Token(TokenType.plus, '+', start_pos.ln, start_pos.col))
+        else:  # plain '+'
+            if self.current_char is None or self.current_char in OPRTR_DLM:
+                tokens.append(Token(TokenType.plus, '+', start_pos.ln, start_pos.col))
+            else:
+                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '+'"))
+                self.advance()
 
     def make_minus_or_decrement(self, tokens, errors):
         start_pos = self.pos.copy()
