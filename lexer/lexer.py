@@ -416,7 +416,7 @@ class Lexer:
                                     errors.append(LexicalError(start_pos, f"Invalid after 'choke': '{clutch_str}'"))
                                     matched = True
                             else:
-                                if self.current_char is None or self.current_char in DO_ELSE_DLM:
+                                if self.current_char is None or self.current_char in BRC_DLM:
                                     tokens.append(Token(TokenType.choke, ident_str, start_pos.ln, start_pos.col))
                                     matched = True                      
             elif self.current_char == 'o':
