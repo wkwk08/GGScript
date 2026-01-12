@@ -902,8 +902,7 @@ class Lexer:
        
     def make_number(self, tokens, errors, positive=True):
         start_pos = self.pos.copy()
-        num_str = '' 
-        digit_count = 0
+        num_str = ''
         is_float = False
 
         # Preserve sign from previous character
@@ -912,64 +911,117 @@ class Lexer:
             num_str = '-'
         elif prev_char == '+':
             num_str = '+'
-        else:
-            num_str = ''
 
         # Integer part
+        digit_count = 0
         while self.current_char and self.current_char.isdigit():
-            num_str += self.current_char
             digit_count += 1
+            num_str += self.current_char
             self.advance()
-            if digit_count > MAX_INTEGER_DIGITS:
-                errors.append(LexicalError(start_pos, f"Integer part too long (max {MAX_INTEGER_DIGITS} digits)"))
-                return
+
+            if digit_count == MAX_INTEGER_DIGITS:
+                # Raise error at 15 digits
+                errors.append(LexicalError(
+                    start_pos,
+                    f"Integer part too long (max {MAX_INTEGER_DIGITS} digits)"
+                ))
+                # Reset counters
+                num_str = ''
+                digit_count = 0
+
+                # Tokenize the next digit separately
+                if self.current_char and self.current_char.isdigit():
+                    tokens.append(Token(TokenType.integer, self.current_char,
+                                        self.pos.ln, self.pos.col))
+                    self.advance()
+
+                # Restart counting for the next run
+                continue
 
         # Fractional part
         if self.current_char == '.':
             is_float = True
-            num_str += '.'
             self.advance()
             frac_count = 0
+            frac_digits = ''
             while self.current_char and self.current_char.isdigit():
-                num_str += self.current_char
                 frac_count += 1
-                self.advance()
-                if frac_count > MAX_FRACTIONAL_DIGITS:
-                    errors.append(LexicalError(start_pos, f"Fractional part too long (max {MAX_FRACTIONAL_DIGITS} digits)"))
-                    return
-                
+                if frac_count <= MAX_FRACTIONAL_DIGITS:
+                    frac_digits += self.current_char
+                    self.advance()
+                else:
+                    # Raise error at overflow
+                    errors.append(LexicalError(
+                        start_pos,
+                        f"Fractional part too long (max {MAX_FRACTIONAL_DIGITS} digits)"
+                    ))
+                    # Emit the valid fractional part once
+                    if frac_digits:
+                        tokens.append(Token(TokenType.float, num_str + '.' + frac_digits,
+                                            start_pos.ln, start_pos.col))
+                        frac_digits = ''
+                    # Emit each overflow digit separately
+                    while self.current_char and self.current_char.isdigit():
+                        tokens.append(Token(TokenType.float, self.current_char,
+                                            self.pos.ln, self.pos.col))
+                        self.advance()
+                    break
+
+            # Emit if we collected digits but didn’t overflow
+            if frac_digits:
+                tokens.append(Token(TokenType.float, num_str + '.' + frac_digits,
+                                    start_pos.ln, start_pos.col))
+            return
+
         # Invalid trailing identifier check
         if self.current_char is not None and (self.current_char.isalpha() or self.current_char == '_'):
-            errors.append(LexicalError(start_pos, f"Invalid character '{self.current_char}' after number '{num_str}'"))
+            errors.append(LexicalError(
+                start_pos,
+                f"Invalid character '{self.current_char}' after number '{num_str}'"
+            ))
             self.advance()
             return
 
-        # Validate delimiter using INT_DLM / FLT_LIT_DLM
+        # Validate delimiter for completed number
         if self.current_char is None or self.current_char in INT_FLT_DLM:
             if is_float:
                 try:
-                    float(num_str)  # validate
-                    tokens.append(Token(TokenType.float, num_str, start_pos.ln, start_pos.col))
+                    float(num_str)
+                    tokens.append(Token(TokenType.float, num_str,
+                                        start_pos.ln, start_pos.col))
                 except ValueError:
-                    errors.append(LexicalError(start_pos, f"Invalid float literal '{num_str}'"))
+                    errors.append(LexicalError(start_pos,
+                                            f"Invalid float literal '{num_str}'"))
             else:
                 try:
                     value = int(num_str)
                     if value < MIN_INTEGER or value > MAX_INTEGER:
-                        errors.append(LexicalError(start_pos, f"Integer out of range (±{MAX_INTEGER}): '{num_str}'"))
-                    else:
-                        tokens.append(Token(TokenType.integer, num_str, start_pos.ln, start_pos.col))
+                        errors.append(LexicalError(
+                            start_pos,
+                            f"Integer out of range (±{MAX_INTEGER}): '{num_str}'"
+                        ))
+                    elif num_str:  # only emit if not empty
+                        tokens.append(Token(TokenType.integer, num_str,
+                                            start_pos.ln, start_pos.col))
                 except ValueError:
-                    errors.append(LexicalError(start_pos, f"Invalid integer literal '{num_str}'"))            
-            
+                    errors.append(LexicalError(start_pos,
+                                            f"Invalid integer literal '{num_str}'"))
+
+
     def validate_number_limits(num_str, is_integer, start_pos, errors):
-        if is_integer:
-            if len(num_str.lstrip('-')) > MAX_INTEGER_DIGITS:
-                errors.append(LexicalError(start_pos, f"frag value exceeds {MAX_INTEGER_DIGITS} digits"))
-            else:
-                int_part, _, frac_part = num_str.partition('.')
-                if len(frac_part) > MAX_FRACTIONAL_DIGITS:
-                    errors.append(LexicalError(start_pos, f"elo fractional part exceeds {MAX_FRACTIONAL_DIGITS} digits"))
+        int_part, _, frac_part = num_str.partition('.')
+
+        if is_integer and len(int_part.lstrip('-')) > MAX_INTEGER_DIGITS:
+            errors.append(LexicalError(
+                start_pos,
+                f"Integer part too long (max {MAX_INTEGER_DIGITS} digits)"
+            ))
+
+        if frac_part and len(frac_part) > MAX_FRACTIONAL_DIGITS:
+            errors.append(LexicalError(
+                start_pos,
+                f"Fractional part too long (max {MAX_FRACTIONAL_DIGITS} digits)"
+            ))
 
     def make_signed_number_or_operator(self, tokens, errors):
         start_pos = self.pos.copy()
