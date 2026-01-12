@@ -310,7 +310,7 @@ class Lexer:
                     ident_str += self.current_char
                     previous_char = self.current_char
                     self.advance()
-                    if self.current_char is None or self.current_char in JUMP_DLM:
+                    if self.current_char is None or self.current_char in SEMI_DLM:
                         tokens.append(Token(TokenType.afk, ident_str, start_pos.ln, start_pos.col))
                         matched = True
                     # No else for invalid dlm here, handled below if not matched
