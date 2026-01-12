@@ -876,7 +876,7 @@ class Lexer:
 
             # Reserved keyword protection
             if ident_str in RESERVED_KEYWORDS:
-                errors.append(LexicalError(start_pos, f"'{ident_str}' is a reserved keyword and cannot be used as an identifier"))
+                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '{ident_str}'"))
                 matched = True
 
             # Validate identifier rules
