@@ -985,28 +985,29 @@ class Lexer:
         # Validate delimiter for completed number
         if self.current_char is None or self.current_char in INT_FLT_DLM:
             if is_float:
-                try:
-                    float(num_str)
-                    tokens.append(Token(TokenType.float, num_str,
-                                        start_pos.ln, start_pos.col))
-                except ValueError:
-                    errors.append(LexicalError(start_pos,
-                                            f"Invalid float literal '{num_str}'"))
-            else:
-                try:
-                    value = int(num_str)
-                    if value < MIN_INTEGER or value > MAX_INTEGER:
-                        errors.append(LexicalError(
-                            start_pos,
-                            f"Integer out of range (±{MAX_INTEGER}): '{num_str}'"
-                        ))
-                    elif num_str:  # only emit if not empty
-                        tokens.append(Token(TokenType.integer, num_str,
+                if num_str:  # only validate if not empty
+                    try:
+                        float(num_str)
+                        tokens.append(Token(TokenType.float, num_str,
                                             start_pos.ln, start_pos.col))
-                except ValueError:
-                    errors.append(LexicalError(start_pos,
-                                            f"Invalid integer literal '{num_str}'"))
-
+                    except ValueError:
+                        errors.append(LexicalError(start_pos,
+                                                f"Invalid float literal '{num_str}'"))
+            else:
+                if num_str:  # only validate if not empty
+                    try:
+                        value = int(num_str)
+                        if value < MIN_INTEGER or value > MAX_INTEGER:
+                            errors.append(LexicalError(
+                                start_pos,
+                                f"Integer out of range (±{MAX_INTEGER}): '{num_str}'"
+                            ))
+                        else:
+                            tokens.append(Token(TokenType.integer, num_str,
+                                                start_pos.ln, start_pos.col))
+                    except ValueError:
+                        errors.append(LexicalError(start_pos,
+                                                f"Invalid integer literal '{num_str}'"))
 
     def validate_number_limits(num_str, is_integer, start_pos, errors):
         int_part, _, frac_part = num_str.partition('.')
