@@ -929,14 +929,12 @@ class Lexer:
                 num_str = ''
                 digit_count = 0
 
-                # Tokenize the next digit separately
-                if self.current_char and self.current_char.isdigit():
+                # Emit each overflow digit separately as integer tokens
+                while self.current_char and self.current_char.isdigit():
                     tokens.append(Token(TokenType.integer, self.current_char,
                                         self.pos.ln, self.pos.col))
                     self.advance()
-
-                # Restart counting for the next run
-                continue
+                break
 
         # Fractional part
         if self.current_char == '.':
@@ -957,14 +955,12 @@ class Lexer:
                     ))
                     # Do NOT emit the collected fractional part (invalid once overflow occurs)
                     frac_digits = ''
-                    # Emit only the next overflow digit as a float token
-                    tokens.append(Token(TokenType.float, '.' + self.current_char,
-                                        self.pos.ln, self.pos.col))
-                    self.advance()
-                    # Reset counter for next run
-                    frac_count = 0
-                    # Continue loop to catch further overflow runs
-                    continue
+                    # Emit each overflow digit separately as float tokens with leading dot
+                    while self.current_char and self.current_char.isdigit():
+                        tokens.append(Token(TokenType.float, '.' + self.current_char,
+                                            self.pos.ln, self.pos.col))
+                        self.advance()
+                    break
 
             # Emit if we collected digits and did not overflow
             if frac_digits:
@@ -975,7 +971,7 @@ class Lexer:
         # Validate delimiter for completed number
         if self.current_char is None or self.current_char in INT_FLT_DLM:
             if is_float:
-                if num_str:  # only validate if not empty
+                if num_str:
                     try:
                         float(num_str)
                         tokens.append(Token(TokenType.float, num_str,
@@ -984,7 +980,7 @@ class Lexer:
                         errors.append(LexicalError(start_pos,
                                                 f"Invalid float literal '{num_str}'"))
             else:
-                if num_str:  # only validate if not empty
+                if num_str:
                     try:
                         value = int(num_str)
                         if value < MIN_INTEGER or value > MAX_INTEGER:
