@@ -950,36 +950,26 @@ class Lexer:
                     frac_digits += self.current_char
                     self.advance()
                 else:
-                    # Raise error at overflow
+                    # Raise error at overflow boundary
                     errors.append(LexicalError(
                         start_pos,
                         f"Fractional part too long (max {MAX_FRACTIONAL_DIGITS} digits)"
                     ))
-                    # Emit the valid fractional part once
-                    if frac_digits:
-                        tokens.append(Token(TokenType.float, num_str + '.' + frac_digits,
-                                            start_pos.ln, start_pos.col))
-                        frac_digits = ''
-                    # Emit each overflow digit separately
-                    while self.current_char and self.current_char.isdigit():
-                        tokens.append(Token(TokenType.float, self.current_char,
-                                            self.pos.ln, self.pos.col))
-                        self.advance()
-                    break
+                    # Do NOT emit the collected fractional part (invalid once overflow occurs)
+                    frac_digits = ''
+                    # Emit only the next overflow digit as a float token
+                    tokens.append(Token(TokenType.float, '.' + self.current_char,
+                                        self.pos.ln, self.pos.col))
+                    self.advance()
+                    # Reset counter for next run
+                    frac_count = 0
+                    # Continue loop to catch further overflow runs
+                    continue
 
-            # Emit if we collected digits but didn’t overflow
+            # Emit if we collected digits and did not overflow
             if frac_digits:
                 tokens.append(Token(TokenType.float, num_str + '.' + frac_digits,
                                     start_pos.ln, start_pos.col))
-            return
-
-        # Invalid trailing identifier check
-        if self.current_char is not None and (self.current_char.isalpha() or self.current_char == '_'):
-            errors.append(LexicalError(
-                start_pos,
-                f"Invalid character '{self.current_char}' after number '{num_str}'"
-            ))
-            self.advance()
             return
 
         # Validate delimiter for completed number
