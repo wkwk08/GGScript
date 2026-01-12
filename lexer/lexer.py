@@ -253,8 +253,6 @@ class Lexer:
                 tokens.append(Token(TokenType.plus_assign, '+=', start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '+='"))
-        elif self.current_char in NUM or self.current_char == '.':  # positive number literal
-            self.make_number(tokens, errors, positive=True)
         else:  # plain '+'
             if self.current_char is None or self.current_char in OPRTR_DLM:
                 tokens.append(Token(TokenType.plus, '+', start_pos.ln, start_pos.col))
@@ -909,8 +907,6 @@ class Lexer:
         prev_char = self.source_code[self.pos.index - 1]
         if not positive:
             num_str = '-'
-        elif prev_char == '+':
-            num_str = '+'
 
         # Integer part
         digit_count = 0
