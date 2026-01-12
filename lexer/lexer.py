@@ -926,18 +926,20 @@ class Lexer:
                     start_pos,
                     f"'{num_str}' exceeds maximum number of characters"
                 ))
-                # Discard the accumulated run (invalid once overflow occurs)
+                # Discard the accumulated run
                 num_str = ''
                 digit_count = 0
 
-                # Emit this overflow digit as a separate token
-                tokens.append(Token(TokenType.integer, self.current_char,
+                # Emit this overflow digit as a signed token if negative
+                literal = ('-' if not positive else '') + self.current_char
+                tokens.append(Token(TokenType.integer, literal,
                                     self.pos.ln, self.pos.col))
                 self.advance()
 
                 # Continue emitting any further overflow digits
                 while self.current_char and self.current_char.isdigit():
-                    tokens.append(Token(TokenType.integer, self.current_char,
+                    literal = ('-' if not positive else '') + self.current_char
+                    tokens.append(Token(TokenType.integer, literal,
                                         self.pos.ln, self.pos.col))
                     self.advance()
                 break
@@ -957,13 +959,14 @@ class Lexer:
                     # Raise error at overflow boundary
                     errors.append(LexicalError(
                         start_pos,
-                        f"'{num_str + '.' + frac_digits + self.current_char}' exceeds maximum number of characters"
+                        f"'{num_str + '.' + frac_digits}' exceeds maximum number of characters"
                     ))
                     # Do NOT emit the collected fractional part (invalid once overflow occurs)
                     frac_digits = ''
                     # Emit each overflow digit separately as float tokens with leading dot
                     while self.current_char and self.current_char.isdigit():
-                        tokens.append(Token(TokenType.float, '.' + self.current_char,
+                        literal = ('-' if not positive else '') + '.' + self.current_char
+                        tokens.append(Token(TokenType.float, literal,
                                             self.pos.ln, self.pos.col))
                         self.advance()
                     break
