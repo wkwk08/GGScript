@@ -924,7 +924,7 @@ class Lexer:
                 # Raise error once we exceed 15 digits
                 errors.append(LexicalError(
                     start_pos,
-                    f"Integer part too long (max {MAX_INTEGER_DIGITS} digits)"
+                    f"'{num_str}' exceeds maximum number of characters"
                 ))
                 # Discard the accumulated run (invalid once overflow occurs)
                 num_str = ''
@@ -957,7 +957,7 @@ class Lexer:
                     # Raise error at overflow boundary
                     errors.append(LexicalError(
                         start_pos,
-                        f"Fractional part too long (max {MAX_FRACTIONAL_DIGITS} digits)"
+                        f"'{num_str + '.' + frac_digits + self.current_char}' exceeds maximum number of characters"
                     ))
                     # Do NOT emit the collected fractional part (invalid once overflow occurs)
                     frac_digits = ''
