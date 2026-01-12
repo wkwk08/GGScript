@@ -670,7 +670,7 @@ class Lexer:
                         ident_str += self.current_char
                         previous_char = self.current_char
                         self.advance()
-                        if self.current_char is None or self.current_char in CASE_DLM:
+                        if self.current_char is None or self.current_char in COLON_DLM:
                             tokens.append(Token(TokenType.noob, ident_str, start_pos.ln, start_pos.col))
                             matched = True
         elif self.current_char == 'p':
