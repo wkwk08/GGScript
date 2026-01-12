@@ -916,20 +916,26 @@ class Lexer:
         digit_count = 0
         while self.current_char and self.current_char.isdigit():
             digit_count += 1
-            num_str += self.current_char
-            self.advance()
 
-            if digit_count == MAX_INTEGER_DIGITS:
-                # Raise error at 15 digits
+            if digit_count <= MAX_INTEGER_DIGITS:
+                num_str += self.current_char
+                self.advance()
+            else:
+                # Raise error once we exceed 15 digits
                 errors.append(LexicalError(
                     start_pos,
                     f"Integer part too long (max {MAX_INTEGER_DIGITS} digits)"
                 ))
-                # Reset counters
+                # Discard the accumulated run (invalid once overflow occurs)
                 num_str = ''
                 digit_count = 0
 
-                # Emit each overflow digit separately as integer tokens
+                # Emit this overflow digit as a separate token
+                tokens.append(Token(TokenType.integer, self.current_char,
+                                    self.pos.ln, self.pos.col))
+                self.advance()
+
+                # Continue emitting any further overflow digits
                 while self.current_char and self.current_char.isdigit():
                     tokens.append(Token(TokenType.integer, self.current_char,
                                         self.pos.ln, self.pos.col))
