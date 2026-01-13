@@ -247,7 +247,7 @@ class Lexer:
         self.advance()  # consume '+'
         if self.current_char == '+':  # increment
             self.advance()
-            if self.current_char is None or self.current_char in CMPLX_DLM:
+            if self.current_char is None or self.current_char in UNRY_OP_DLM:
                 tokens.append(Token(TokenType.increment, '++', start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '++'"))
