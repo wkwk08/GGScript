@@ -255,7 +255,7 @@ class Lexer:
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '+='"))
         else:  # plain '+'
-            if self.current_char is None or self.current_char in ASSGN_OPRTR:
+            if self.current_char is None or self.current_char in ARITH_OP_DLM:
                 tokens.append(Token(TokenType.plus, '+', start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '+'"))
@@ -279,7 +279,7 @@ class Lexer:
         elif self.current_char in NUM or self.current_char == '.':  # negative number literal
             self.make_number(tokens, errors, positive=False)
         else:  # plain '-'
-            if self.current_char is None or self.current_char in ASSGN_OPRTR:
+            if self.current_char is None or self.current_char in ARITH_OP_DLM:
                 tokens.append(Token(TokenType.minus, '-', start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '-'"))
@@ -1316,7 +1316,7 @@ class Lexer:
 
         else:
             # Division operator /
-            if self.current_char is None or self.current_char in ASSGN_OPRTR:
+            if self.current_char is None or self.current_char in ARITH_OP_DLM:
                 tokens.append(Token(TokenType.div, '/', start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '/'"))
@@ -1340,7 +1340,7 @@ class Lexer:
             errors.append(LexicalError(start_pos, "Unexpected '*/' outside of comment"))
             self.advance()
         else:  # plain multiplication
-            if self.current_char is None or self.current_char in ASSGN_OPRTR:
+            if self.current_char is None or self.current_char in ARITH_OP_DLM:
                 tokens.append(Token(TokenType.mul, '*', start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '*'"))
@@ -1356,7 +1356,7 @@ class Lexer:
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '%='"))
         else:
-            if self.current_char is None or self.current_char in ASSGN_OPRTR:
+            if self.current_char is None or self.current_char in ARITH_OP_DLM:
                 tokens.append(Token(TokenType.mod, '%', start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '%'"))
