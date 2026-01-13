@@ -903,9 +903,6 @@ class Lexer:
         start_pos = self.pos.copy()
         num_str = ''
         is_float = False
-
-        # Preserve sign from previous character
-        prev_char = self.source_code[self.pos.index - 1]
         if not positive:
             num_str = '-'
 
@@ -913,63 +910,48 @@ class Lexer:
         digit_count = 0
         while self.current_char and self.current_char.isdigit():
             digit_count += 1
-
             if digit_count <= MAX_INTEGER_DIGITS:
                 num_str += self.current_char
                 self.advance()
             else:
-                # Raise error once we exceed 15 digits
+                overflow_pos = self.pos.copy()
+                overflow_char = self.current_char
+                overflow_literal = ('-' if not positive else '') + overflow_char
                 errors.append(LexicalError(
                     start_pos,
-                    f"'{num_str + self.current_char}' exceeds maximum number of characters"
+                    f"'{num_str + overflow_char}' exceeds maximum number of characters"
                 ))
-                # Discard the accumulated run
                 num_str = ''
                 digit_count = 0
-
-                overflow_digit = ('-' if not positive else '') + self.current_char
                 self.advance()
-
-                # If next char is '.', merge overflow_digit into float
                 if self.current_char == '.':
-                    is_float = True
                     self.advance()
-                    frac_count = 0
                     frac_digits = ''
-                    while self.current_char and self.current_char.isdigit():
-                        frac_count += 1
-                        if frac_count <= MAX_FRACTIONAL_DIGITS:
-                            frac_digits += self.current_char
+                    # collect up to MAX_FRACTIONAL_DIGITS
+                    while self.current_char and self.current_char.isdigit() and len(frac_digits) < MAX_FRACTIONAL_DIGITS:
+                        frac_digits += self.current_char
+                        self.advance()
+                    # if there are more fractional digits -> report fractional overflow using '.' + collected digits
+                    if self.current_char and self.current_char.isdigit():
+                        errors.append(LexicalError(
+                            start_pos,
+                            f"'{'.' + frac_digits}' exceeds maximum number of characters"
+                        ))
+                        # skip remaining fractional digits
+                        while self.current_char and self.current_char.isdigit():
                             self.advance()
-                        else:
-                            errors.append(LexicalError(
-                                start_pos,
-                                f"'{overflow_digit + '.' + frac_digits}' exceeds maximum number of characters"
-                            ))
-                            frac_digits = ''
-                            while self.current_char and self.current_char.isdigit():
-                                literal = overflow_digit + '.' + self.current_char
-                                tokens.append(Token(TokenType.float, literal,
-                                                    self.pos.ln, self.pos.col))
-                                self.advance()
-                            break
-
+                    # emit token using only the overflow digit and the first fractional digit (if any)
                     if frac_digits:
-                        literal = overflow_digit + '.' + frac_digits
-                        tokens.append(Token(TokenType.float, literal,
-                                            start_pos.ln, start_pos.col))
+                        tokens.append(Token(TokenType.float, overflow_literal + '.' + frac_digits[0],
+                                            overflow_pos.ln, overflow_pos.col))
+                    else:
+                        tokens.append(Token(TokenType.float, overflow_literal + '.',
+                                            overflow_pos.ln, overflow_pos.col))
                     return
                 else:
-                    # No fractional part → emit overflow digits individually
-                    tokens.append(Token(TokenType.integer, overflow_digit,
-                                        self.pos.ln, self.pos.col))
-                    while self.current_char and self.current_char.isdigit():
-                        literal = ('-' if not positive else '') + self.current_char
-                        tokens.append(Token(TokenType.integer, literal,
-                                            self.pos.ln, self.pos.col))
-                        self.advance()
-                break
-
+                    tokens.append(Token(TokenType.integer, overflow_literal,
+                                        overflow_pos.ln, overflow_pos.col))
+                    return
         # Fractional part
         if self.current_char == '.':
             is_float = True
@@ -982,25 +964,20 @@ class Lexer:
                     frac_digits += self.current_char
                     self.advance()
                 else:
-                    # Raise error at overflow boundary
                     errors.append(LexicalError(
                         start_pos,
                         f"'{num_str + '.' + frac_digits}' exceeds maximum number of characters"
                     ))
-                    frac_digits = ''
                     while self.current_char and self.current_char.isdigit():
-                        literal = ('-' if not positive else '') + '.' + self.current_char
-                        tokens.append(Token(TokenType.float, literal,
-                                            self.pos.ln, self.pos.col))
                         self.advance()
                     break
-
             if frac_digits:
                 tokens.append(Token(TokenType.float, num_str + '.' + frac_digits,
                                     start_pos.ln, start_pos.col))
+            else:
+                tokens.append(Token(TokenType.float, num_str + '.',
+                                    start_pos.ln, start_pos.col))
             return
-
-        # Validate delimiter for completed number
         if self.current_char is None or self.current_char in INT_FLT_DLM:
             if is_float:
                 if num_str:
@@ -1026,20 +1003,10 @@ class Lexer:
                     except ValueError:
                         errors.append(LexicalError(start_pos,
                                                 f"Invalid integer literal '{num_str}'"))
-
-    def validate_number_limits(num_str, is_integer, start_pos, errors):
-        int_part, _, frac_part = num_str.partition('.')
-
-        if is_integer and len(int_part.lstrip('-')) > MAX_INTEGER_DIGITS:
+        else:
             errors.append(LexicalError(
                 start_pos,
-                f"Integer part too long (max {MAX_INTEGER_DIGITS} digits)"
-            ))
-
-        if frac_part and len(frac_part) > MAX_FRACTIONAL_DIGITS:
-            errors.append(LexicalError(
-                start_pos,
-                f"Fractional part too long (max {MAX_FRACTIONAL_DIGITS} digits)"
+                f"Invalid character '{self.current_char}' after numeric literal"
             ))
 
     def make_signed_number_or_operator(self, tokens, errors):
