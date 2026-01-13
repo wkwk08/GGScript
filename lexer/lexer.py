@@ -1315,7 +1315,7 @@ class Lexer:
 
         else:
             # Division operator /
-            if self.current_char is None or self.current_char in OPRTR_DLM:
+            if self.current_char is None or self.current_char in ASSGN_OPRTR:
                 tokens.append(Token(TokenType.div, '/', start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '/'"))
