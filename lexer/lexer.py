@@ -33,6 +33,7 @@ COMM_END_DLM = WHTSPC_DLM
 ARITH_OPRTR = '+-*/%'
 ARITH_OP_DLM = WHTSPC_DLM + ALPHANUM + "('"
 REL_OPRTR   = '<>!='   # raw chars; compound handled in make_* methods
+REL_OP_DLM = WHTSPC_DLM + ALPHANUM + '("\''
 ASSGN_OPRTR = '=+-*/%'      # compound handled in make_* methods
 LOGIC_OPRTR = '!&|'
 EQ_OP_DLM = WHTSPC_DLM + ALPHANUM + '"\''
