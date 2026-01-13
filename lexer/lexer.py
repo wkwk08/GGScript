@@ -32,7 +32,7 @@ COMM_STRt_DLM = WHTSPC_DLM + ASCII
 COMM_END_DLM = WHTSPC_DLM
 ARITH_OPRTR = '+-*/%'
 REL_OPRTR   = '<>!='   # raw chars; compound handled in make_* methods
-ASSGN_OPRTR = '='      # compound handled in make_* methods
+ASSGN_OPRTR = '=+-*/%'      # compound handled in make_* methods
 LOGIC_OPRTR = '!&|'
 IDFR_DLM = WHTSPC_DLM + ARITH_OPRTR + REL_OPRTR + LOGIC_OPRTR
 INT_FLT_DLM = WHTSPC_DLM + ARITH_OPRTR + REL_OPRTR + LOGIC_OPRTR + ';' + ',' + ')]}'
