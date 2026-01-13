@@ -1525,7 +1525,7 @@ class Lexer:
     def make_rbracket(self, tokens, errors):
         start_pos = self.pos.copy()
         self.advance()  # consume ']'
-        if self.current_char is not None and self.current_char not in CLBRCKT_DLM:
+        if self.current_char is not None and self.current_char not in CL_SQBRCKT_DLM:
             errors.append(LexicalError(start_pos,
                 f"Invalid delimiter '{self.current_char}' after ']'"))
             return
