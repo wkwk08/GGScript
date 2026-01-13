@@ -1298,7 +1298,7 @@ class Lexer:
         self.advance()  # consume '*'
         if self.current_char == '=':  # mul-assign
             self.advance()
-            if self.current_char is None or self.current_char in OPRTR_DLM:
+            if self.current_char is None or self.current_char in REL_OP_DLM:
                 tokens.append(Token(TokenType.mul_assign, '*=', start_pos.ln, start_pos.col))
             else:
                 # Invalid delimiter after '*='
