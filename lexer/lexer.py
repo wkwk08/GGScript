@@ -44,6 +44,7 @@ PRN_BLCK_DLM = WHTSPC_DLM + '(){ }'
 PRN_BRC_DLM = WHTSPC_DLM + '({'
 PRN_DLM = WHTSPC_DLM + '('
 SEMI_DLM = ';' + WHTSPC_DLM
+OP_PAREN_DLM = WHTSPC_DLM + ALPHANUM + '('
 
 # Group delimiters
 DATATYPE_DLM = WHTSPC_DLM              # frag, elo, ign, surebol, tag, stun
@@ -52,7 +53,6 @@ LOOP_FUNC_DLM = WHTSPC_DLM + '(){}'    # build, grind, lobby, retry
 JUMP_DLM = SEMI_DLM                    # afk, ggwp, hop
 BOOL_DLM = CMPLX_DLM                   # buff, nerf
 DO_ELSE_DLM = WHTSPC_DLM + '{'         # choke, try
-OP_PRN_DLM = WHTSPC_DLM + ALPHANUM + '()"' # comsat, craft, drop, shout, stack
 METHOD_DLM = WHTSPC_DLM + '.'          # count, split
 CASE_DLM = WHTSPC_DLM + ':'            # noob, role
 SYMBOL_DLM = OPRTR_DLM # plus, minus, mul, div, mod, assign, lt, gt, eq, neq, and, or
