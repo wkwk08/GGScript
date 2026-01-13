@@ -1428,7 +1428,7 @@ class Lexer:
 
         if self.current_char == '&':  # saw '&&'
             self.advance()  # consume second '&'
-            if self.current_char is None or self.current_char in OPRTR_DLM:
+            if self.current_char is None or self.current_char in OP_PAREN_DLM:
                 tokens.append(Token(TokenType.and_, '&&', start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, "Invalid operator '&&'"))
