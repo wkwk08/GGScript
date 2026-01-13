@@ -1371,7 +1371,7 @@ class Lexer:
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '=='"))
         else:  # assignment operator
-            if self.current_char is None or self.current_char in OPRTR_DLM:
+            if self.current_char is None or self.current_char in ASSGN_OPRTR:
                 tokens.append(Token(TokenType.assign, '=', start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '='"))
