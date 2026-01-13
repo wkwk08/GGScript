@@ -361,7 +361,6 @@ class Lexer:
             ident_str += self.current_char
             previous_char = self.current_char
             self.advance()
-
             # clutch branch (starts with 'cl')
             if self.current_char == 'l':
                 ident_str += self.current_char
@@ -386,7 +385,6 @@ class Lexer:
                                 if self.current_char is None or self.current_char in PRN_DLM:
                                     tokens.append(Token(TokenType.clutch, ident_str, start_pos.ln, start_pos.col))
                                     matched = True
-
             # choke branch (starts with 'ch')
             elif self.current_char == 'h':
                 ident_str += self.current_char
@@ -404,7 +402,6 @@ class Lexer:
                             ident_str += self.current_char
                             previous_char = self.current_char
                             self.advance()
-
                             # peek ahead for compound 'choke clutch'
                             next_word = self.peek_word()
                             if next_word == 'clutch':
@@ -743,7 +740,6 @@ class Lexer:
             ident_str += self.current_char
             previous_char = self.current_char
             self.advance()
-
             if self.current_char == 'u':
                 ident_str += self.current_char
                 previous_char = self.current_char
@@ -771,7 +767,6 @@ class Lexer:
                                     if self.current_char is None or self.current_char in DTYP_DLM:
                                         tokens.append(Token(TokenType.surebol, ident_str, start_pos.ln, start_pos.col))
                                         matched = True
-
             elif self.current_char == 'h':
                 ident_str += self.current_char
                 previous_char = self.current_char
@@ -791,7 +786,6 @@ class Lexer:
                             if self.current_char is None or self.current_char in PRN_DLM:
                                 tokens.append(Token(TokenType.shout, ident_str, start_pos.ln, start_pos.col))
                                 matched = True
-
             elif self.current_char == 't':
                 ident_str += self.current_char
                 previous_char = self.current_char
@@ -807,7 +801,6 @@ class Lexer:
                         if self.current_char is None or self.current_char in WHTSPC_DLM:
                             tokens.append(Token(TokenType.stun, ident_str, start_pos.ln, start_pos.col))
                             matched = True
-
                 elif self.current_char == 'a':
                     ident_str += self.current_char
                     previous_char = self.current_char
