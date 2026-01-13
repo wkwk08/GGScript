@@ -866,7 +866,7 @@ class Lexer:
                     ident_str += self.current_char
                     previous_char = self.current_char
                     self.advance()
-                    if self.current_char is None or self.current_char in CMPLX_DLM:
+                    if self.current_char is None or self.current_char in BRC_DLM:
                         tokens.append(Token(TokenType.try_, ident_str, start_pos.ln, start_pos.col))
                         matched = True
         # For letters without keywords (e.g., 'q', 'v', etc.), just build identifier
