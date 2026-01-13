@@ -1516,7 +1516,7 @@ class Lexer:
             self.make_string(tokens, errors)
             return
         # Validate next char
-        if self.current_char is not None and self.current_char not in OP_PRN_DLM:
+        if self.current_char is not None and self.current_char not in OP_PAREN_DLM:
             errors.append(LexicalError(
                 self.pos.copy(),
                 f"Invalid character '{self.current_char}' after '('"
