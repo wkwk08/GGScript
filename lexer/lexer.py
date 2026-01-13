@@ -1382,7 +1382,7 @@ class Lexer:
         self.advance()  # !
         if self.current_char == '=':
             self.advance()
-            if self.current_char is None or self.current_char in OPRTR_DLM:
+            if self.current_char is None or self.current_char in REL_OP_DLM:
                 tokens.append(Token(TokenType.neq, '!=', start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '!='"))
