@@ -35,6 +35,7 @@ ARITH_OP_DLM = WHTSPC_DLM + ALPHANUM + "('"
 REL_OPRTR   = '<>!='   # raw chars; compound handled in make_* methods
 ASSGN_OPRTR = '=+-*/%'      # compound handled in make_* methods
 LOGIC_OPRTR = '!&|'
+EQ_OP_DLM = WHTSPC_DLM + ALPHANUM + '"\''
 IDFR_DLM = WHTSPC_DLM + ARITH_OPRTR + REL_OPRTR + LOGIC_OPRTR
 INT_FLT_DLM = WHTSPC_DLM + ARITH_OPRTR + REL_OPRTR + LOGIC_OPRTR + ';' + ',' + ')]}'
 STRG_DLM = WHTSPC_DLM + ';,)'
