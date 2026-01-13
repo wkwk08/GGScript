@@ -1500,7 +1500,7 @@ class Lexer:
     def make_rparen(self, tokens, errors):
         start_pos = self.pos.copy()
         self.advance()  # consume ')'
-        if self.current_char is not None and self.current_char not in CLBRCKT_DLM:
+        if self.current_char is not None and self.current_char not in CL_PAREN_DLM:
             errors.append(LexicalError(
                 self.pos.copy(),
                 f"Invalid character '{self.current_char}' after ')'"
