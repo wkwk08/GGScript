@@ -415,7 +415,7 @@ class Lexer:
                                     clutch_str += self.current_char
                                     self.advance()
                                 if clutch_str == 'clutch':
-                                    if self.current_char is None or self.current_char in COND_DLM:
+                                    if self.current_char is None or self.current_char in PRN_DLM:
                                         tokens.append(Token(TokenType.choke_clutch, 'choke clutch', start_pos.ln, start_pos.col))
                                         matched = True
                                     else:
