@@ -906,111 +906,81 @@ class Lexer:
             else:
                 tokens.append(Token(TokenType.identifier, ident_str, start_pos.ln, start_pos.col))
                 matched = True
-       
+
     def make_number(self, tokens, errors, positive=True):
         start_pos = self.pos.copy()
-        num_str = ''
+        num_str = '-' if not positive else ''
         is_float = False
-        if not positive:
-            num_str = '-'
 
-        # Integer part
-        digit_count = 0
+        # === INTEGER PART ===
+        digits = ''
         while self.current_char and self.current_char.isdigit():
-            digit_count += 1
-            if digit_count <= MAX_INTEGER_DIGITS:
-                num_str += self.current_char
-                self.advance()
-            else:
-                overflow_pos = self.pos.copy()
-                overflow_char = self.current_char
-                overflow_literal = ('-' if not positive else '') + overflow_char
-                errors.append(LexicalError(
-                    start_pos,
-                    f"'{num_str + overflow_char}' exceeds maximum number of characters"
-                ))
-                num_str = ''
-                digit_count = 0
-                self.advance()
-                if self.current_char == '.':
-                    self.advance()
-                    frac_digits = ''
-                    # collect up to MAX_FRACTIONAL_DIGITS
-                    while self.current_char and self.current_char.isdigit() and len(frac_digits) < MAX_FRACTIONAL_DIGITS:
-                        frac_digits += self.current_char
-                        self.advance()
-                    # if there are more fractional digits -> report fractional overflow using '.' + collected digits
-                    if self.current_char and self.current_char.isdigit():
-                        errors.append(LexicalError(
-                            start_pos,
-                            f"'{'.' + frac_digits}' exceeds maximum number of characters"
-                        ))
-                        # skip remaining fractional digits
-                        while self.current_char and self.current_char.isdigit():
-                            self.advance()
-                    # emit token using only the overflow digit and the first fractional digit (if any)
-                    if frac_digits:
-                        tokens.append(Token(TokenType.float, overflow_literal + '.' + frac_digits[0],
-                                            overflow_pos.ln, overflow_pos.col))
-                    else:
-                        tokens.append(Token(TokenType.float, overflow_literal + '.',
-                                            overflow_pos.ln, overflow_pos.col))
-                    return
-                else:
-                    tokens.append(Token(TokenType.integer, overflow_literal,
-                                        overflow_pos.ln, overflow_pos.col))
-                    return
-        # Fractional part
+            digits += self.current_char
+            self.advance()
+
+        idx = 0
+        first_group = True
+        while len(digits) - idx > MAX_INTEGER_DIGITS:  # strictly greater
+            group = digits[idx:idx+MAX_INTEGER_DIGITS]
+            errors.append(LexicalError(
+                start_pos,
+                f"'{group}' exceeds maximum number of characters"
+            ))
+            idx += MAX_INTEGER_DIGITS
+            first_group = False
+
+        leftover_int = (num_str if first_group else '') + digits[idx:]
+
+        # === FRACTIONAL PART ===
         if self.current_char == '.':
             is_float = True
             self.advance()
-            frac_count = 0
             frac_digits = ''
             while self.current_char and self.current_char.isdigit():
-                frac_count += 1
-                if frac_count <= MAX_FRACTIONAL_DIGITS:
-                    frac_digits += self.current_char
-                    self.advance()
-                else:
-                    errors.append(LexicalError(
-                        start_pos,
-                        f"'{num_str + '.' + frac_digits}' exceeds maximum number of characters"
-                    ))
-                    while self.current_char and self.current_char.isdigit():
-                        self.advance()
-                    break
-            if frac_digits:
-                tokens.append(Token(TokenType.float, num_str + '.' + frac_digits,
-                                    start_pos.ln, start_pos.col))
-            else:
-                tokens.append(Token(TokenType.float, num_str + '.',
-                                    start_pos.ln, start_pos.col))
+                frac_digits += self.current_char
+                self.advance()
+
+            idx = 0
+            while len(frac_digits) - idx > MAX_FRACTIONAL_DIGITS:  # strictly greater
+                group = frac_digits[idx:idx+MAX_FRACTIONAL_DIGITS]
+                errors.append(LexicalError(
+                    start_pos,
+                    f"'.{group}' exceeds maximum number of characters"
+                ))
+                idx += MAX_FRACTIONAL_DIGITS
+
+            leftover_frac = frac_digits[idx:]
+
+            if leftover_frac:
+                literal = leftover_int + '.' + leftover_frac
+                tokens.append(Token(TokenType.float, literal, start_pos.ln, start_pos.col))
+            # IMPORTANT: if no leftover fractional digits, do NOT emit a bare '.' token
             return
+
+        # === FINAL EMISSION ===
         if self.current_char is None or self.current_char in INT_FLT_DLM:
             if is_float:
-                if num_str:
-                    try:
-                        float(num_str)
-                        tokens.append(Token(TokenType.float, num_str,
-                                            start_pos.ln, start_pos.col))
-                    except ValueError:
-                        errors.append(LexicalError(start_pos,
-                                                f"Invalid float literal '{num_str}'"))
+                try:
+                    float(leftover_int)
+                    tokens.append(Token(TokenType.float, leftover_int, start_pos.ln, start_pos.col))
+                except ValueError:
+                    errors.append(LexicalError(start_pos,
+                                            f"Invalid float literal '{leftover_int}'"))
             else:
-                if num_str:
+                if leftover_int:
                     try:
-                        value = int(num_str)
+                        value = int(leftover_int)
                         if value < MIN_INTEGER or value > MAX_INTEGER:
                             errors.append(LexicalError(
                                 start_pos,
-                                f"Integer out of range (±{MAX_INTEGER}): '{num_str}'"
+                                f"Integer out of range (±{MAX_INTEGER}): '{leftover_int}'"
                             ))
                         else:
-                            tokens.append(Token(TokenType.integer, num_str,
+                            tokens.append(Token(TokenType.integer, leftover_int,
                                                 start_pos.ln, start_pos.col))
                     except ValueError:
                         errors.append(LexicalError(start_pos,
-                                                f"Invalid integer literal '{num_str}'"))
+                                                f"Invalid integer literal '{leftover_int}'"))
         else:
             errors.append(LexicalError(
                 start_pos,
