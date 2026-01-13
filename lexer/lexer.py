@@ -768,7 +768,7 @@ class Lexer:
                                     ident_str += self.current_char
                                     previous_char = self.current_char
                                     self.advance()
-                                    if self.current_char is None or self.current_char in WHTSPC_DLM:
+                                    if self.current_char is None or self.current_char in DTYP_DLM:
                                         tokens.append(Token(TokenType.surebol, ident_str, start_pos.ln, start_pos.col))
                                         matched = True
 
