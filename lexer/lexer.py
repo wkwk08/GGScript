@@ -1339,7 +1339,7 @@ class Lexer:
             errors.append(LexicalError(start_pos, "Unexpected '*/' outside of comment"))
             self.advance()
         else:  # plain multiplication
-            if self.current_char is None or self.current_char in OPRTR_DLM:
+            if self.current_char is None or self.current_char in ASSGN_OPRTR:
                 tokens.append(Token(TokenType.mul, '*', start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '*'"))
