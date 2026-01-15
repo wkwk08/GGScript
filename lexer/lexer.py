@@ -1141,6 +1141,11 @@ class Lexer:
 
         if self.current_char == "'":  # closing quote
             self.advance()
+
+            if char_value not in ASCII and not char_value.startswith('\\'):
+                errors.append(LexicalError(start_pos, f"Invalid character '{char_value}' in char literal"))
+                return
+
             if self.current_char is None or self.current_char in STRG_DLM:
                 tokens.append(Token(TokenType.char, char_value, start_pos.ln, start_pos.col))
             else:
