@@ -1099,78 +1099,54 @@ class Lexer:
 
     def make_string(self, tokens, errors):
         start_pos = self.pos.copy()
-        self.advance()  # "
-
-        # Handle standalone or unterminated quote
-        if self.current_char is None or self.current_char == '\n':
-            errors.append(LexicalError(start_pos, "Unterminated string literal"))
-            return
-        
-        string_value = ''
-        while self.current_char and self.current_char != '"':
-            if self.current_char == '\\':
+        self.advance()  # consume opening "
+        str_value = ''
+        while self.current_char is not None and self.current_char != '"':
+            if self.current_char == '\\':  # escape
+                str_value += self.current_char
                 self.advance()
-                if self.current_char in 'ntr"\\':
-                    escape_map = {'n': '\n', 't': '\t', 'r': '\r', '"': '"', '\\': '\\'}
-                    string_value += escape_map.get(self.current_char, self.current_char)
+                if self.current_char is not None:
+                    str_value += self.current_char
                     self.advance()
-                else:
-                    errors.append(LexicalError(start_pos, f"Invalid escape sequence \\{self.current_char}"))
-                    return
-            elif self.current_char == '\n':
-                errors.append(LexicalError(start_pos, "String literal cannot span multiple lines without \\n"))
-                return
             else:
-                string_value += self.current_char
+                str_value += self.current_char
                 self.advance()
-        if self.current_char == '"':
+        if self.current_char == '"':  # closing quote
             self.advance()
+            lexeme = '"' + str_value + '"'   # <-- include quotes
             if self.current_char is None or self.current_char in STRG_DLM:
-                tokens.append(Token(TokenType.string, f'"{string_value}"', start_pos.ln, start_pos.col))
+                tokens.append(Token(TokenType.string, lexeme, start_pos.ln, start_pos.col))
             else:
-                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after string"))
+                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after string literal"))
         else:
             errors.append(LexicalError(start_pos, "Unterminated string literal"))
 
     def make_char(self, tokens, errors):
         start_pos = self.pos.copy()
-        self.advance()  # skip opening '
-
-        if self.current_char is None or self.current_char == '\n':
-            errors.append(LexicalError(start_pos, "Unterminated character literal"))
+        self.advance()  # consume opening '
+        if self.current_char is None:
+            errors.append(LexicalError(start_pos, "Unterminated char literal"))
             return
 
-        if self.current_char == "'":
+        char_value = ''
+        if self.current_char == '\\':  # escape sequence
+            char_value += self.current_char
             self.advance()
-            errors.append(LexicalError(start_pos, "Empty character literal is not allowed"))
-            return
-
-        char_value = self.current_char
-        self.advance()
-
-        if self.current_char != "'":
-            errors.append(LexicalError(start_pos, "Unterminated character literal"))
-            while self.current_char and self.current_char != "'":
+            if self.current_char is not None:
+                char_value += self.current_char
                 self.advance()
-            if self.current_char == "'":
-                self.advance()
-            return
-
-        self.advance()
-
-        if not char_value.isalpha() or not char_value.isupper():
-            errors.append(LexicalError(start_pos, "Character literal must be a single uppercase letter A–Z"))
-            while self.current_char and self.current_char != "'":
-                self.advance()
-            if self.current_char == "'":
-                self.advance()
-            return
-
-        if self.current_char is None or self.current_char in STRG_DLM:
-            # Valid character literal
-            tokens.append(Token(TokenType.char, f"'{char_value}'", start_pos.ln, start_pos.col))
         else:
-            errors.append(LexicalError(start_pos, "Invalid delimiter after character literal"))
+            char_value += self.current_char
+            self.advance()
+
+        if self.current_char == "'":  # closing quote
+            self.advance()
+            if self.current_char is None or self.current_char in STRG_DLM:
+                tokens.append(Token(TokenType.char, char_value, start_pos.ln, start_pos.col))
+            else:
+                errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after char literal"))
+        else:
+            errors.append(LexicalError(start_pos, "Unterminated char literal"))
 
     def make_comment_or_div_or_div_assign(self, tokens, errors):
         start_pos = self.pos.copy()
