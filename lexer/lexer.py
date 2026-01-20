@@ -66,7 +66,6 @@ METHOD_DLM = WHTSPC_DLM + '.'          # count, split
 CASE_DLM = WHTSPC_DLM + ':'            # noob, role
 SYMBOL_DLM = OPRTR_DLM # plus, minus, mul, div, mod, assign, lt, gt, eq, neq, and, or
 QUOTE_DLM = STRG_DLM # string and char literals
-SEMI_SYM_DLM = TERMI_DLM # for semicolon and symbols
 PAREN_DLM = OPBRCKT_DLM + CLBRCKT_DLM # for parentheses and brackets
 
 # Validation constants
