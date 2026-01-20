@@ -1385,7 +1385,7 @@ class Lexer:
     def make_semicolon(self, tokens, errors):
         start_pos = self.pos.copy()
         self.advance()  # ;
-        if self.current_char is None or self.current_char in WHTSPC_DLM:
+        if self.current_char is None or self.current_char in TERMI_DLM:
             tokens.append(Token(TokenType.terminator, ';', start_pos.ln, start_pos.col))
         else:
             errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after ';'"))
