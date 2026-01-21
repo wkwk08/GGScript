@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
-from lexer.lexer import Lexer
-from lexer.token_types import TokenType
+from src.lexer import Lexer
+from src.token_types import TokenType
 
 # ------------------------------------------------------------------
 #  Page Config & Logo

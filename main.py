@@ -1,7 +1,7 @@
 import sys
 import os
-from lexer.lexer import Lexer
-from lexer.token_types import TokenType
+from src.lexer import Lexer
+from src.token_types import TokenType
 
 # ------------------------------------------------------------------
 #  Token → string helper
