@@ -54,7 +54,7 @@ PRN_BLCK_DLM = WHTSPC_DLM + '(){ }'
 PRN_BRC_DLM = WHTSPC_DLM + '({'
 PRN_DLM = WHTSPC_DLM + '('
 SEMI_DLM = ';' + WHTSPC_DLM
-OP_PAREN_DLM = WHTSPC_DLM + ALPHANUM + '()'
+OP_PAREN_DLM = WHTSPC_DLM + ALPHANUM + '(){'
 
 # Group delimiters
 DATATYPE_DLM = WHTSPC_DLM              # frag, elo, ign, surebol, tag, stun
