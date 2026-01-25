@@ -192,7 +192,7 @@ def get_token_category(raw_type: str) -> str:
         return "TERMINATOR"
     if raw_lower == "separator":
         return "SEPARATOR"
-    if raw_lower == "bracket":
+    if raw_lower in ("(", ")", "{", "}", "[", "]"):
         return "BRACKET"
     
     return "OTHER"
@@ -261,7 +261,7 @@ if lex_btn and code_content and code_content.strip():
             raw_type_str = str(t.type).split('.')[-1] if '.' in str(t.type) else str(t.type)
             lexeme = str(t.value).replace("\n", "\\n").replace("\t", "\\t").replace("\r", "\\r")
             
-            token_display = lexeme if raw_type_str.lower() in ["comment", "terminator", "separator", "bracket"] else raw_type_str
+            token_display = lexeme if raw_type_str.lower() in ["comment", "terminator", "separator", "lparen", "rparen", "lbrace", "rbrace", "lbracket", "rbracket"] else raw_type_str
             if raw_type_str.lower() == "choke_clutch":
                 token_display = "choke clutch"
                 
