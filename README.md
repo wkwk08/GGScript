@@ -28,6 +28,7 @@ $ source venv/bin/activate
 3. **Install dependencies**
 ```
 $ pip install -r requirements.txt
+$ pip install streamlit-monaco
 ```
 
 ### Usage 
