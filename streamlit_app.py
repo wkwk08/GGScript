@@ -3,6 +3,7 @@ import pandas as pd
 from streamlit_monaco import st_monaco
 from src.lexer import Lexer
 from src.token_types import TokenType
+from src.parser import analyze_syntax
 
 # ── PAGE CONFIG ───────────────────────────────────────────────────────
 st.set_page_config(
@@ -321,7 +322,27 @@ if lex_btn and code_content and code_content.strip():
 elif run_btn:
     terminal_lines = ["→ executing program...", "(not implemented yet)"]
 elif syn_btn:
-    terminal_lines = ["→ syntax analysis...", "(not implemented yet)"]
+    terminal_lines = ["→ syntax analysis..."]
+    if code_content and code_content.strip():
+        try:
+            lexer = Lexer(code_content)
+            tokens, lex_errors = lexer.make_tokens()
+            
+            if lex_errors:
+                terminal_lines.append(f"<span class='error-line'>Lexical errors found ({len(lex_errors)}). Cannot proceed to syntax.</span>")
+                for err in lex_errors:
+                    terminal_lines.append(f"<span class='error-line'>  {err.as_string()}</span>")
+            else:
+                success, message = analyze_syntax(tokens)
+                if success:
+                    terminal_lines.append(f"<span class='success-line'>{message}</span>")
+                else:
+                    terminal_lines.append(f"<span class='error-line'>{message}</span>")
+                    
+        except Exception as e:
+            terminal_lines.append(f"<span class='error-line'>Parser crashed: {str(e)}</span>")
+    else:
+        terminal_lines.append("<span class='error-line'>No code to analyze.</span>")
 elif sem_btn:
     terminal_lines = ["→ semantic analysis...", "(not implemented yet)"]
 
