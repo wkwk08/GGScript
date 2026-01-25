@@ -197,12 +197,10 @@ def get_token_category(raw_type: str) -> str:
     return "OTHER"
 
 # ── SAMPLE CODE ───────────────────────────────────────────────────────
-SAMPLE_CODE = """/* GGScript example */
+SAMPLE_CODE = """/* Welcome to GGScript! */
 frag lobby() {
     ign message = "ggwp team!";
     shout message;
-    buff speed = 999;
-    nerf damage;
     ggwp;
 }"""
 
