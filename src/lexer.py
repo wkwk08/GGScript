@@ -1432,7 +1432,7 @@ class Lexer:
         self.advance()  # consume '('
         # If immediately followed by a string, handle it
         if self.current_char == '"':
-            tokens.append(Token(TokenType.bracket, '(', start_pos.ln, start_pos.col))
+            tokens.append(Token(TokenType.lparen, '(', start_pos.ln, start_pos.col))
             self.make_string(tokens, errors)
             return
         # Validate next char
@@ -1442,7 +1442,7 @@ class Lexer:
                 f"Invalid character '{self.current_char}' after '('"
             ))
             return
-        tokens.append(Token(TokenType.bracket, '(', start_pos.ln, start_pos.col))
+        tokens.append(Token(TokenType.lparen, '(', start_pos.ln, start_pos.col))
         return
 
     def make_rparen(self, tokens, errors):
@@ -1454,7 +1454,7 @@ class Lexer:
                 f"Invalid character '{self.current_char}' after ')'"
             ))
             return
-        tokens.append(Token(TokenType.bracket, ')', start_pos.ln, start_pos.col))
+        tokens.append(Token(TokenType.rparen, ')', start_pos.ln, start_pos.col))
         return
 
     def make_lbracket(self, tokens, errors):
@@ -1464,7 +1464,7 @@ class Lexer:
             errors.append(LexicalError(start_pos,
                 f"Invalid delimiter '{self.current_char}' after '['"))
             return
-        tokens.append(Token(TokenType.bracket, '[', start_pos.ln, start_pos.col))
+        tokens.append(Token(TokenType.lbracket, '[', start_pos.ln, start_pos.col))
         return 
 
     def make_rbracket(self, tokens, errors):
@@ -1474,7 +1474,7 @@ class Lexer:
             errors.append(LexicalError(start_pos,
                 f"Invalid delimiter '{self.current_char}' after ']'"))
             return
-        tokens.append(Token(TokenType.bracket, ']', start_pos.ln, start_pos.col))
+        tokens.append(Token(TokenType.rbracket, ']', start_pos.ln, start_pos.col))
         return  
 
     def make_lbrace(self, tokens, errors):
@@ -1484,7 +1484,7 @@ class Lexer:
             errors.append(LexicalError(start_pos,
                 f"Invalid delimiter '{self.current_char}' after '{{'"))
             return
-        tokens.append(Token(TokenType.bracket, '{', start_pos.ln, start_pos.col))
+        tokens.append(Token(TokenType.lbrace, '{', start_pos.ln, start_pos.col))
         return
 
     def make_rbrace(self, tokens, errors):
@@ -1494,5 +1494,5 @@ class Lexer:
             errors.append(LexicalError(start_pos,
                 f"Invalid delimiter '{self.current_char}' after '}}'"))
             return
-        tokens.append(Token(TokenType.bracket, '}', start_pos.ln, start_pos.col))
+        tokens.append(Token(TokenType.rbrace, '}', start_pos.ln, start_pos.col))
         return 
