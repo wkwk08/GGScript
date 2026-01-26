@@ -145,15 +145,6 @@ SYMBOL_TO_TOKEN = {
     # New unified mappings
     ';': TokenType.terminator,
     ',': TokenType.separator,
-    '(': TokenType.bracket,
-    ')': TokenType.bracket,
-    '{': TokenType.bracket,
-    '}': TokenType.bracket,
-    '[': TokenType.bracket,
-    ']': TokenType.bracket,
-    '"': TokenType.bracket,
-    ':': TokenType.bracket,
-    '.': TokenType.bracket,
 }
 
 # Keyword mapping
