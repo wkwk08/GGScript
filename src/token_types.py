@@ -139,7 +139,6 @@ SYMBOL_TO_TOKEN = {
     '[': TokenType.lbracket,
     ']': TokenType.rbracket,
     ',': TokenType.comma,
-    ';': TokenType.semicolon,
     ':': TokenType.colon,
     '.': TokenType.dot,
 
