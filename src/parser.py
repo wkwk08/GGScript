@@ -450,8 +450,7 @@ PREDICT_SET = {
         "surebol": ["<global_section>", 0],
         "tag": ["<global_section>", 0],
         "stun": ["<global_section>", 0],
-        "build": ["<global_section>", 1],
-        "frag": ["<global_section>", 1]  # main
+        "build": ["<global_section>", 1]
     },
     "<function_section>": {
         "build": ["<function_section>", 0],
@@ -618,8 +617,7 @@ PREDICT_SET = {
         "ggwp": ["<statement_list>", 0],
         "}": ["<statement_list>", 1],
         "role": ["<statement_list>", 1],  # for case
-        "noob": ["<statement_list>", 1],
-        "afk": ["<statement_list>", 1]
+        "noob": ["<statement_list>", 1]
     },
     "<statement>": {
         "frag": ["<statement>", 3],  # local_decl
