@@ -1304,7 +1304,13 @@ PREDICT_SET = {
 # ────────────────────────────────────────────────
 class SyntaxAnalyzer:
     def __init__(self, tokens):
-        self.tokens = [t for t in tokens if t.type not in ['newline', 'whitespace', 'comment', 'eof']]
+        # Filter tokens (exclude comments/whitespace)
+        self.tokens = [t for t in tokens if t.type not in [
+            TokenType.whitespace, 
+            TokenType.newline, 
+            TokenType.comment, 
+            TokenType.eof
+        ]]
         self.token_idx = -1
         self.advance()
 
@@ -1312,10 +1318,201 @@ class SyntaxAnalyzer:
         self.token_idx += 1
         if self.token_idx < len(self.tokens):
             self.current_token = self.tokens[self.token_idx]
-            self.current_type = str(self.current_token.type).lower()
+            # Use map_token_type to translate Lexer Type -> Grammar Symbol
+            self.current_type = self.map_token_type(self.current_token)
         else:
             self.current_token = Token(TokenType.eof, None, line=-1, column=-1)
             self.current_type = 'eof'
+
+    def map_token_type(self, token):
+        # Map all TokenType values to their grammar symbols or string representations
+        t = token.type
+        # Data Types
+        if t == TokenType.frag:
+            return "frag"
+        if t == TokenType.elo:
+            return "elo"
+        if t == TokenType.ign:
+            return "ign"
+        if t == TokenType.surebol:
+            return "surebol"
+        if t == TokenType.tag:
+            return "tag"
+
+        # Control Flow
+        if t == TokenType.clutch:
+            return "clutch"
+        if t == TokenType.choke:
+            return "choke"
+        if t == TokenType.choke_clutch:
+            return "choke_clutch"
+        if t == TokenType.pick:
+            return "pick"
+        if t == TokenType.role:
+            return "role"
+        if t == TokenType.noob:
+            return "noob"
+        if t == TokenType.grind:
+            return "grind"
+        if t == TokenType.retry:
+            return "retry"
+        if t == TokenType.try_:
+            return "try"
+        if t == TokenType.afk:
+            return "afk"
+        if t == TokenType.hop:
+            return "hop"
+
+        # I/O
+        if t == TokenType.comsat:
+            return "comsat"
+        if t == TokenType.shout:
+            return "shout"
+
+        # Functions
+        if t == TokenType.build:
+            return "build"
+        if t == TokenType.lobby:
+            return "lobby"
+        if t == TokenType.dodge:
+            return "dodge"
+        if t == TokenType.ggwp:
+            return "ggwp"
+
+        # Modifiers
+        if t == TokenType.stun:
+            return "stun"
+
+        # Boolean Literals
+        if t == TokenType.buff:
+            return "buff"
+        if t == TokenType.nerf:
+            return "nerf"
+
+        # Array Operations
+        if t == TokenType.stack:
+            return "stack"
+        if t == TokenType.craft:
+            return "craft"
+        if t == TokenType.drop:
+            return "drop"
+        if t == TokenType.count:
+            return "count"
+        if t == TokenType.split:
+            return "split"
+
+        # Arithmetic Operators
+        if t == TokenType.plus:
+            return "+"
+        if t == TokenType.minus:
+            return "-"
+        if t == TokenType.mul:
+            return "*"
+        if t == TokenType.div:
+            return "/"
+        if t == TokenType.mod:
+            return "%"
+
+        # Relational Operators
+        if t == TokenType.eq:
+            return "=="
+        if t == TokenType.neq:
+            return "!="
+        if t == TokenType.lt:
+            return "<"
+        if t == TokenType.gt:
+            return ">"
+        if t == TokenType.lte:
+            return "<="
+        if t == TokenType.gte:
+            return ">="
+
+        # Assignment Operators
+        if t == TokenType.assign:
+            return "="
+        if t == TokenType.plus_assign:
+            return "+="
+        if t == TokenType.minus_assign:
+            return "-="
+        if t == TokenType.mul_assign:
+            return "*="
+        if t == TokenType.div_assign:
+            return "/="
+        if t == TokenType.mod_assign:
+            return "%="
+
+        # Logical Operators
+        if t == TokenType.and_:
+            return "&&"
+        if t == TokenType.or_:
+            return "||"
+        if t == TokenType.not_:
+            return "!"
+
+        # Unary Operators
+        if t == TokenType.increment:
+            return "++"
+        if t == TokenType.decrement:
+            return "--"
+
+        # Delimiters
+        if t == TokenType.lparen:
+            return "("
+        if t == TokenType.rparen:
+            return ")"
+        if t == TokenType.lbrace:
+            return "{"
+        if t == TokenType.rbrace:
+            return "}"
+        if t == TokenType.lbracket:
+            return "["
+        if t == TokenType.rbracket:
+            return "]"
+        if t == TokenType.comma:
+            return ","
+        if t == TokenType.semicolon:
+            return ";"
+        if t == TokenType.colon:
+            return ":"
+        if t == TokenType.dot:
+            return "."
+
+        # New unified delimiter types
+        if t == TokenType.terminator:
+            return ";"
+        if t == TokenType.separator:
+            return token.value
+        if t == TokenType.bracket:
+            return "bracket"
+
+        # Literals
+        if t == TokenType.integer:
+            return "integer"
+        if t == TokenType.float:
+            return "float"
+        if t == TokenType.string:
+            return "string"
+        if t == TokenType.char:
+            return "char"
+
+        # Identifiers
+        if t == TokenType.identifier:
+            return "identifier"
+
+        # Special
+        if t == TokenType.eof:
+            return "eof"
+        if t == TokenType.error:
+            return "error"
+        if t == TokenType.comment:
+            return "comment"
+        if t == TokenType.whitespace:
+            return "whitespace"
+        if t == TokenType.newline:
+            return "newline"
+
+        # Fallback: string representation
+        return str(t)
 
     def syntax_analyzer(self):
         stack = ["<program>"]
