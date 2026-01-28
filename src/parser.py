@@ -12,7 +12,7 @@ class InvalidSyntaxError(Exception):
         return f"Syntax Error at Ln {self.line}, Col {self.column}: {self.details}"
 
 # ────────────────────────────────────────────────
-# COMPLETE CONTEXT-FREE GRAMMAR (productions 1-197 from paper, refactored for LL(1))
+# CONTEXT-FREE GRAMMAR
 # ────────────────────────────────────────────────
 CFG = {
     "<program>": [
@@ -26,18 +26,14 @@ CFG = {
         ["<function_definition>", "<function_section>"],  # 4
         []  # 5
     ],
+
+    # ─── GLOBAL DECLARATIONS (Strictly Rules 6-8) ──────────────────
     "<global_declaration>": [
-        ["<non_const_decl>"],  # refactored: replaces 6 and 8
-        ["<constant_declaration>"]  # 7
+        ["<variable_declaration>", ";"],  # 6
+        ["<constant_declaration>"],       # 7
+        ["<array_declaration>", ";"]      # 8
     ],
-    "<non_const_decl>": [
-        ["<data_type>", "identifier", "<decl_suffix>"]  # refactored for var/array
-    ],
-    "<decl_suffix>": [
-        ["[", "<expression>", "]", "<array_init>", ";"],  # array
-        ["<init_option>", "<init_tail>", ";"]  # var
-    ],
-    "<variable_declaration>": [  # not directly used, but for reference
+    "<variable_declaration>": [
         ["<data_type>", "<identifier_init_list>"]  # 9
     ],
     "<identifier_init_list>": [
@@ -47,29 +43,34 @@ CFG = {
         ["identifier", "<init_option>"]  # 11
     ],
     "<init_option>": [
-        ["=", "<expression>"],  # 12
+        ["=", "<expression>"],       # 12
         ["(", "<expression>", ")"],  # 13
         ["{", "<expression>", "}"],  # 14
-        []  # 15
+        []                           # 15
     ],
     "<init_tail>": [
         [",", "<identifier_init>", "<init_tail>"],  # 16
-        []  # 17
+        []                                          # 17
     ],
     "<constant_declaration>": [
         ["stun", "<data_type>", "identifier", "=", "<constant_value>", ";"]  # 18
     ],
+    "<array_declaration>": [
+        ["<data_type>", "identifier", "[", "<positive_integer>", "]", "<array_init>"]  # 19
+    ],
     "<array_init>": [
         ["=", "{", "<value_list>", "}"],  # 20
-        []  # 21
+        []                                # 21
     ],
     "<value_list>": [
         ["<constant_value>", "<value_tail>"]  # 22
     ],
     "<value_tail>": [
         [",", "<constant_value>", "<value_tail>"],  # 23
-        []  # 24
+        []                                          # 24
     ],
+
+    # ─── FUNCTIONS ─────────────────────────────────────────────────
     "<function_definition>": [
         ["build", "<return_type>", "identifier", "(", "<parameters>", ")", "{", "<function_body>", "}"]  # 25
     ],
@@ -84,20 +85,21 @@ CFG = {
         []  # 29
     ],
     "<local_declaration>": [
-        ["<non_const_decl>"],  # refactored
-        ["<constant_declaration>"]  # 31
+        ["<variable_declaration>", ";"],  # 30
+        ["<constant_declaration>"],       # 31
+        ["<array_declaration>", ";"]      # 32
     ],
     "<return_type>": [
-        ["frag"],  # 33
-        ["elo"],  # 34
-        ["ign"],  # 35
+        ["frag"],     # 33
+        ["elo"],      # 34
+        ["ign"],      # 35
         ["surebol"],  # 36
-        ["tag"],  # 37
-        ["dodge"]  # 38
+        ["tag"],      # 37
+        ["dodge"]     # 38
     ],
     "<parameters>": [
         ["<parameter_list>"],  # 39
-        []  # 40
+        []                     # 40
     ],
     "<parameter_list>": [
         ["<data_type>", "identifier", "<parameter_tail>"]  # 41
@@ -106,34 +108,37 @@ CFG = {
         [",", "<data_type>", "identifier", "<parameter_tail>"],  # 42
         []  # 43
     ],
+
+    # ─── STATEMENTS ────────────────────────────────────────────────
     "<statement_list>": [
         ["<statement>", "<statement_list>"],  # 44
-        []  # 45
+        []                                   # 45
     ],
     "<statement>": [
         ["<declaration_statement>"],  # 46
-        ["<executable_statement>"],  # 47
-        ["<control_statement>"],  # 48
-        ["<local_declaration>"]  # 49
+        ["<executable_statement>"],   # 47
+        ["<control_statement>"],      # 48
+        ["<local_declaration>"]       # 49
     ],
     "<declaration_statement>": [
-        ["<non_const_decl>"],  # refactored
-        ["<constant_declaration>"]  # 51
+        ["<variable_declaration>", ";"],  # 50
+        ["<constant_declaration>"],       # 51
+        ["<array_declaration>", ";"]      # 52
     ],
     "<executable_statement>": [
         ["<assignment_statement>"],  # 53
-        ["<input_statement>"],  # 54
-        ["<output_statement>"],  # 55
-        ["<function_call_stmt>"],  # 56
-        ["<break_statement>"],  # 57
-        ["<continue_statement>"]  # 58
+        ["<input_statement>"],       # 54
+        ["<output_statement>"],      # 55
+        ["<function_call_stmt>"],    # 56
+        ["<break_statement>"],       # 57
+        ["<continue_statement>"]     # 58
     ],
     "<control_statement>": [
-        ["<if_statement>"],  # 59
+        ["<if_statement>"],      # 59
         ["<switch_statement>"],  # 60
-        ["<for_loop>"],  # 61
-        ["<while_loop>"],  # 62
-        ["<do_while_loop>"]  # 63
+        ["<for_loop>"],          # 61
+        ["<while_loop>"],        # 62
+        ["<do_while_loop>"]      # 63
     ],
     "<assignment_statement>": [
         ["<lvalue>", "<assignment_operator>", "<expression>", ";"]  # 64
@@ -143,7 +148,7 @@ CFG = {
     ],
     "<array_access>": [
         ["[", "<expression>", "]", "<array_access>"],  # 66
-        []  # 67
+        []                                             # 67
     ],
     "<input_statement>": [
         ["comsat", "<input_list>", ";"]  # 68
@@ -153,7 +158,7 @@ CFG = {
     ],
     "<input_tail>": [
         [",", "<lvalue>", "<input_tail>"],  # 70
-        []  # 71
+        []                                  # 71
     ],
     "<output_statement>": [
         ["shout", "<output_list>", ";"]  # 72
@@ -163,11 +168,11 @@ CFG = {
     ],
     "<output_tail>": [
         [",", "<output_item>", "<output_tail>"],  # 74
-        []  # 75
+        []                                        # 75
     ],
     "<output_item>": [
-        ["string"],  # 76, changed to "string"
-        ["<expression>"]  # 77
+        ["<string_literal>"],  # 76
+        ["<expression>"]       # 77
     ],
     "<function_call_stmt>": [
         ["<function_name>", "(", "<argument_list>", ")", ";"]  # 78
@@ -177,19 +182,15 @@ CFG = {
     ],
     "<function_name>": [
         ["identifier"],  # 80
-        ["stack"],  
-        ["craft"],
-        ["drop"],
-        ["count"],
-        ["split"]
+        ["stack"], ["craft"], ["drop"], ["count"], ["split"]
     ],
     "<argument_list>": [
         ["<expression>", "<argument_tail>"],  # 81
-        []  # 82
+        []                                    # 82
     ],
     "<argument_tail>": [
         [",", "<expression>", "<argument_tail>"],  # 83
-        []  # 84
+        []                                         # 84
     ],
     "<break_statement>": [
         ["afk", ";"]  # 85
@@ -199,32 +200,34 @@ CFG = {
     ],
     "<return_statement>": [
         ["ggwp", "<return_value>", ";"],  # 87
-        []  # 88
+        []                                # 88
     ],
     "<return_value>": [
         ["<expression>"],  # 89
-        []  # 90
+        []                 # 90
     ],
+
+    # ─── LOGIC BLOCKS ──────────────────────────────────────────────
     "<if_statement>": [
         ["clutch", "(", "<condition>", ")", "{", "<statement_list>", "}", "<else_if_block>", "<else_block>"]  # 91
     ],
     "<else_if_block>": [
         ["<else_if>", "<else_if_block>"],  # 92
-        []  # 93
+        []                                 # 93
     ],
     "<else_if>": [
         ["choke", "clutch", "(", "<condition>", ")", "{", "<statement_list>", "}"]  # 94
     ],
     "<else_block>": [
         ["choke", "{", "<statement_list>", "}"],  # 95
-        []  # 96
+        []                                        # 96
     ],
     "<switch_statement>": [
         ["pick", "(", "<expression>", ")", "{", "<case_blocks>", "<default_block>", "}"]  # 97
     ],
     "<case_blocks>": [
         ["<case_block>", "<case_blocks>"],  # 98
-        []  # 99
+        []                                  # 99
     ],
     "<case_block>": [
         ["role", "<case_value>", ":", "<case_body>", "afk", ";"]  # 100
@@ -234,26 +237,26 @@ CFG = {
     ],
     "<default_block>": [
         ["noob", ":", "<case_body>", "afk", ";"],  # 102
-        []  # 103
+        []                                         # 103
     ],
     "<for_loop>": [
         ["grind", "(", "<for_init>", ";", "<condition>", ";", "<for_update>", ")", "{", "<statement_list>", "}"]  # 104
     ],
     "<for_init>": [
-        ["<variable_declaration>"],  # 105, note: now uses <non_const_decl> without ; ?
-        ["<assignment_statement_no_semi>"],  # 106
-        []  # 107
+        ["<variable_declaration>"],             # 105
+        ["<assignment_statement_no_semi>"],     # 106
+        []                                      # 107
     ],
     "<assignment_statement_no_semi>": [
         ["<lvalue>", "<assignment_operator>", "<expression>"]  # 108
     ],
     "<for_update>": [
         ["<assignment_expression>", "<update_tail>"],  # 109
-        []  # 110
+        []                                             # 110
     ],
     "<update_tail>": [
         [",", "<assignment_expression>", "<update_tail>"],  # 111
-        []  # 112
+        []                                                 # 112
     ],
     "<while_loop>": [
         ["retry", "(", "<condition>", ")", "{", "<statement_list>", "}"]  # 113
@@ -261,6 +264,8 @@ CFG = {
     "<do_while_loop>": [
         ["try", "{", "<statement_list>", "}", "retry", "(", "<condition>", ")", ";"]  # 114
     ],
+
+    # ─── EXPRESSIONS ───────────────────────────────────────────────
     "<expression>": [
         ["<logical_or_expression>"]  # 115
     ],
@@ -269,109 +274,109 @@ CFG = {
     ],
     "<logical_or_tail>": [
         ["||", "<logical_and_expression>", "<logical_or_tail>"],  # 117
-        []  # 118
+        []                                                        # 118
     ],
     "<logical_and_expression>": [
         ["<equality_expression>", "<logical_and_tail>"]  # 119
     ],
     "<logical_and_tail>": [
         ["&&", "<equality_expression>", "<logical_and_tail>"],  # 120
-        []  # 121
+        []                                                      # 121
     ],
     "<equality_expression>": [
         ["<relational_expression>", "<equality_tail>"]  # 122
     ],
     "<equality_tail>": [
         ["<equality_op>", "<relational_expression>", "<equality_tail>"],  # 123
-        []  # 124
+        []                                                               # 124
     ],
     "<equality_op>": [
         ["=="],  # 125
-        ["!="]  # 126
+        ["!="]   # 126
     ],
     "<relational_expression>": [
         ["<additive_expression>", "<relational_tail>"]  # 127
     ],
     "<relational_tail>": [
         ["<relational_op>", "<additive_expression>", "<relational_tail>"],  # 128
-        []  # 129
+        []                                                                 # 129
     ],
     "<relational_op>": [
-        ["<"],  # 130
-        [">"],  # 131
+        ["<"],   # 130
+        [">"],   # 131
         ["<="],  # 132
-        [">="]  # 133
+        [">="]   # 133
     ],
     "<additive_expression>": [
         ["<multiplicative_expression>", "<additive_tail>"]  # 134
     ],
     "<additive_tail>": [
         ["<additive_op>", "<multiplicative_expression>", "<additive_tail>"],  # 135
-        []  # 136
+        []                                                                   # 136
     ],
     "<additive_op>": [
         ["+"],  # 137
-        ["-"]  # 138
+        ["-"]   # 138
     ],
     "<multiplicative_expression>": [
         ["<unary_expression>", "<multiplicative_tail>"]  # 139
     ],
     "<multiplicative_tail>": [
         ["<multiplicative_op>", "<unary_expression>", "<multiplicative_tail>"],  # 140
-        []  # 141
+        []                                                                      # 141
     ],
     "<multiplicative_op>": [
         ["*"],  # 142
         ["/"],  # 143
-        ["%"]  # 144
+        ["%"]   # 144
     ],
     "<unary_expression>": [
         ["<unary_op>", "<unary_expression>"],  # 145
-        ["<postfix_expression>"]  # 146
+        ["<postfix_expression>"]               # 146
     ],
     "<unary_op>": [
-        ["+"],  # 147
-        ["-"],  # 148
-        ["!"],  # 149
+        ["+"],   # 147
+        ["-"],   # 148
+        ["!"],   # 149
         ["++"],  # 150
-        ["--"]  # 151
+        ["--"]   # 151
     ],
     "<postfix_expression>": [
         ["<primary_expression>", "<postfix_tail>"]  # 152
     ],
     "<postfix_tail>": [
-        ["<postfix_op>", "<postfix_tail>"],  # refactored to allow multiple post ops
-        ["<array_access>"],  # 154
-        ["<function_call_suffix>"],  # 155
-        []  # 156
+        ["<postfix_op>"],          # 153
+        ["<array_access>"],        # 154
+        ["<function_call_suffix>"],# 155
+        []                         # 156
     ],
     "<postfix_op>": [
         ["++"],  # 157
-        ["--"]  # 158
+        ["--"]   # 158
     ],
     "<function_call_suffix>": [
         ["(", "<argument_list>", ")"]  # 159
     ],
     "<primary_expression>": [
-        ["<literal>"],  # 160
-        ["identifier"],  # 161
-        ["(", "<expression>", ")"],  # 162
+        ["<literal>"],            # 160
+        ["identifier"],           # 161
+        ["(", "<expression>", ")"], # 162
         ["<function_call_expr>"]  # 163
     ],
     "<data_type>": [
-        ["frag"],  # 165
-        ["elo"],  # 166
-        ["ign"],  # 167
+        ["frag"],     # 165
+        ["elo"],      # 166
+        ["ign"],      # 167
         ["surebol"],  # 168
-        ["tag"]  # 169
+        ["tag"]       # 169
     ],
     "<assignment_operator>": [
-        ["="],  # 170
+        ["="],   # 170
         ["+="],  # 171
         ["-="],  # 172
         ["*="],  # 173
         ["/="],  # 174
-        ["%="]  # 175
+        ["%="]   # 175
     ],
     "<assignment_expression>": [
         ["<lvalue>", "<assignment_operator>", "<expression>"]  # 176
@@ -380,54 +385,39 @@ CFG = {
         ["<expression>"]  # 177
     ],
     "<literal>": [
-        ["integer"],  # 178, changed
-        ["float"],  # 179
-        ["string"],  # 180
-        ["char"],  # 181
+        ["<integer_literal>"], # 178
+        ["<float_literal>"],   # 179
+        ["<string_literal>"],  # 180
+        ["<char_literal>"],    # 181
         ["<boolean_literal>"]  # 182
     ],
-    "<boolean_literal>": [
-        ["buff"],  # 195
-        ["nerf"]  # 196
-    ],
-    # Refactored constant_value to avoid left-recursion
+    
+    # ─── CONSTANT VALUE ──────────
     "<constant_value>": [
-        ["<const_add_expression>"]
+        ["<literal>"],                                                       # 183
+        ["<constant_value>", "<arithmetic_operator>", "<constant_value>"],   # 184 (Recursive)
+        ["(", "<constant_value>", ")"]                                       # 185
     ],
-    "<const_add_expression>": [
-        ["<const_mul_expression>", "<const_add_tail>"]
-    ],
-    "<const_add_tail>": [
-        ["+", "<const_mul_expression>", "<const_add_tail>"],
-        ["-", "<const_mul_expression>", "<const_add_tail>"],
-        []
-    ],
-    "<const_mul_expression>": [
-        ["<const_primary>", "<const_mul_tail>"]
-    ],
-    "<const_mul_tail>": [
-        ["*", "<const_primary>", "<const_mul_tail>"],
-        ["/", "<const_primary>", "<const_mul_tail>"],
-        ["%", "<const_primary>", "<const_mul_tail>"],
-        []
-    ],
-    "<const_primary>": [
-        ["<literal>"],
-        ["(", "<constant_value>", ")"]
-    ],
-    "<arithmetic_operator>": [  # not used directly
-        ["+"],
-        ["-"],
-        ["*"],
-        ["/"],
-        ["%"]
+    "<arithmetic_operator>": [
+        ["+"], ["-"], ["*"], ["/"], ["%"] # 186
     ],
     "<case_value>": [
-        ["integer"],  # 187
-        ["char"],  # 188
-        ["string"],  # 189
+        ["<integer_literal>"], # 187
+        ["<char_literal>"],    # 188
+        ["<string_literal>"],  # 189
         ["<boolean_literal>"]  # 190
-    ]
+    ],
+    
+    # ─── TOKENS / REGEX PLACEHOLDERS ───────────────────────────────
+    "<integer_literal>": [ ["integer"] ],  # 191
+    "<float_literal>":   [ ["float"] ],    # 192
+    "<string_literal>":  [ ["string"] ],   # 193
+    "<char_literal>":    [ ["char"] ],     # 194
+    "<boolean_literal>": [
+        ["buff"],  # 195
+        ["nerf"]   # 196
+    ],
+    "<positive_integer>": [ ["integer"] ]  # 197
 }
 
 # ────────────────────────────────────────────────
