@@ -618,7 +618,7 @@ PREDICT_SET = {
         "grind": ["<statement_list>", 0],
         "retry": ["<statement_list>", 0],
         "try": ["<statement_list>", 0],
-        "ggwp": ["<statement_list>", 0],
+        "ggwp": ["<statement_list>", 1],
         "}": ["<statement_list>", 1],
         "role": ["<statement_list>", 1],
         "noob": ["<statement_list>", 1]
