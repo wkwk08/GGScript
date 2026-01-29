@@ -26,12 +26,16 @@ CFG = {
         ["<function_definition>", "<function_section>"],  # 4
         []  # 5
     ],
-
-    # ─── GLOBAL DECLARATIONS (Strictly Rules 6-8) ──────────────────
     "<global_declaration>": [
-        ["<variable_declaration>", ";"],  # 6
-        ["<constant_declaration>"],       # 7
-        ["<array_declaration>", ";"]      # 8
+        ["<non_const_decl>"],  # 6
+        ["<constant_declaration>"]  # 7
+    ],
+    "<non_const_decl>": [
+        ["<data_type>", "identifier", "<decl_suffix>"]
+    ],
+    "<decl_suffix>": [
+        ["[", "<expression>", "]", "<array_init>", ";"],  # array
+        ["<init_option>", "<init_tail>", ";"]  # var
     ],
     "<variable_declaration>": [
         ["<data_type>", "<identifier_init_list>"]  # 9
@@ -43,34 +47,29 @@ CFG = {
         ["identifier", "<init_option>"]  # 11
     ],
     "<init_option>": [
-        ["=", "<expression>"],       # 12
+        ["=", "<expression>"],  # 12
         ["(", "<expression>", ")"],  # 13
         ["{", "<expression>", "}"],  # 14
-        []                           # 15
+        []  # 15
     ],
     "<init_tail>": [
         [",", "<identifier_init>", "<init_tail>"],  # 16
-        []                                          # 17
+        []  # 17
     ],
     "<constant_declaration>": [
         ["stun", "<data_type>", "identifier", "=", "<constant_value>", ";"]  # 18
     ],
-    "<array_declaration>": [
-        ["<data_type>", "identifier", "[", "<positive_integer>", "]", "<array_init>"]  # 19
-    ],
     "<array_init>": [
         ["=", "{", "<value_list>", "}"],  # 20
-        []                                # 21
+        []  # 21
     ],
     "<value_list>": [
         ["<constant_value>", "<value_tail>"]  # 22
     ],
     "<value_tail>": [
         [",", "<constant_value>", "<value_tail>"],  # 23
-        []                                          # 24
+        []  # 24
     ],
-
-    # ─── FUNCTIONS ─────────────────────────────────────────────────
     "<function_definition>": [
         ["build", "<return_type>", "identifier", "(", "<parameters>", ")", "{", "<function_body>", "}"]  # 25
     ],
@@ -85,21 +84,20 @@ CFG = {
         []  # 29
     ],
     "<local_declaration>": [
-        ["<variable_declaration>", ";"],  # 30
-        ["<constant_declaration>"],       # 31
-        ["<array_declaration>", ";"]      # 32
+        ["<non_const_decl>"],  # 30 (Refactored)
+        ["<constant_declaration>"]  # 31
     ],
     "<return_type>": [
-        ["frag"],     # 33
-        ["elo"],      # 34
-        ["ign"],      # 35
+        ["frag"],  # 33
+        ["elo"],  # 34
+        ["ign"],  # 35
         ["surebol"],  # 36
-        ["tag"],      # 37
-        ["dodge"]     # 38
+        ["tag"],  # 37
+        ["dodge"]  # 38
     ],
     "<parameters>": [
         ["<parameter_list>"],  # 39
-        []                     # 40
+        []  # 40
     ],
     "<parameter_list>": [
         ["<data_type>", "identifier", "<parameter_tail>"]  # 41
@@ -108,37 +106,34 @@ CFG = {
         [",", "<data_type>", "identifier", "<parameter_tail>"],  # 42
         []  # 43
     ],
-
-    # ─── STATEMENTS ────────────────────────────────────────────────
     "<statement_list>": [
         ["<statement>", "<statement_list>"],  # 44
-        []                                   # 45
+        []  # 45
     ],
     "<statement>": [
         ["<declaration_statement>"],  # 46
-        ["<executable_statement>"],   # 47
-        ["<control_statement>"],      # 48
-        ["<local_declaration>"]       # 49
+        ["<executable_statement>"],  # 47
+        ["<control_statement>"],  # 48
+        ["<local_declaration>"]  # 49
     ],
     "<declaration_statement>": [
-        ["<variable_declaration>", ";"],  # 50
-        ["<constant_declaration>"],       # 51
-        ["<array_declaration>", ";"]      # 52
+        ["<non_const_decl>"],  # 50 (Refactored)
+        ["<constant_declaration>"]  # 51
     ],
     "<executable_statement>": [
         ["<assignment_statement>"],  # 53
-        ["<input_statement>"],       # 54
-        ["<output_statement>"],      # 55
-        ["<function_call_stmt>"],    # 56
-        ["<break_statement>"],       # 57
-        ["<continue_statement>"]     # 58
+        ["<input_statement>"],  # 54
+        ["<output_statement>"],  # 55
+        ["<function_call_stmt>"],  # 56
+        ["<break_statement>"],  # 57
+        ["<continue_statement>"]  # 58
     ],
     "<control_statement>": [
-        ["<if_statement>"],      # 59
+        ["<if_statement>"],  # 59
         ["<switch_statement>"],  # 60
-        ["<for_loop>"],          # 61
-        ["<while_loop>"],        # 62
-        ["<do_while_loop>"]      # 63
+        ["<for_loop>"],  # 61
+        ["<while_loop>"],  # 62
+        ["<do_while_loop>"]  # 63
     ],
     "<assignment_statement>": [
         ["<lvalue>", "<assignment_operator>", "<expression>", ";"]  # 64
@@ -148,7 +143,7 @@ CFG = {
     ],
     "<array_access>": [
         ["[", "<expression>", "]", "<array_access>"],  # 66
-        []                                             # 67
+        []  # 67
     ],
     "<input_statement>": [
         ["comsat", "<input_list>", ";"]  # 68
@@ -158,7 +153,7 @@ CFG = {
     ],
     "<input_tail>": [
         [",", "<lvalue>", "<input_tail>"],  # 70
-        []                                  # 71
+        []  # 71
     ],
     "<output_statement>": [
         ["shout", "<output_list>", ";"]  # 72
@@ -168,11 +163,11 @@ CFG = {
     ],
     "<output_tail>": [
         [",", "<output_item>", "<output_tail>"],  # 74
-        []                                        # 75
+        []  # 75
     ],
     "<output_item>": [
-        ["<string_literal>"],  # 76
-        ["<expression>"]       # 77
+        ["string"],  # 76
+        ["<expression>"]  # 77
     ],
     "<function_call_stmt>": [
         ["<function_name>", "(", "<argument_list>", ")", ";"]  # 78
@@ -182,15 +177,19 @@ CFG = {
     ],
     "<function_name>": [
         ["identifier"],  # 80
-        ["stack"], ["craft"], ["drop"], ["count"], ["split"]
+        ["stack"],  
+        ["craft"],
+        ["drop"],
+        ["count"],
+        ["split"]
     ],
     "<argument_list>": [
         ["<expression>", "<argument_tail>"],  # 81
-        []                                    # 82
+        []  # 82
     ],
     "<argument_tail>": [
         [",", "<expression>", "<argument_tail>"],  # 83
-        []                                         # 84
+        []  # 84
     ],
     "<break_statement>": [
         ["afk", ";"]  # 85
@@ -200,34 +199,32 @@ CFG = {
     ],
     "<return_statement>": [
         ["ggwp", "<return_value>", ";"],  # 87
-        []                                # 88
+        []  # 88
     ],
     "<return_value>": [
         ["<expression>"],  # 89
-        []                 # 90
+        []  # 90
     ],
-
-    # ─── LOGIC BLOCKS ──────────────────────────────────────────────
     "<if_statement>": [
         ["clutch", "(", "<condition>", ")", "{", "<statement_list>", "}", "<else_if_block>", "<else_block>"]  # 91
     ],
     "<else_if_block>": [
         ["<else_if>", "<else_if_block>"],  # 92
-        []                                 # 93
+        []  # 93
     ],
     "<else_if>": [
         ["choke", "clutch", "(", "<condition>", ")", "{", "<statement_list>", "}"]  # 94
     ],
     "<else_block>": [
         ["choke", "{", "<statement_list>", "}"],  # 95
-        []                                        # 96
+        []  # 96
     ],
     "<switch_statement>": [
         ["pick", "(", "<expression>", ")", "{", "<case_blocks>", "<default_block>", "}"]  # 97
     ],
     "<case_blocks>": [
         ["<case_block>", "<case_blocks>"],  # 98
-        []                                  # 99
+        []  # 99
     ],
     "<case_block>": [
         ["role", "<case_value>", ":", "<case_body>", "afk", ";"]  # 100
@@ -237,26 +234,26 @@ CFG = {
     ],
     "<default_block>": [
         ["noob", ":", "<case_body>", "afk", ";"],  # 102
-        []                                         # 103
+        []  # 103
     ],
     "<for_loop>": [
         ["grind", "(", "<for_init>", ";", "<condition>", ";", "<for_update>", ")", "{", "<statement_list>", "}"]  # 104
     ],
     "<for_init>": [
-        ["<variable_declaration>"],             # 105
-        ["<assignment_statement_no_semi>"],     # 106
-        []                                      # 107
+        ["<variable_declaration>"],  # 105
+        ["<assignment_statement_no_semi>"],  # 106
+        []  # 107
     ],
     "<assignment_statement_no_semi>": [
         ["<lvalue>", "<assignment_operator>", "<expression>"]  # 108
     ],
     "<for_update>": [
         ["<assignment_expression>", "<update_tail>"],  # 109
-        []                                             # 110
+        []  # 110
     ],
     "<update_tail>": [
         [",", "<assignment_expression>", "<update_tail>"],  # 111
-        []                                                 # 112
+        []  # 112
     ],
     "<while_loop>": [
         ["retry", "(", "<condition>", ")", "{", "<statement_list>", "}"]  # 113
@@ -264,8 +261,6 @@ CFG = {
     "<do_while_loop>": [
         ["try", "{", "<statement_list>", "}", "retry", "(", "<condition>", ")", ";"]  # 114
     ],
-
-    # ─── EXPRESSIONS ───────────────────────────────────────────────
     "<expression>": [
         ["<logical_or_expression>"]  # 115
     ],
@@ -274,109 +269,109 @@ CFG = {
     ],
     "<logical_or_tail>": [
         ["||", "<logical_and_expression>", "<logical_or_tail>"],  # 117
-        []                                                        # 118
+        []  # 118
     ],
     "<logical_and_expression>": [
         ["<equality_expression>", "<logical_and_tail>"]  # 119
     ],
     "<logical_and_tail>": [
         ["&&", "<equality_expression>", "<logical_and_tail>"],  # 120
-        []                                                      # 121
+        []  # 121
     ],
     "<equality_expression>": [
         ["<relational_expression>", "<equality_tail>"]  # 122
     ],
     "<equality_tail>": [
         ["<equality_op>", "<relational_expression>", "<equality_tail>"],  # 123
-        []                                                               # 124
+        []  # 124
     ],
     "<equality_op>": [
         ["=="],  # 125
-        ["!="]   # 126
+        ["!="]  # 126
     ],
     "<relational_expression>": [
         ["<additive_expression>", "<relational_tail>"]  # 127
     ],
     "<relational_tail>": [
         ["<relational_op>", "<additive_expression>", "<relational_tail>"],  # 128
-        []                                                                 # 129
+        []  # 129
     ],
     "<relational_op>": [
-        ["<"],   # 130
-        [">"],   # 131
+        ["<"],  # 130
+        [">"],  # 131
         ["<="],  # 132
-        [">="]   # 133
+        [">="]  # 133
     ],
     "<additive_expression>": [
         ["<multiplicative_expression>", "<additive_tail>"]  # 134
     ],
     "<additive_tail>": [
         ["<additive_op>", "<multiplicative_expression>", "<additive_tail>"],  # 135
-        []                                                                   # 136
+        []  # 136
     ],
     "<additive_op>": [
         ["+"],  # 137
-        ["-"]   # 138
+        ["-"]  # 138
     ],
     "<multiplicative_expression>": [
         ["<unary_expression>", "<multiplicative_tail>"]  # 139
     ],
     "<multiplicative_tail>": [
         ["<multiplicative_op>", "<unary_expression>", "<multiplicative_tail>"],  # 140
-        []                                                                      # 141
+        []  # 141
     ],
     "<multiplicative_op>": [
         ["*"],  # 142
         ["/"],  # 143
-        ["%"]   # 144
+        ["%"]  # 144
     ],
     "<unary_expression>": [
         ["<unary_op>", "<unary_expression>"],  # 145
-        ["<postfix_expression>"]               # 146
+        ["<postfix_expression>"]  # 146
     ],
     "<unary_op>": [
-        ["+"],   # 147
-        ["-"],   # 148
-        ["!"],   # 149
+        ["+"],  # 147
+        ["-"],  # 148
+        ["!"],  # 149
         ["++"],  # 150
-        ["--"]   # 151
+        ["--"]  # 151
     ],
     "<postfix_expression>": [
         ["<primary_expression>", "<postfix_tail>"]  # 152
     ],
     "<postfix_tail>": [
-        ["<postfix_op>"],          # 153
-        ["<array_access>"],        # 154
-        ["<function_call_suffix>"],# 155
-        []                         # 156
+        ["<postfix_op>", "<postfix_tail>"],  
+        ["<array_access>"],  # 154
+        ["<function_call_suffix>"],  # 155
+        []  # 156
     ],
     "<postfix_op>": [
         ["++"],  # 157
-        ["--"]   # 158
+        ["--"]  # 158
     ],
     "<function_call_suffix>": [
         ["(", "<argument_list>", ")"]  # 159
     ],
     "<primary_expression>": [
-        ["<literal>"],            # 160
-        ["identifier"],           # 161
-        ["(", "<expression>", ")"], # 162
+        ["<literal>"],  # 160
+        ["identifier"],  # 161
+        ["(", "<expression>", ")"],  # 162
         ["<function_call_expr>"]  # 163
     ],
     "<data_type>": [
-        ["frag"],     # 165
-        ["elo"],      # 166
-        ["ign"],      # 167
+        ["frag"],  # 165
+        ["elo"],  # 166
+        ["ign"],  # 167
         ["surebol"],  # 168
-        ["tag"]       # 169
+        ["tag"]  # 169
     ],
     "<assignment_operator>": [
-        ["="],   # 170
+        ["="],  # 170
         ["+="],  # 171
         ["-="],  # 172
         ["*="],  # 173
         ["/="],  # 174
-        ["%="]   # 175
+        ["%="]  # 175
     ],
     "<assignment_expression>": [
         ["<lvalue>", "<assignment_operator>", "<expression>"]  # 176
@@ -385,44 +380,49 @@ CFG = {
         ["<expression>"]  # 177
     ],
     "<literal>": [
-        ["<integer_literal>"], # 178
-        ["<float_literal>"],   # 179
-        ["<string_literal>"],  # 180
-        ["<char_literal>"],    # 181
+        ["integer"],  # 178
+        ["float"],  # 179
+        ["string"],  # 180
+        ["char"],  # 181
         ["<boolean_literal>"]  # 182
     ],
-    
-    # ─── CONSTANT VALUE ──────────
-    "<constant_value>": [
-        ["<literal>"],                                                       # 183
-        ["<constant_value>", "<arithmetic_operator>", "<constant_value>"],   # 184 (Recursive)
-        ["(", "<constant_value>", ")"]                                       # 185
-    ],
-    "<arithmetic_operator>": [
-        ["+"], ["-"], ["*"], ["/"], ["%"] # 186
-    ],
-    "<case_value>": [
-        ["<integer_literal>"], # 187
-        ["<char_literal>"],    # 188
-        ["<string_literal>"],  # 189
-        ["<boolean_literal>"]  # 190
-    ],
-    
-    # ─── TOKENS / REGEX PLACEHOLDERS ───────────────────────────────
-    "<integer_literal>": [ ["integer"] ],  # 191
-    "<float_literal>":   [ ["float"] ],    # 192
-    "<string_literal>":  [ ["string"] ],   # 193
-    "<char_literal>":    [ ["char"] ],     # 194
     "<boolean_literal>": [
         ["buff"],  # 195
-        ["nerf"]   # 196
+        ["nerf"]  # 196
     ],
-    "<positive_integer>": [ ["integer"] ]  # 197
+    # REFACTORED TO REMOVE LEFT RECURSION
+    "<constant_value>": [
+        ["<const_add_expression>"]
+    ],
+    "<const_add_expression>": [
+        ["<const_mul_expression>", "<const_add_tail>"]
+    ],
+    "<const_add_tail>": [
+        ["+", "<const_mul_expression>", "<const_add_tail>"],
+        ["-", "<const_mul_expression>", "<const_add_tail>"],
+        []
+    ],
+    "<const_mul_expression>": [
+        ["<const_primary>", "<const_mul_tail>"]
+    ],
+    "<const_mul_tail>": [
+        ["*", "<const_primary>", "<const_mul_tail>"],
+        ["/", "<const_primary>", "<const_mul_tail>"],
+        ["%", "<const_primary>", "<const_mul_tail>"],
+        []
+    ],
+    "<const_primary>": [
+        ["<literal>"],
+        ["(", "<constant_value>", ")"]
+    ],
+    "<case_value>": [
+        ["integer"],  # 187
+        ["char"],  # 188
+        ["string"],  # 189
+        ["<boolean_literal>"]  # 190
+    ]
 }
 
-# ────────────────────────────────────────────────
-# COMPLETE PREDICT SET (extended and completed for all multi-prod non-terminals)
-# ────────────────────────────────────────────────
 PREDICT_SET = {
     "<program>": {
         "frag": ["<program>", 0],
@@ -444,7 +444,7 @@ PREDICT_SET = {
     },
     "<function_section>": {
         "build": ["<function_section>", 0],
-        "frag": ["<function_section>", 1]  # main
+        "frag": ["<function_section>", 1]
     },
     "<global_declaration>": {
         "frag": ["<global_declaration>", 0],
@@ -606,11 +606,11 @@ PREDICT_SET = {
         "try": ["<statement_list>", 0],
         "ggwp": ["<statement_list>", 0],
         "}": ["<statement_list>", 1],
-        "role": ["<statement_list>", 1],  # for case
+        "role": ["<statement_list>", 1],
         "noob": ["<statement_list>", 1]
     },
     "<statement>": {
-        "frag": ["<statement>", 3],  # local_decl
+        "frag": ["<statement>", 3],
         "elo": ["<statement>", 3],
         "ign": ["<statement>", 3],
         "surebol": ["<statement>", 3],
@@ -621,6 +621,11 @@ PREDICT_SET = {
         "shout": ["<statement>", 1],
         "afk": ["<statement>", 1],
         "hop": ["<statement>", 1],
+        "stack": ["<statement>", 1],
+        "craft": ["<statement>", 1],
+        "drop": ["<statement>", 1],
+        "count": ["<statement>", 1],
+        "split": ["<statement>", 1],
         "clutch": ["<statement>", 2],
         "pick": ["<statement>", 2],
         "grind": ["<statement>", 2],
@@ -637,13 +642,13 @@ PREDICT_SET = {
     },
     "<executable_statement>": {
         "identifier": ["<executable_statement>", 0],
-        "stack": ["<executable_statement>", 2],  # function_call
-        "craft": ["<executable_statement>", 2],
-        "drop": ["<executable_statement>", 2],
-        "count": ["<executable_statement>", 2],
-        "split": ["<executable_statement>", 2],
         "comsat": ["<executable_statement>", 1],
         "shout": ["<executable_statement>", 2],
+        "stack": ["<executable_statement>", 3],
+        "craft": ["<executable_statement>", 3],
+        "drop": ["<executable_statement>", 3],
+        "count": ["<executable_statement>", 3],
+        "split": ["<executable_statement>", 3],
         "afk": ["<executable_statement>", 4],
         "hop": ["<executable_statement>", 5]
     },
@@ -866,7 +871,7 @@ PREDICT_SET = {
         "grind": ["<case_body>", 0],
         "retry": ["<case_body>", 0],
         "try": ["<case_body>", 0],
-        "role": ["<case_body>", 0],  # epsilon for next case
+        "role": ["<case_body>", 0],
         "noob": ["<case_body>", 0],
         "}": ["<case_body>", 0]
     },
@@ -1178,51 +1183,19 @@ PREDICT_SET = {
         "count": ["<primary_expression>", 3],
         "split": ["<primary_expression>", 3]
     },
-    "<data_type>": {
-        "frag": ["<data_type>", 0],
-        "elo": ["<data_type>", 1],
-        "ign": ["<data_type>", 2],
-        "surebol": ["<data_type>", 3],
-        "tag": ["<data_type>", 4]
+    "<case_value>": {
+        "integer": ["<case_value>", 0],
+        "char": ["<case_value>", 1],
+        "string": ["<case_value>", 2],
+        "buff": ["<case_value>", 3],
+        "nerf": ["<case_value>", 3]
     },
-    "<assignment_operator>": {
-        "=": ["<assignment_operator>", 0],
-        "+=": ["<assignment_operator>", 1],
-        "-=": ["<assignment_operator>", 2],
-        "*=": ["<assignment_operator>", 3],
-        "/=": ["<assignment_operator>", 4],
-        "%=": ["<assignment_operator>", 5]
-    },
-    "<assignment_expression>": {
-        "identifier": ["<assignment_expression>", 0]
-    },
-    "<condition>": {
-        "+": ["<condition>", 0],
-        "-": ["<condition>", 0],
-        "!": ["<condition>", 0],
-        "++": ["<condition>", 0],
-        "--": ["<condition>", 0],
-        "integer": ["<condition>", 0],
-        "float": ["<condition>", 0],
-        "string": ["<condition>", 0],
-        "char": ["<condition>", 0],
-        "buff": ["<condition>", 0],
-        "nerf": ["<condition>", 0],
-        "identifier": ["<condition>", 0],
-        "(": ["<condition>", 0]
-    },
-    "<literal>": {
-        "integer": ["<literal>", 0],
-        "float": ["<literal>", 1],
-        "string": ["<literal>", 2],
-        "char": ["<literal>", 3],
-        "buff": ["<literal>", 4],
-        "nerf": ["<literal>", 4]
-    },
+    # ADDED: Boolean Literal
     "<boolean_literal>": {
         "buff": ["<boolean_literal>", 0],
         "nerf": ["<boolean_literal>", 1]
     },
+    # REFACTORED CONSTANT HIERARCHY START
     "<constant_value>": {
         "integer": ["<constant_value>", 0],
         "float": ["<constant_value>", 0],
@@ -1244,10 +1217,8 @@ PREDICT_SET = {
     "<const_add_tail>": {
         "+": ["<const_add_tail>", 0],
         "-": ["<const_add_tail>", 1],
-        ",": ["<const_add_tail>", 2],
-        "}": ["<const_add_tail>", 2],
-        ";": ["<const_add_tail>", 2],
-        ")": ["<const_add_tail>", 2]
+        ")": ["<const_add_tail>", 2],
+        ";": ["<const_add_tail>", 2]
     },
     "<const_mul_expression>": {
         "integer": ["<const_mul_expression>", 0],
@@ -1264,10 +1235,8 @@ PREDICT_SET = {
         "%": ["<const_mul_tail>", 2],
         "+": ["<const_mul_tail>", 3],
         "-": ["<const_mul_tail>", 3],
-        ",": ["<const_mul_tail>", 3],
-        "}": ["<const_mul_tail>", 3],
-        ";": ["<const_mul_tail>", 3],
-        ")": ["<const_mul_tail>", 3]
+        ")": ["<const_mul_tail>", 3],
+        ";": ["<const_mul_tail>", 3]
     },
     "<const_primary>": {
         "integer": ["<const_primary>", 0],
@@ -1277,13 +1246,6 @@ PREDICT_SET = {
         "buff": ["<const_primary>", 0],
         "nerf": ["<const_primary>", 0],
         "(": ["<const_primary>", 1]
-    },
-    "<case_value>": {
-        "integer": ["<case_value>", 0],
-        "char": ["<case_value>", 1],
-        "string": ["<case_value>", 2],
-        "buff": ["<case_value>", 3],
-        "nerf": ["<case_value>", 3]
     }
 }
 
