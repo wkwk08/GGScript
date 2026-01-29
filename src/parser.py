@@ -469,6 +469,13 @@ PREDICT_SET = {
         ",": ["<decl_suffix>", 1],
         ";": ["<decl_suffix>", 1]
     },
+    "<variable_declaration>": {
+        "frag": ["<variable_declaration>", 0],
+        "elo": ["<variable_declaration>", 0],
+        "ign": ["<variable_declaration>", 0],
+        "surebol": ["<variable_declaration>", 0],
+        "tag": ["<variable_declaration>", 0]
+    },
     "<identifier_init_list>": {
         "identifier": ["<identifier_init_list>", 0]
     },
@@ -567,6 +574,13 @@ PREDICT_SET = {
         "surebol": ["<return_type>", 3],
         "tag": ["<return_type>", 4],
         "dodge": ["<return_type>", 5]
+    },
+    "<data_type>": {
+        "frag":    ["<data_type>", 0],
+        "elo":     ["<data_type>", 1],
+        "ign":     ["<data_type>", 2],
+        "surebol": ["<data_type>", 3],
+        "tag":     ["<data_type>", 4]
     },
     "<parameters>": {
         "frag": ["<parameters>", 0],
@@ -1190,12 +1204,10 @@ PREDICT_SET = {
         "buff": ["<case_value>", 3],
         "nerf": ["<case_value>", 3]
     },
-    # ADDED: Boolean Literal
     "<boolean_literal>": {
         "buff": ["<boolean_literal>", 0],
         "nerf": ["<boolean_literal>", 1]
     },
-    # REFACTORED CONSTANT HIERARCHY START
     "<constant_value>": {
         "integer": ["<constant_value>", 0],
         "float": ["<constant_value>", 0],
@@ -1246,6 +1258,73 @@ PREDICT_SET = {
         "buff": ["<const_primary>", 0],
         "nerf": ["<const_primary>", 0],
         "(": ["<const_primary>", 1]
+    },
+    "<condition>": {
+        "+": ["<condition>", 0],
+        "-": ["<condition>", 0],
+        "!": ["<condition>", 0],
+        "++": ["<condition>", 0],
+        "--": ["<condition>", 0],
+        "integer": ["<condition>", 0],
+        "float": ["<condition>", 0],
+        "string": ["<condition>", 0],
+        "char": ["<condition>", 0],
+        "buff": ["<condition>", 0],
+        "nerf": ["<condition>", 0],
+        "identifier": ["<condition>", 0],
+        "(": ["<condition>", 0]
+    },
+    "<literal>": {
+        "integer": ["<literal>", 0],
+        "float": ["<literal>", 1],
+        "string": ["<literal>", 2],
+        "char": ["<literal>", 3],
+        "buff": ["<literal>", 4],
+        "nerf": ["<literal>", 4]
+    },
+    "<assignment_expression>": {
+        "identifier": ["<assignment_expression>", 0]
+    },
+    # ────────────────────────────────────────────────
+    # ADDED: Operator predict sets (to prevent crashes in expressions)
+    # ────────────────────────────────────────────────
+    "<assignment_operator>": {
+        "=":   ["<assignment_operator>", 0],
+        "+=":  ["<assignment_operator>", 1],
+        "-=":  ["<assignment_operator>", 2],
+        "*=":  ["<assignment_operator>", 3],
+        "/=":  ["<assignment_operator>", 4],
+        "%=":  ["<assignment_operator>", 5]
+    },
+    "<equality_op>": {
+        "==": ["<equality_op>", 0],
+        "!=": ["<equality_op>", 1]
+    },
+    "<relational_op>": {
+        "<":  ["<relational_op>", 0],
+        ">":  ["<relational_op>", 1],
+        "<=": ["<relational_op>", 2],
+        ">=": ["<relational_op>", 3]
+    },
+    "<additive_op>": {
+        "+": ["<additive_op>", 0],
+        "-": ["<additive_op>", 1]
+    },
+    "<multiplicative_op>": {
+        "*": ["<multiplicative_op>", 0],
+        "/": ["<multiplicative_op>", 1],
+        "%": ["<multiplicative_op>", 2]
+    },
+    "<unary_op>": {
+        "+":  ["<unary_op>", 0],
+        "-":  ["<unary_op>", 1],
+        "!":  ["<unary_op>", 2],
+        "++": ["<unary_op>", 3],
+        "--": ["<unary_op>", 4]
+    },
+    "<postfix_op>": {
+        "++": ["<postfix_op>", 0],
+        "--": ["<postfix_op>", 1]
     }
 }
 
@@ -1273,6 +1352,13 @@ class SyntaxAnalyzer:
         else:
             self.current_token = Token(TokenType.eof, None, line=-1, column=-1)
             self.current_type = 'eof'
+
+    def peek(self):
+        """Returns the type of the NEXT token without consuming it."""
+        if self.token_idx + 1 < len(self.tokens):
+            next_token = self.tokens[self.token_idx + 1]
+            return self.map_token_type(next_token)
+        return 'eof'
 
     def map_token_type(self, token):
         # Map all TokenType values to their grammar symbols or string representations
@@ -1467,28 +1553,58 @@ class SyntaxAnalyzer:
     def syntax_analyzer(self):
         stack = ["<program>"]
         error = None
+        
         while stack and not error:
             top = stack[-1]
-            line = self.current_token.line
-            column = self.current_token.column
+            line = self.current_token.line if self.current_token else -1
+            column = self.current_token.column if self.current_token else -1
+
+            print(f"DEBUG: top={top}, current={self.current_type}, peek={self.peek()}, stack_size={len(stack)}")  # ← add this temporarily
 
             if is_non_terminal(top):
+                # LL(2) resolution - MUST be first
+                if top == "<global_section>" and self.current_type == "frag":
+                    next_type = self.peek()
+                    print(f"DEBUG: LL(2) trigger - next={next_type}")
+                    if next_type == "lobby":
+                        print("DEBUG: frag lobby → force epsilon for global_section")
+                        stack.pop()  # epsilon
+                        continue
+                    else:
+                        print("DEBUG: frag + not lobby → force global_declaration")
+                        stack.pop()
+                        stack.append("<global_section>")
+                        stack.append("<global_declaration>")
+                        continue
+
+                # Start symbol bypass
+                if top == "<program>":
+                    print("DEBUG: expanding <program>")
+                    stack.pop()
+                    stack.append("<main_function>")
+                    stack.append("<function_section>")
+                    stack.append("<global_section>")
+                    continue
+
+                # Normal table lookup
                 if top in PREDICT_SET and self.current_type in PREDICT_SET[top]:
                     prod_info = PREDICT_SET[top][self.current_type]
-                    nt = prod_info[0]
-                    idx = prod_info[1]
+                    nt, idx = prod_info
+                    print(f"DEBUG: table match {top} → rule {idx}")
                     stack.pop()
                     production = CFG[nt][idx]
                     for sym in reversed(production):
-                        if sym:  # skip empty for epsilon
+                        if sym:
                             stack.append(sym)
                 else:
                     expected = ', '.join(PREDICT_SET.get(top, {}).keys()) or 'epsilon possible'
+                    print(f"ERROR TRIGGER: {top} does not expect '{self.current_type}'")
                     error = InvalidSyntaxError(
                         line, column,
                         f"Unexpected '{self.current_type}'. Expected: {expected}"
                     )
             else:
+                print(f"DEBUG: terminal match attempt: expected '{top}', got '{self.current_type}'")
                 stack.pop()
                 if top == self.current_type:
                     self.advance()
