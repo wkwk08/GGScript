@@ -901,84 +901,70 @@ class Lexer:
                 matched = True
 
     def make_number(self, tokens, errors, positive=True):
-        start_pos = self.pos.copy()
-        num_str = '-' if not positive else ''
-        is_float = False
+            start_pos = self.pos.copy()
+            num_str = '-' if not positive else ''
+            is_float = False
 
-        # === INTEGER PART ===
-        digits = ''
-        while self.current_char and self.current_char.isdigit():
-            digits += self.current_char
-            self.advance()
-
-        idx = 0
-        first_group = True
-        while len(digits) - idx > MAX_INTEGER_DIGITS:  # strictly greater
-            group = digits[idx:idx+MAX_INTEGER_DIGITS]
-            errors.append(LexicalError(
-                start_pos,
-                f"'{group}' exceeds maximum number of characters"
-            ))
-            idx += MAX_INTEGER_DIGITS
-            first_group = False
-
-        leftover_int = (num_str if first_group else '') + digits[idx:]
-
-        # === FRACTIONAL PART ===
-        if self.current_char == '.':
-            is_float = True
-            self.advance()
-            frac_digits = ''
+            # === INTEGER PART ===
+            digits = ''
             while self.current_char and self.current_char.isdigit():
-                frac_digits += self.current_char
+                digits += self.current_char
                 self.advance()
 
             idx = 0
-            while len(frac_digits) - idx > MAX_FRACTIONAL_DIGITS:  # strictly greater
-                group = frac_digits[idx:idx+MAX_FRACTIONAL_DIGITS]
+            first_group = True
+            while len(digits) - idx > MAX_INTEGER_DIGITS: 
+                group = digits[idx:idx+MAX_INTEGER_DIGITS]
+                errors.append(LexicalError(start_pos, f"'{group}' exceeds maximum number of characters"))
+                idx += MAX_INTEGER_DIGITS
+                first_group = False
+
+            leftover_int = (num_str if first_group else '') + digits[idx:]
+            literal = leftover_int 
+
+            # === FRACTIONAL PART ===
+            if self.current_char == '.':
+                is_float = True
+                self.advance()
+                frac_digits = ''
+                while self.current_char and self.current_char.isdigit():
+                    frac_digits += self.current_char
+                    self.advance()
+
+                idx = 0
+                while len(frac_digits) - idx > MAX_FRACTIONAL_DIGITS:
+                    group = frac_digits[idx:idx+MAX_FRACTIONAL_DIGITS]
+                    errors.append(LexicalError(start_pos, f"'.{group}' exceeds maximum number of characters"))
+                    idx += MAX_FRACTIONAL_DIGITS
+
+                leftover_frac = frac_digits[idx:]
+
+                if leftover_frac:
+                    literal = leftover_int + '.' + leftover_frac
+
+            # === FINAL EMISSION & DELIMITER CHECK ===
+            if self.current_char is None or self.current_char in INT_FLT_DLM:
+                if is_float:
+                    try:
+                        float(literal) 
+                        tokens.append(Token(TokenType.float, literal, start_pos.ln, start_pos.col))
+                    except ValueError:
+                        errors.append(LexicalError(start_pos, f"Invalid float literal '{literal}'"))
+                else:
+                    if leftover_int:
+                        try:
+                            value = int(leftover_int)
+                            if value < MIN_INTEGER or value > MAX_INTEGER:
+                                errors.append(LexicalError(start_pos, f"Integer out of range (±{MAX_INTEGER}): '{leftover_int}'"))
+                            else:
+                                tokens.append(Token(TokenType.integer, leftover_int, start_pos.ln, start_pos.col))
+                        except ValueError:
+                            errors.append(LexicalError(start_pos, f"Invalid integer literal '{leftover_int}'"))
+            else:
                 errors.append(LexicalError(
                     start_pos,
-                    f"'.{group}' exceeds maximum number of characters"
+                    f"Invalid character '{self.current_char}' after numeric literal"
                 ))
-                idx += MAX_FRACTIONAL_DIGITS
-
-            leftover_frac = frac_digits[idx:]
-
-            if leftover_frac:
-                literal = leftover_int + '.' + leftover_frac
-                tokens.append(Token(TokenType.float, literal, start_pos.ln, start_pos.col))
-            # IMPORTANT: if no leftover fractional digits, do NOT emit a bare '.' token
-            return
-
-        # === FINAL EMISSION ===
-        if self.current_char is None or self.current_char in INT_FLT_DLM:
-            if is_float:
-                try:
-                    float(leftover_int)
-                    tokens.append(Token(TokenType.float, leftover_int, start_pos.ln, start_pos.col))
-                except ValueError:
-                    errors.append(LexicalError(start_pos,
-                                            f"Invalid float literal '{leftover_int}'"))
-            else:
-                if leftover_int:
-                    try:
-                        value = int(leftover_int)
-                        if value < MIN_INTEGER or value > MAX_INTEGER:
-                            errors.append(LexicalError(
-                                start_pos,
-                                f"Integer out of range (±{MAX_INTEGER}): '{leftover_int}'"
-                            ))
-                        else:
-                            tokens.append(Token(TokenType.integer, leftover_int,
-                                                start_pos.ln, start_pos.col))
-                    except ValueError:
-                        errors.append(LexicalError(start_pos,
-                                                f"Invalid integer literal '{leftover_int}'"))
-        else:
-            errors.append(LexicalError(
-                start_pos,
-                f"Invalid character '{self.current_char}' after numeric literal"
-            ))
 
     def make_signed_number_or_operator(self, tokens, errors):
         start_pos = self.pos.copy()
