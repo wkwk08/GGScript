@@ -1341,7 +1341,7 @@ class Lexer:
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '!='"))
         else:
-            if self.current_char is None or self.current_char in OP_PAREN_DLM:
+            if self.current_char is None or self.current_char in LOGIC_OP_DLM:
                 tokens.append(Token(TokenType.not_, '!', start_pos.ln, start_pos.col))
             else:
                 errors.append(LexicalError(start_pos, f"Invalid delimiter '{self.current_char}' after '!'"))
