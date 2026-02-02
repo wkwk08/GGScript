@@ -36,6 +36,7 @@ REL_OPRTR   = '<>!='   # raw chars; compound handled in make_* methods
 REL_OP_DLM = WHTSPC_DLM + ALPHANUM + '("\''
 ASSGN_OPRTR = '=+-*/%'      # compound handled in make_* methods
 LOGIC_OPRTR = '!&|'
+LOGIC_OP_DLM = WHTSPC_DLM + ALPHANUM + '("-!'
 EQ_OP_DLM = WHTSPC_DLM + ALPHANUM + '"\''
 UNRY_OP_DLM = WHTSPC_DLM + ALPHANUM + ';),'
 CL_PAREN_DLM = WHTSPC_DLM + ALPHANUM + ARITH_OPRTR + REL_OPRTR + '\n{)};'
