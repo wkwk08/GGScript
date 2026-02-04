@@ -207,7 +207,7 @@ CFG = {
         []  # 92
     ],
     "<else_if>": [
-        ["choke", "clutch", "(", "<condition>", ")", "{", "<statement_list>", "}"]  # 93
+        ["choke_clutch", "(", "<condition>", ")", "{", "<statement_list>", "}"]  # 93
     ],
     "<else_block>": [
         ["choke", "{", "<statement_list>", "}"],  # 94
@@ -793,7 +793,8 @@ PREDICT_SET = {
         "clutch": ["<if_statement>", 0]
     },
     "<else_if_block>": {
-        "choke": ["<else_if_block>", 0],
+        "choke_clutch": ["<else_if_block>", 0],
+        "choke": ["<else_if_block>", 1],
         "frag": ["<else_if_block>", 1],
         "elo": ["<else_if_block>", 1],
         "ign": ["<else_if_block>", 1],
@@ -814,7 +815,7 @@ PREDICT_SET = {
         "}": ["<else_if_block>", 1]
     },
     "<else_if>": {
-        "choke": ["<else_if>", 0]
+        "choke_clutch": ["<else_if>", 0]
     },
     "<else_block>": {
         "choke": ["<else_block>", 0],
