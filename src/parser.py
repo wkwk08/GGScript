@@ -405,7 +405,7 @@ CFG = {
     "<integer_literal>": [["integer"]], # 189
     "<float_literal>": [["float"]],     # 190
     "<string_literal>": [["string"]],   # 191
-    "<char_literal>": [["char_literal"]], # 192
+    "<char_literal>": [["char"]], # 192
     "<positive_integer>": [["positive_integer"]] # 195
 }
 
