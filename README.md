@@ -41,5 +41,5 @@ Choose one to run:
 $ python main.py your_script.gg
 
 2. Streamlit app
-$ streamlit run streamlit_app.py
+$ streamlit run app.py
 ```
