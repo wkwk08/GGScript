@@ -221,13 +221,13 @@ CFG = {
         []  # 98
     ],
     "<case_block>": [
-        ["role", "<case_value>", ":", "<case_body>", "afk", ";"]  # 99
+        ["role", "<case_value>", ":", "<case_body>"]  # 99
     ],
     "<case_body>": [
         ["<statement_list>"]  # 100
     ],
     "<default_block>": [
-        ["noob", ":", "<case_body>", "afk", ";"],  # 101
+        ["noob", ":", "<case_body>"],  # 101
         []  # 102
     ],
     "<for_loop>": [
