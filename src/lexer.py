@@ -933,30 +933,36 @@ class Lexer:
                 self.advance()
 
             idx = 0
+            overflowed = False
             while len(frac_digits) - idx > MAX_FRACTIONAL_DIGITS:
                 group = frac_digits[idx:idx+MAX_FRACTIONAL_DIGITS]
                 errors.append(LexicalError(start_pos, f"'.{group}' exceeds maximum number of characters"))
                 idx += MAX_FRACTIONAL_DIGITS
+                overflowed = True
 
             leftover_frac = frac_digits[idx:]
 
-            if leftover_frac:
+            if not overflowed:
                 literal = leftover_int + '.' + leftover_frac
+            else:
+                # overflow occurred → reject entire float literal
+                literal = None
 
         # === FINAL EMISSION & DELIMITER CHECK ===
         if is_float:
-            try:
-                float(literal)
-                tokens.append(Token(TokenType.float, literal, start_pos.ln, start_pos.col))
-            except ValueError:
-                errors.append(LexicalError(start_pos, f"Invalid float literal '{literal}'"))
+            if literal is not None:
+                try:
+                    float(literal)
+                    tokens.append(Token(TokenType.float, literal, start_pos.ln, start_pos.col))
+                except ValueError:
+                    errors.append(LexicalError(start_pos, f"Invalid float literal '{literal}'"))
+            # else: overflow → no token emitted
 
-            # After emitting, check delimiter
+            # After emitting (or rejecting), check delimiter
             if self.current_char is None or self.current_char in INT_FLT_DLM:
                 return
             elif self.current_char == '.':
                 errors.append(LexicalError(start_pos, "Invalid '.' after float literal"))
-                # consume the rest of the chain so no new tokens are emitted
                 while self.current_char and self.current_char not in INT_FLT_DLM:
                     self.advance()
                 return
