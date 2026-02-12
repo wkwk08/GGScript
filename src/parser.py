@@ -406,7 +406,7 @@ CFG = {
     "<float_literal>": [["float"]],     # 190
     "<string_literal>": [["string"]],   # 191
     "<char_literal>": [["char"]], # 192
-    "<positive_integer>": [["positive_integer"]] # 195
+    "<positive_integer>": [["integer"]] # 195
 }
 
 # ────────────────────────────────────────────────
@@ -1212,7 +1212,8 @@ PREDICT_SET = {
         "-": ["<const_add_tail>", 1],
         ")": ["<const_add_tail>", 2],
         ";": ["<const_add_tail>", 2],
-        ",": ["<const_add_tail>", 2]
+        ",": ["<const_add_tail>", 2],
+        "}": ["<const_add_tail>", 2]
     },
     "<const_mul_expression>": {
         "integer": ["<const_mul_expression>", 0],
@@ -1231,7 +1232,8 @@ PREDICT_SET = {
         "-": ["<const_mul_tail>", 3],
         ")": ["<const_mul_tail>", 3],
         ";": ["<const_mul_tail>", 3],
-        ",": ["<const_mul_tail>", 3]
+        ",": ["<const_mul_tail>", 3],
+        "}": ["<const_mul_tail>", 3]
     },
     "<const_primary>": {
         "integer": ["<const_primary>", 0],
@@ -1289,7 +1291,7 @@ PREDICT_SET = {
         "char": ["<char_literal>", 0]
     },
     "<positive_integer>": {
-        "positive_integer": ["<positive_integer>", 0]
+        "integer": ["<positive_integer>", 0]
     }
 }
 
@@ -1515,6 +1517,12 @@ class SyntaxAnalyzer:
         # Fallback: string representation
         return str(t)
 
+    def peek_n(self, n):
+            target_idx = self.token_idx + n
+            if target_idx < len(self.tokens):
+                return self.map_token_type(self.tokens[target_idx])
+            return 'eof'
+
     def syntax_analyzer(self):
         stack = ["<program>"]
         error = None
@@ -1524,69 +1532,65 @@ class SyntaxAnalyzer:
             line = self.current_token.line if self.current_token else -1
             column = self.current_token.column if self.current_token else -1
 
-            print(f"DEBUG: top={top}, current={self.current_type}, peek={self.peek()}, stack_size={len(stack)}")  # ← add this temporarily
-
             if is_non_terminal(top):
-                # LL(2) resolution - MUST be first
+                # Ambiguity Check: Main Function vs Global Section
                 if top == "<global_section>" and self.current_type == "frag":
-                    next_type = self.peek()
-                    print(f"DEBUG: LL(2) trigger - next={next_type}")
-                    if next_type == "lobby":
-                        print("DEBUG: frag lobby → force epsilon for global_section")
-                        stack.pop()  # epsilon
-                        continue
-                    else:
-                        print("DEBUG: frag + not lobby → force global_declaration")
+                    if self.peek_n(1) == "lobby":
                         stack.pop()
-                        stack.append("<global_section>")
-                        stack.append("<global_declaration>")
                         continue
 
-                # Start symbol bypass
-                if top == "<program>":
-                    print("DEBUG: expanding <program>")
+                # Ambiguity Check: Array vs Variable Declaration
+                ambiguous_parents = ["<global_declaration>", "<local_declaration>", "<declaration_statement>"]
+                data_types = ["frag", "elo", "ign", "surebol", "tag", "stun"]
+
+                if top in ambiguous_parents and self.current_type in data_types:
+                    symbol_after_id = self.peek_n(2)
                     stack.pop()
-                    stack.append("<main_function>")
-                    stack.append("<function_section>")
-                    stack.append("<global_section>")
+
+                    if symbol_after_id == "[":
+                        stack.append(";")
+                        stack.append("<array_declaration>")
+                    else:
+                        stack.append(";")
+                        stack.append("<variable_declaration>")
                     continue
 
-                # Normal table lookup
+                # Standard Table Lookup
                 if top in PREDICT_SET and self.current_type in PREDICT_SET[top]:
                     prod_info = PREDICT_SET[top][self.current_type]
                     nt, idx = prod_info
-                    print(f"DEBUG: table match {top} → rule {idx}")
+                    
                     stack.pop()
                     production = CFG[nt][idx]
+                    
                     for sym in reversed(production):
                         if sym:
                             stack.append(sym)
                 else:
-                    expected = ', '.join(PREDICT_SET.get(top, {}).keys()) or 'epsilon possible'
-                    print(f"ERROR TRIGGER: {top} does not expect '{self.current_type}'")
+                    expected = ', '.join(PREDICT_SET.get(top, {}).keys()) or 'epsilon'
                     error = InvalidSyntaxError(
-                        line, column,
-                        f"Unexpected '{self.current_type}'. Expected: {expected}"
+                        line, column, 
+                        f"Unexpected '{self.current_type}' while parsing {top}. Expected: {expected}"
                     )
+
             else:
-                print(f"DEBUG: terminal match attempt: expected '{top}', got '{self.current_type}'")
+                # Terminal Matching
                 stack.pop()
                 if top == self.current_type:
                     self.advance()
                 else:
                     error = InvalidSyntaxError(
-                        line, column,
-                        f"Expected '{top}', found '{self.current_type}'"
+                        line, column, 
+                        f"Expected '{top}', but found '{self.current_type}'"
                     )
 
-        if error:
-            return error
-        if self.current_type != 'eof':
-            return InvalidSyntaxError(
+        if not error and self.current_type != 'eof':
+             return InvalidSyntaxError(
                 self.current_token.line, self.current_token.column,
-                "Extra input after program end"
+                "Extra input found after program end"
             )
-        return None
+
+        return error
 
 def is_non_terminal(s):
     return s.startswith("<") and s.endswith(">")
