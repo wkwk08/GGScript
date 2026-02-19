@@ -7,7 +7,7 @@ from src.parser import analyze_syntax
 
 # ── PAGE CONFIG ───────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="GGScript Editor",
+    page_title="GGScript Compiler",
     page_icon="https://i.imgur.com/szLgNMG.png",
     layout="wide",
     initial_sidebar_state="collapsed"
