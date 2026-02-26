@@ -265,15 +265,15 @@ class SemanticAnalyzer:
         self.function_return_stack = [] 
 
     def interpret(self, node):
-        try:
-            self.visit_node(node) 
-            self.errors.append("Semantic analysis completed successfully. No Semantic Errors found.")
-            print("Semantic checking completed successfully. No Semantic Errors found.")
-            print('---------GLOBAL TABLE---------\n\t\t')
-            self.print_symbols(self.curr_scope.syms, indent=2)
-        except SemanticError as e:
-            pass
-        return self.errors
+            try:
+                self.visit_node(node) 
+                # Success message removed from the error list
+                print("Semantic checking completed successfully. No Semantic Errors found.")
+                print('---------GLOBAL TABLE---------\n\t\t')
+                self.print_symbols(self.curr_scope.syms, indent=2)
+            except SemanticError as e:
+                pass
+            return self.errors
 
     def enter_scope(self, nodeName): 
         print(f'\n(semantic)(dbg) ENTERING scope {nodeName}')
