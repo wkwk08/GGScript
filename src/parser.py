@@ -1633,7 +1633,7 @@ class SyntaxAnalyzer:
                     expected = ', '.join(PREDICT_SET.get(top, {}).keys()) or 'epsilon'
                     error = InvalidSyntaxError(
                         line, column, 
-                        f"Unexpected '{self.current_type}' while parsing {top}. Expected: {expected}"
+                        f"Unexpected '{self.current_type}' while parsing. {top} Expected: {expected}"
                     )
 
             else:
