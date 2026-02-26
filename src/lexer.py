@@ -916,7 +916,7 @@ class Lexer:
         first_group = True
         while len(digits) - idx > MAX_INTEGER_DIGITS: 
             group = digits[idx:idx+MAX_INTEGER_DIGITS]
-            errors.append(LexicalError(start_pos, f"'{group}' exceeds maximum number of characters"))
+            errors.append(LexicalError(start_pos, f"'{group}' exceeds the maximum of 15 characters for an integer number."))
             idx += MAX_INTEGER_DIGITS
             first_group = False
 
