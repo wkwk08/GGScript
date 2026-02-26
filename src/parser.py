@@ -1604,7 +1604,7 @@ class SyntaxAnalyzer:
 
                 # Ambiguity Check: Array vs Variable Declaration
                 ambiguous_parents = ["<global_declaration>", "<local_declaration>", "<declaration_statement>"]
-                data_types = ["frag", "elo", "ign", "surebol", "tag", "stun"]
+                data_types = ["frag", "elo", "ign", "surebol", "tag"]
 
                 if top in ambiguous_parents and self.current_type in data_types:
                     symbol_after_id = self.peek_n(2)
