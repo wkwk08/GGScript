@@ -1082,14 +1082,14 @@ class ASTBuilder:
                                 row = []
                                 if self.current_token.type != TokenType.rbrace:
                                     row.append(self.parse_expression())
-                                    while self.match(TokenType.comma):
+                                    while self.match(TokenType.separator):
                                         row.append(self.parse_expression())
                                 self.expect(TokenType.rbrace)
                                 init_vals.append(row)
-                                self.match(TokenType.comma) 
+                                self.match(TokenType.separator) 
                         else:
                             init_vals.append(self.parse_expression())
-                            while self.match(TokenType.comma):
+                            while self.match(TokenType.separator):
                                 init_vals.append(self.parse_expression())
                     self.expect(TokenType.rbrace)
                 
@@ -1100,7 +1100,7 @@ class ASTBuilder:
                     init_val = self.parse_expression()
                 declarations.append(node_vardec(self.token_to_dict(dtype_token), self.token_to_dict(id_token), const_b, init_val))
             
-            if self.match(TokenType.comma):
+            if self.match(TokenType.separator):
                 continue
             else:
                 break
@@ -1121,7 +1121,7 @@ class ASTBuilder:
             self.advance()
             p_id = self.expect(TokenType.identifier)
             params.append(node_funcpar_var(self.token_to_dict(p_dt), self.token_to_dict(p_id)))
-            while self.match(TokenType.comma):
+            while self.match(TokenType.separator):
                 p_dt = self.current_token
                 self.advance()
                 p_id = self.expect(TokenType.identifier)
@@ -1271,7 +1271,7 @@ class ASTBuilder:
     def parse_input_stmt(self):
         self.expect(TokenType.comsat)
         targets = [self.parse_primary()] 
-        while self.match(TokenType.comma):
+        while self.match(TokenType.separator):
             targets.append(self.parse_primary())
         self.expect(TokenType.terminator)
         return node_input(targets)
@@ -1279,7 +1279,7 @@ class ASTBuilder:
     def parse_output_stmt(self):
         self.expect(TokenType.shout)
         items = [self.parse_expression()]
-        while self.match(TokenType.comma):
+        while self.match(TokenType.separator):
             items.append(self.parse_expression())
         self.expect(TokenType.terminator)
         return node_output(items)
@@ -1295,7 +1295,7 @@ class ASTBuilder:
             args = []
             if self.current_token.type != TokenType.rparen:
                 args.append(self.parse_expression())
-                while self.match(TokenType.comma):
+                while self.match(TokenType.separator):
                     args.append(self.parse_expression())
             self.expect(TokenType.rparen)
             self.expect(TokenType.terminator)
@@ -1305,7 +1305,7 @@ class ASTBuilder:
             args = []
             if self.current_token.type != TokenType.rparen:
                 args.append(self.parse_expression())
-                while self.match(TokenType.comma):
+                while self.match(TokenType.separator):
                     args.append(self.parse_expression())
             self.expect(TokenType.rparen)
             self.expect(TokenType.terminator)
@@ -1428,7 +1428,7 @@ class ASTBuilder:
                 args = []
                 if self.current_token.type != TokenType.rparen:
                     args.append(self.parse_expression())
-                    while self.match(TokenType.comma):
+                    while self.match(TokenType.separator):
                         args.append(self.parse_expression())
                 self.expect(TokenType.rparen)
                 return node_func_call(self.token_to_dict(tok), args)
@@ -1449,7 +1449,7 @@ class ASTBuilder:
                 args = []
                 if self.current_token.type != TokenType.rparen:
                     args.append(self.parse_expression())
-                    while self.match(TokenType.comma):
+                    while self.match(TokenType.separator):
                         args.append(self.parse_expression())
                 self.expect(TokenType.rparen)
                 return node_method_call(self.token_to_dict(tok), self.token_to_dict(m_tok), args)

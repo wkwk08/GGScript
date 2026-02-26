@@ -1526,7 +1526,7 @@ class SyntaxAnalyzer:
             return "["
         if t == TokenType.rbracket:
             return "]"
-        if t == TokenType.comma:
+        if t == TokenType.separator:
             return ","
         if t == TokenType.semicolon:
             return ";"
