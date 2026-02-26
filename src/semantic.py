@@ -351,30 +351,27 @@ class SemanticAnalyzer:
     # ------------------------------------ NODE VISITATION FUNCS ----------------------------------
 
     def visit_node_program(self, node):
-        self.has_main = False
-        
-        for statement in node.globals_n: 
-            self.visit_node(statement)
-
-        for func in node.funcs_n:
-            self.visit_node(func)
-
-        if node.main_n:
-            self.has_main = True
-            self.current_function_name = "lobby" 
-            self.function_return_stack.append("frag")
-            self.count_return = 0
+            self.has_main = False
             
-            has_return = self.check_return_in_body(node.main_n.body_n)
-            if not has_return:
-                self.logError(f"Main function 'lobby' must have a 'ggwp' return statement.", ErrorNode(1, 1))
+            for statement in node.globals_n: 
+                self.visit_node(statement)
+
+            for func in node.funcs_n:
+                self.visit_node(func)
+
+            if node.main_n:
+                self.has_main = True
+                self.current_function_name = "lobby" 
+                self.function_return_stack.append("frag")
+                self.count_return = 0
+                    
+                self.visit_node(node.main_n)
                 
-            self.visit_node(node.main_n)
-            self.function_return_stack.pop()
-            self.current_function_name = None
-        
-        if not self.has_main:
-            self.logError(f"Program must contain a main 'lobby' function.", ErrorNode(1, 1))
+                self.function_return_stack.pop()
+                self.current_function_name = None
+            
+            if not self.has_main:
+                self.logError(f"Program must contain a main 'lobby' function.", ErrorNode(1, 1))
 
     def visit_node_main_func(self, node):
         self.enter_scope("lobby") 
