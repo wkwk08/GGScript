@@ -4,6 +4,7 @@ from streamlit_monaco import st_monaco
 from src.lexer import Lexer
 from src.token_types import TokenType
 from src.parser import analyze_syntax
+from src.semantic import SemanticAnalyzer
 
 # ── PAGE CONFIG ───────────────────────────────────────────────────────
 st.set_page_config(
@@ -344,7 +345,32 @@ elif syn_btn:
     else:
         terminal_lines.append("<span class='error-line'>No code to analyze.</span>")
 elif sem_btn:
-    terminal_lines = ["→ semantic analysis...", "(not implemented yet)"]
+    terminal_lines = ["→ semantic analysis..."]
+    if code_content and code_content.strip():
+        try:
+            lexer = Lexer(code_content)
+            tokens, lex_errors = lexer.make_tokens()
+            
+            if lex_errors:
+                terminal_lines.append(f"<span class='error-line'>Lexical errors found ({len(lex_errors)}). Cannot proceed to semantic.</span>")
+                for err in lex_errors:
+                    terminal_lines.append(f"<span class='error-line'>  {err.as_string()}</span>")
+            else:
+                syntax_success, syntax_message = analyze_syntax(tokens)
+                if not syntax_success:
+                    terminal_lines.append(f"<span class='error-line'>Syntax errors found. Cannot proceed to semantic: {syntax_message}</span>")
+                else:
+                    semantic_analyzer = SemanticAnalyzer(tokens)
+                    semantic_success, semantic_message = semantic_analyzer.analyze()
+                    if semantic_success:
+                        terminal_lines.append(f"<span class='success-line'>{semantic_message}</span>")
+                    else:
+                        terminal_lines.append(f"<span class='error-line'>{semantic_message}</span>")
+                    
+        except Exception as e:
+            terminal_lines.append(f"<span class='error-line'>Semantic analyzer crashed: {str(e)}</span>")
+    else:
+        terminal_lines.append("<span class='error-line'>No code to analyze.</span>")
 
 # ── RENDER TERMINAL ───────────────────────────────────────────────────
 terminal_content = "\n".join(terminal_lines)
