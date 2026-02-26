@@ -1,4 +1,4 @@
-from token_types import TokenType
+from src.token_types import TokenType
 
 class SemanticError:
     def __init__(self, line, column, details):
