@@ -936,7 +936,7 @@ class Lexer:
             overflowed = False
             while len(frac_digits) - idx > MAX_FRACTIONAL_DIGITS:
                 group = frac_digits[idx:idx+MAX_FRACTIONAL_DIGITS]
-                errors.append(LexicalError(start_pos, f"'.{group}' exceeds maximum number of characters"))
+                errors.append(LexicalError(start_pos, f"'.{group}' exceeds the 6-digit limit for fractional part of a float."))
                 idx += MAX_FRACTIONAL_DIGITS
                 overflowed = True
 
