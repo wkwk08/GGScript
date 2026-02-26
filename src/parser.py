@@ -54,18 +54,33 @@ CFG = {
         ["stun", "<data_type>", "identifier", "=", "<constant_value>", ";"]  # 18
     ],
     "<array_declaration>": [
-        ["<data_type>", "identifier", "[", "<positive_integer>", "]", "<array_init>"]  # 19
+        ["<data_type>", "identifier", "<dimension_list>", "<array_init>"]  # 19
+    ],
+    "<dimension_list>": [
+        ["[", "<array_size>", "]", "<dimension_tail>"]
+    ],
+    "<dimension_tail>": [
+        ["[", "<array_size>", "]", "<dimension_tail>"],
+        []
+    ],
+    "<array_size>": [
+        ["<positive_integer>"],
+        []
     ],
     "<array_init>": [
         ["=", "{", "<value_list>", "}"],  # 20
         []  # 21
     ],
     "<value_list>": [
-        ["<constant_value>", "<value_tail>"]  # 22
+        ["<array_element>", "<value_tail>"]  # 22 Updated
     ],
     "<value_tail>": [
-        [",", "<constant_value>", "<value_tail>"],  # 23
+        [",", "<array_element>", "<value_tail>"],
         []  # 24
+    ],
+    "<array_element>": [
+        ["<constant_value>"],       # Flat values: 1, "hello", etc.
+        ["{", "<value_list>", "}"]  # Nested arrays: {1, 2, 3}
     ],
     "<function_definition>": [
         ["build", "<return_type>", "identifier", "(", "<parameters>", ")", "{", "<function_body>", "}"]  # 25
@@ -134,7 +149,7 @@ CFG = {
         ["<do_while_loop>"]      # 62
     ],
     "<assignment_statement>": [
-        ["<lvalue>", "<assignment_operator>", "<expression>", ";"]  # 63
+        ["<lvalue>", "<assign_tail>", ";"] # 63
     ],
     "<lvalue>": [
         ["identifier", "<array_access>"]  # 64
@@ -356,7 +371,12 @@ CFG = {
         ["="], ["+="], ["-="], ["*="], ["/="], ["%="] # 168-173
     ],
     "<assignment_expression>": [
-        ["<lvalue>", "<assignment_operator>", "<expression>"]  # 174
+        ["<lvalue>", "<assign_tail>"]  # 174 Updated
+    ],
+    "<assign_tail>": [
+        ["<assignment_operator>", "<expression>"], # For standard assignments: = 5
+        ["++"],                                    # For postfix increment: ++
+        ["--"]                                     # For postfix decrement: --
     ],
     "<condition>": [
         ["<expression>"]  # 175
@@ -481,6 +501,28 @@ PREDICT_SET = {
         "=": ["<array_init>", 0],
         ";": ["<array_init>", 1]
     },
+    "<dimension_list>": {
+        "[": ["<dimension_list>", 0]
+    },
+    "<dimension_tail>": {
+        "[": ["<dimension_tail>", 0],
+        "=": ["<dimension_tail>", 1],
+        ";": ["<dimension_tail>", 1]
+    },
+    "<array_size>": {
+        "integer": ["<array_size>", 0],
+        "]": ["<array_size>", 1]
+    },
+    "<array_element>": {
+        "integer": ["<array_element>", 0],
+        "float": ["<array_element>", 0],
+        "string": ["<array_element>", 0],
+        "char": ["<array_element>", 0],
+        "buff": ["<array_element>", 0],
+        "nerf": ["<array_element>", 0],
+        "(": ["<array_element>", 0],
+        "{": ["<array_element>", 1]
+    },
     "<value_list>": {
         "integer": ["<value_list>", 0],
         "float": ["<value_list>", 0],
@@ -488,7 +530,8 @@ PREDICT_SET = {
         "char": ["<value_list>", 0],
         "buff": ["<value_list>", 0],
         "nerf": ["<value_list>", 0],
-        "(": ["<value_list>", 0]
+        "(": ["<value_list>", 0],
+        "{": ["<value_list>", 0]
     },
     "<value_tail>": {
         ",": ["<value_tail>", 0],
@@ -670,7 +713,9 @@ PREDICT_SET = {
         ";": ["<array_access>", 1],
         ")": ["<array_access>", 1],
         ",": ["<array_access>", 1],
-        "]": ["<array_access>", 1]
+        "]": ["<array_access>", 1],
+        "++": ["<array_access>", 1],
+        "--": ["<array_access>", 1]
     },
     "<input_statement>": {
         "comsat": ["<input_statement>", 0]
@@ -1278,6 +1323,16 @@ PREDICT_SET = {
         "/=": ["<assignment_operator>", 4],
         "%=": ["<assignment_operator>", 5]
     },
+    "<assign_tail>": {
+        "=":  ["<assign_tail>", 0],
+        "+=": ["<assign_tail>", 0],
+        "-=": ["<assign_tail>", 0],
+        "*=": ["<assign_tail>", 0],
+        "/=": ["<assign_tail>", 0],
+        "%=": ["<assign_tail>", 0],
+        "++": ["<assign_tail>", 1],
+        "--": ["<assign_tail>", 2]
+    },
     "<integer_literal>": {
         "integer": ["<integer_literal>", 0]
     },
@@ -1533,6 +1588,14 @@ class SyntaxAnalyzer:
             column = self.current_token.column if self.current_token else -1
 
             if is_non_terminal(top):
+                # Array Dimension Validation
+                if top == "<positive_integer>" and str(self.current_token.value) == "0":
+                    error = InvalidSyntaxError(
+                        line, column, 
+                        "Array dimensions must be greater than 0."
+                    )
+                    break # Stop parsing immediately
+                
                 # Ambiguity Check: Main Function vs Global Section
                 if top == "<global_section>" and self.current_type == "frag":
                     if self.peek_n(1) == "lobby":
