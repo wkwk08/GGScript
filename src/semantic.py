@@ -901,28 +901,33 @@ class SemanticAnalyzer:
             self.logError("'hop' (continue) must be inside a loop.", err_n)
 
     def visit_node_return_block(self, node):
-        if not self.function_return_stack:
-            self.logError("'ggwp' (return) statement outside of a function.", ErrorNode(0,0))
-            return
+            if not self.function_return_stack:
+                self.logError("'ggwp' (return) statement outside of a function.", ErrorNode(0,0))
+                return
 
-        expected_type = self.function_return_stack[-1]
-        
-        if node.ret_value_n:
-            ret_type, _, val_err = self.visit_node(node.ret_value_n)
-            if ret_type[0] == 'arr':
-                self.logError(f"Function '{self.current_function_name}' cannot return an array.", val_err)
-                
-            actual_type = ret_type[1]
-            if expected_type == 'dodge':
-                self.logError(f"Void ('dodge') function '{self.current_function_name}' cannot return a value.", val_err)
-            elif expected_type != actual_type:
-                if not (expected_type == 'elo' and actual_type == 'frag'):
-                    self.logError(f"Expected return type '{expected_type}', got '{actual_type}'.", val_err)
-        else:
-            if expected_type != "dodge":
-                self.logError(f"Function '{self.current_function_name}' must return '{expected_type}'.", ErrorNode(0,0))
+            expected_type = self.function_return_stack[-1]
+            
+            if node.ret_value_n:
+                ret_type, _, val_err = self.visit_node(node.ret_value_n)
+                if ret_type[0] == 'arr':
+                    self.logError(f"Function '{self.current_function_name}' cannot return an array.", val_err)
+                    
+                actual_type = ret_type[1]
+                if expected_type == 'dodge':
+                    self.logError(f"Void ('dodge') function '{self.current_function_name}' cannot return a value.", val_err)
+                elif expected_type != actual_type:
+                    if not (expected_type == 'elo' and actual_type == 'frag'):
+                        self.logError(f"Expected return type '{expected_type}', got '{actual_type}'.", val_err)
+            else:
+                # No return value provided (e.g., just 'ggwp;')
+                if expected_type != "dodge":
+                    # ALLOW IMPLICIT RETURN FOR LOBBY
+                    if self.current_function_name == "lobby" and expected_type == "frag":
+                        pass # 'ggwp;' inside 'lobby' acts implicitly as 'return 0'
+                    else:
+                        self.logError(f"Function '{self.current_function_name}' expects return type '{expected_type}', but got none.", ErrorNode(0,0))
 
-        self.count_return += 1 
+            self.count_return += 1
 
     def visit_node_input(self, node):
         for target in node.targets_n:
