@@ -4,7 +4,7 @@ from streamlit_monaco import st_monaco
 from src.lexer import Lexer
 from src.token_types import TokenType
 from src.parser import analyze_syntax
-from src.semantic import SemanticAnalyzer
+from src.semantic import analyze_semantics  # <--- CHANGED THIS IMPORT
 
 # ── PAGE CONFIG ───────────────────────────────────────────────────────
 st.set_page_config(
@@ -360,8 +360,7 @@ elif sem_btn:
                 if not syntax_success:
                     terminal_lines.append(f"<span class='error-line'>Syntax errors found. Cannot proceed to semantic: {syntax_message}</span>")
                 else:
-                    semantic_analyzer = SemanticAnalyzer(tokens)
-                    semantic_success, semantic_message = semantic_analyzer.analyze()
+                    semantic_success, semantic_message = analyze_semantics(tokens)
                     if semantic_success:
                         terminal_lines.append(f"<span class='success-line'>{semantic_message}</span>")
                     else:
