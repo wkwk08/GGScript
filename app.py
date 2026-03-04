@@ -247,7 +247,7 @@ with col_editor:
     )
 
 # ── LEXICAL ANALYSIS LOGIC ────────────────────────────────────────────
-terminal_lines = ["ready."]
+terminal_lines = [""]
 
 if lex_btn and code_content and code_content.strip():
     try:
