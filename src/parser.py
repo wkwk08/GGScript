@@ -139,7 +139,8 @@ CFG = {
         ["<output_statement>"],      # 54
         ["<function_call_stmt>"],    # 55
         ["<break_statement>"],       # 56
-        ["<continue_statement>"]     # 57
+        ["<continue_statement>"],     # 57
+        ["ggwp", "<return_value>", ";"]
     ],
     "<control_statement>": [
         ["<if_statement>"],      # 58
@@ -641,7 +642,7 @@ PREDICT_SET = {
         "grind": ["<statement_list>", 0],
         "retry": ["<statement_list>", 0],
         "try": ["<statement_list>", 0],
-        "ggwp": ["<statement_list>", 1],
+        "ggwp": ["<statement_list>", 0],
         "}": ["<statement_list>", 1],
         "role": ["<statement_list>", 1],
         "noob": ["<statement_list>", 1]
@@ -663,6 +664,7 @@ PREDICT_SET = {
         "drop": ["<statement>", 1],
         "count": ["<statement>", 1],
         "split": ["<statement>", 1],
+        "ggwp": ["<statement>", 1],
         "clutch": ["<statement>", 2],
         "pick": ["<statement>", 2],
         "grind": ["<statement>", 2],
@@ -687,7 +689,8 @@ PREDICT_SET = {
         "count": ["<executable_statement>", 3],
         "split": ["<executable_statement>", 3],
         "afk": ["<executable_statement>", 4],
-        "hop": ["<executable_statement>", 5]
+        "hop": ["<executable_statement>", 5],
+        "ggwp": ["<executable_statement>", 6]
     },
     "<control_statement>": {
         "clutch": ["<control_statement>", 0],
@@ -911,6 +914,7 @@ PREDICT_SET = {
         "grind": ["<case_body>", 0],
         "retry": ["<case_body>", 0],
         "try": ["<case_body>", 0],
+        "ggwp": ["<case_body>", 0],
         "role": ["<case_body>", 0],
         "noob": ["<case_body>", 0],
         "}": ["<case_body>", 0]
