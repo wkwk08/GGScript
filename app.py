@@ -346,30 +346,31 @@ elif syn_btn:
         terminal_lines.append(f"<span class='error-line'>Parser crashed: {str(e)}</span>")
 elif sem_btn:
     terminal_lines = ["→ semantic analysis..."]
-    if code_content and code_content.strip():
-        try:
-            lexer = Lexer(code_content)
-            tokens, lex_errors = lexer.make_tokens()
-            
-            if lex_errors:
-                terminal_lines.append(f"<span class='error-line'>Lexical errors found ({len(lex_errors)}). Cannot proceed to semantic.</span>")
-                for err in lex_errors:
-                    terminal_lines.append(f"<span class='error-line'>  {err.as_string()}</span>")
+    # Fallback to empty string if editor is empty
+    code_text = code_content if code_content else "" 
+    
+    try:
+        lexer = Lexer(code_text)
+        tokens, lex_errors = lexer.make_tokens()
+        
+        if lex_errors:
+            terminal_lines.append(f"<span class='error-line'>Lexical errors found ({len(lex_errors)}). Cannot proceed to semantic.</span>")
+            for err in lex_errors:
+                terminal_lines.append(f"<span class='error-line'>  {err.as_string()}</span>")
+        else:
+            syntax_success, syntax_message = analyze_syntax(tokens)
+            if not syntax_success:
+                # This line includes your requested prefix + the exact syntax error
+                terminal_lines.append(f"<span class='error-line'>Syntax errors found. Cannot proceed to semantic: {syntax_message}</span>")
             else:
-                syntax_success, syntax_message = analyze_syntax(tokens)
-                if not syntax_success:
-                    terminal_lines.append(f"<span class='error-line'>Syntax errors found. Cannot proceed to semantic: {syntax_message}</span>")
+                semantic_success, semantic_message = analyze_semantics(tokens)
+                if semantic_success:
+                    terminal_lines.append(f"<span class='success-line'>{semantic_message}</span>")
                 else:
-                    semantic_success, semantic_message = analyze_semantics(tokens)
-                    if semantic_success:
-                        terminal_lines.append(f"<span class='success-line'>{semantic_message}</span>")
-                    else:
-                        terminal_lines.append(f"<span class='error-line'>{semantic_message}</span>")
+                    terminal_lines.append(f"<span class='error-line'>{semantic_message}</span>")
                     
-        except Exception as e:
-            terminal_lines.append(f"<span class='error-line'>Semantic analyzer crashed: {str(e)}</span>")
-    else:
-        terminal_lines.append("<span class='error-line'>No code to analyze.</span>")
+    except Exception as e:
+        terminal_lines.append(f"<span class='error-line'>Semantic analyzer crashed: {str(e)}</span>")
 
 # ── RENDER TERMINAL ───────────────────────────────────────────────────
 terminal_content = "\n".join(terminal_lines)
