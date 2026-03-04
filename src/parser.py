@@ -1538,8 +1538,6 @@ class SyntaxAnalyzer:
         # New unified delimiter types
         if t == TokenType.terminator:
             return ";"
-        if t == TokenType.separator:
-            return token.value
         if t == TokenType.bracket:
             return "bracket"
 
