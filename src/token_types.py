@@ -1,81 +1,81 @@
 class TokenType:
-    # Data Types (page 42)
-    frag = "frag"          # int
+    # Data Types
+    frag = "frag"         # int
     elo = "elo"           # float
     ign = "ign"           # string
     surebol = "surebol"   # boolean
     tag = "tag"           # char
 
-    # Control Flow (page 42-43)
-    clutch = "clutch"         # if
-    choke = "choke"          # else
+    # Control Flow
+    clutch = "clutch"       # if
+    choke = "choke"         # else
     choke_clutch = "choke_clutch"   # else if
     pick = "pick"           # switch
     role = "role"           # case
     noob = "noob"           # default
-    grind = "grind"          # for
-    retry = "retry"          # while
-    try_ = "try"           # do
-    afk = "afk"            # break
-    hop = "hop"            # continue
+    grind = "grind"         # for
+    retry = "retry"         # while
+    try_ = "try"            # do
+    afk = "afk"             # break
+    hop = "hop"             # continue
 
-    # I/O (page 43)
+    # I/O
     comsat = "comsat"    # scanf/input
-    shout = "shout"     # printf/output
+    shout = "shout"      # printf/output
 
-    # Functions (page 43-44)
+    # Functions
     build = "build"     # function declaration
     lobby = "lobby"     # main
     dodge = "dodge"     # void
-    ggwp = "ggwp"      # return
+    ggwp = "ggwp"       # return
 
-    # Modifiers (page 44)
+    # Modifiers
     stun = "stun"      # const
 
-    # Boolean Literals (page 44)
+    # Boolean Literals 
     buff = "buff"      # true
     nerf = "nerf"      # false
 
-    # Array Operations (page 44)
+    # Array Operations
     stack = "stack"     # append
     craft = "craft"     # insert
-    drop = "drop"      # pop
+    drop = "drop"       # pop
     count = "count"     # length
     split = "split"     # split
 
-    # Arithmetic Operators (page 45)
+    # Arithmetic Operators 
     plus = "+"          # +
     minus = "-"         # -
     mul = "*"           # *
     div = "/"           # /
     mod = "%"           # %
 
-    # Relational Operators (page 45)
+    # Relational Operators 
     eq = "=="            # ==
     neq = "!="           # !=
-    lt = "<"            # <
-    gt = ">"            # >
+    lt = "<"             # <
+    gt = ">"             # >
     lte = "<="           # <=
     gte = ">="           # >=
 
-    # Assignment Operators (page 46)
-    assign = "="        # =
+    # Assignment Operators 
+    assign = "="         # =
     plus_assign = "+="   # +=
     minus_assign = "-="  # -=
     mul_assign = "*="    # *=
     div_assign = "/="    # /=
     mod_assign = "%="    # %=
 
-    # Logical Operators (page 46)
+    # Logical Operators 
     and_ = "&&"          # &&
     or_ = "||"           # ||
-    not_ = "!"          # !
+    not_ = "!"           # !
 
-    # Unary Operators (page 47)
+    # Unary Operators 
     increment = "++"     # ++
     decrement = "--"     # --
 
-    # Delimiters (page 47)
+    # Delimiters 
     lparen = "("        # (
     rparen = ")"        # )
     lbrace = "{"        # {
@@ -86,24 +86,22 @@ class TokenType:
     semicolon = ";"     # ;
     colon = ":"         # :
     dot = "."           # .
-
-    # New unified delimiter types
     terminator = "terminator"  # ;
     separator = "separator"    # ,
     bracket = "bracket"        # (), {}, [], "
 
     # Literals
-    integer = "integer"       # frag literal
+    integer = "integer"    # frag literal
     float = "float"        # elo literal
-    string = "string"        # ign literal
+    string = "string"      # ign literal
     char = "char"          # tag literal
 
     # Identifiers
-    identifier = "identifier"    # variable names, function names
+    identifier = "identifier"   # variable names, function names
 
     # Special
-    eof = "eof"           # End of file
-    error = "error"         # Lexical error
-    comment = "comment"       # Comments
-    whitespace = "whitespace"    # Spaces, tabs, newlines
-    newline = "newline"       # Newline character
+    eof = "eof"                 # End of file
+    error = "error"             # Lexical error
+    comment = "comment"         # Comments
+    whitespace = "whitespace"   # Spaces, tabs, newlines
+    newline = "newline"         # Newline character
