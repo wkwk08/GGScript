@@ -1372,7 +1372,7 @@ class SyntaxAnalyzer:
             # Use map_token_type to translate Lexer Type -> Grammar Symbol
             self.current_type = self.map_token_type(self.current_token)
         else:
-            self.current_token = Token(TokenType.eof, None, line=-1, column=-1)
+            self.current_token = Token(TokenType.eof, None, line=1, column=1)
             self.current_type = 'eof'
 
     def peek(self):
