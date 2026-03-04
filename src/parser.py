@@ -1598,7 +1598,7 @@ class SyntaxAnalyzer:
                 
                 # Ambiguity Check: Main Function vs Global Section
                 if top == "<global_section>" and self.current_type == "frag":
-                    if self.peek_n(1) == "lobby":
+                    if self.peek_n(1) != "identifier":
                         stack.pop()
                         continue
 
@@ -1644,7 +1644,7 @@ class SyntaxAnalyzer:
                 else:
                     error = InvalidSyntaxError(
                         line, column, 
-                        f"Expected '{top}', but found '{self.current_type}'"
+                        f"Unexpected '{self.current_type}' while parsing.  Expected: {top}"
                     )
 
         if not error and self.current_type != 'eof':
