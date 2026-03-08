@@ -191,7 +191,7 @@ def get_token_category(raw_type: str) -> str:
     
     if raw_lower == "terminator":
         return "TERMINATOR"
-    if raw_lower == "separator":
+    if raw_lower in ("separator", ":"):
         return "SEPARATOR"
     if raw_lower in ("(", ")", "{", "}", "[", "]"):
         return "BRACKET"
