@@ -35,12 +35,11 @@ class node_vardec:
         self.init_value_n = init_value_n
 
 class node_arr_dec:
-    def __init__(self, dtype_t, id_t, const_b, size1_n, size2_n, init_values_n):
+    def __init__(self, dtype_t, id_t, const_b, sizes_n, init_values_n):
         self.dtype_t = dtype_t
         self.id_t = id_t
         self.const_b = const_b
-        self.size1_n = size1_n
-        self.size2_n = size2_n
+        self.sizes_n = sizes_n  # Replaced size1_n/size2_n with a list
         self.init_values_n = init_values_n
 
 class node_func_dec:
@@ -166,10 +165,9 @@ class node_iden:
         self.id_t = id_t
 
 class node_arr_idx:
-    def __init__(self, id_t, idx1_n, idx2_n=None):
+    def __init__(self, id_t, indices_n):
         self.id_t = id_t
-        self.idx1_n = idx1_n
-        self.idx2_n = idx2_n
+        self.indices_n = indices_n
 
 class node_num:
     def __init__(self, val_t, dtype):
@@ -410,55 +408,55 @@ class SemanticAnalyzer:
         self.curr_scope.set(id_name, value, dtype=dtype, const=const)
 
     def visit_node_arr_dec(self, node):
-        err_n = ErrorNode(node.id_t["tokenLine"], node.id_t["tokenCol"], node.id_t["tokenName"])
-        id_name = node.id_t["tokenName"]
-        const = node.const_b
-        
-        if self.curr_scope.get(id_name, checkParent=False):
-            self.logError(f"Symbol '{id_name}' has already been declared.", err_n)
+            err_n = ErrorNode(node.id_t["tokenLine"], node.id_t["tokenCol"], node.id_t["tokenName"])
+            id_name = node.id_t["tokenName"]
+            const = node.const_b
+            
+            if self.curr_scope.get(id_name, checkParent=False):
+                self.logError(f"Symbol '{id_name}' has already been declared.", err_n)
 
-        dtype = ('arr', node.dtype_t["tokenName"])
-        base_val = self.default_vals[dtype[1]]
+            dtype = ('arr', node.dtype_t["tokenName"])
+            base_val = self.default_vals[dtype[1]]
 
-        dim = 1
-        size_1_type, size_1, _ = self.visit_node(node.size1_n)
-        
-        if size_1_type[1] != 'frag':
-            self.logError(f"Array size must be a 'frag', got '{size_1_type[1]}'.", err_n)
+            dim = len(node.sizes_n)
+            evaluated_sizes = []
+            for size_node in node.sizes_n:
+                s_type, s_val, s_err = self.visit_node(size_node)
+                if s_type[1] != 'frag':
+                    self.logError(f"Array size must be a 'frag', got '{s_type[1]}'.", err_n)
+                evaluated_sizes.append(s_val)
 
-        size_2 = None
-        if node.size2_n:
-            dim = 2
-            size_2_type, size_2, _ = self.visit_node(node.size2_n)
-            if size_2_type[1] != 'frag':
-                self.logError(f"Array 2nd dimension must be a 'frag', got '{size_2_type[1]}'.", err_n)
+            if const and not node.init_values_n:
+                self.logError("Constant arrays must be initialized.", err_n)
 
-        if const and not node.init_values_n:
-            self.logError("Constant arrays must be initialized.", err_n)
+            # Helper to build an empty n-dimensional array dynamically
+            def build_default_array(sizes, current_dim):
+                if current_dim == len(sizes) - 1:
+                    return [base_val for _ in range(sizes[current_dim])]
+                return [build_default_array(sizes, current_dim + 1) for _ in range(sizes[current_dim])]
 
-        arr_vals = []
-        if not node.init_values_n:
-            if dim == 1:
-                arr_vals = [base_val for _ in range(size_1)]
+            arr_vals = []
+            if not node.init_values_n:
+                if evaluated_sizes:
+                    arr_vals = build_default_array(evaluated_sizes, 0)
             else:
-                arr_vals = [[base_val for _ in range(size_2)] for _ in range(size_1)]
-        else:
-            if dim == 1:
-                for idx, v_node in enumerate(node.init_values_n):
-                    v_type, v_val, v_err = self.visit_node(v_node)
-                    self.check_type_and_range("array element", dtype, v_type, v_val, node.id_t, index_1D=idx, err_n=v_err)
-                    arr_vals.append(v_val)
-            else:
-                # Assuming nested lists for 2D initialization
-                for idx1, inner_arr in enumerate(node.init_values_n):
-                    row = []
-                    for idx2, v_node in enumerate(inner_arr):
-                        v_type, v_val, v_err = self.visit_node(v_node)
-                        self.check_type_and_range("array element", dtype, v_type, v_val, node.id_t, index_1D=idx1, index_2D=idx2, err_n=v_err)
-                        row.append(v_val)
-                    arr_vals.append(row)
+                # Helper to recursively validate nested initializations 
+                def validate_init(init_node_list, current_dim):
+                    if current_dim >= dim:
+                        self.logError("Array initialization has too many dimensions.", err_n)
+                    res = []
+                    for val_node in init_node_list:
+                        if isinstance(val_node, list):
+                            res.append(validate_init(val_node, current_dim + 1))
+                        else:
+                            v_type, v_val, v_err = self.visit_node(val_node)
+                            self.check_type_and_range("array element", dtype, v_type, v_val, node.id_t, err_n=v_err)
+                            res.append(v_val)
+                    return res
+                
+                arr_vals = validate_init(node.init_values_n, 0)
 
-        self.curr_scope.set_array(id_name, arr_vals, dtype=dtype, arr_info={'dimension': dim, 'size1': size_1, 'size2': size_2}, const=const)
+            self.curr_scope.set_array(id_name, arr_vals, dtype=dtype, arr_info={'dimension': dim, 'sizes': evaluated_sizes}, const=const)
 
     def visit_node_func_dec(self, node):
         func_name = node.id_t["tokenName"]
@@ -531,49 +529,43 @@ class SemanticAnalyzer:
         self.check_type_and_range("variable", iden_symbol["dtype"], val_type, val, id_n=node.id_t, err_n=val_err)
 
     def visit_node_arr_assign_stmt(self, node):
-        arr_name = node.arr_idx_n.id_t["tokenName"]
-        arr_symbol = self.curr_scope.get(arr_name) 
-        arr_err = ErrorNode(node.arr_idx_n.id_t["tokenLine"], node.arr_idx_n.id_t["tokenCol"], node.arr_idx_n.id_t["tokenName"])
+            arr_name = node.arr_idx_n.id_t["tokenName"]
+            arr_symbol = self.curr_scope.get(arr_name) 
+            arr_err = ErrorNode(node.arr_idx_n.id_t["tokenLine"], node.arr_idx_n.id_t["tokenCol"], node.arr_idx_n.id_t["tokenName"])
 
-        if not arr_symbol:
-            self.logError(f"Array '{arr_name}' hasn't been declared yet.", arr_err)
+            if not arr_symbol:
+                self.logError(f"Array '{arr_name}' hasn't been declared yet.", arr_err)
 
-        if arr_symbol["const"]:
-            self.logError(f"Array '{arr_name}' is a constant and cannot be modified.", arr_err)
+            if arr_symbol["const"]:
+                self.logError(f"Array '{arr_name}' is a constant and cannot be modified.", arr_err)
 
-        arr_dtype = arr_symbol["dtype"][1]
-        if arr_symbol["dtype"][0] != 'arr':
-            if arr_dtype == 'ign':
-                self.logError(f"Strings ('ign') are not mutable by index.", arr_err)
-            else:
-                self.logError(f"Symbol '{arr_name}' is not an array.", arr_err)
+            arr_dtype = arr_symbol["dtype"][1]
+            if arr_symbol["dtype"][0] != 'arr':
+                if arr_dtype == 'ign':
+                    self.logError(f"Strings ('ign') are not mutable by index.", arr_err)
+                else:
+                    self.logError(f"Symbol '{arr_name}' is not an array.", arr_err)
 
-        arr_dim = arr_symbol["arr_info"]["dimension"]
+            arr_dim = arr_symbol["arr_info"]["dimension"]
 
-        idx1_type, idx1_val, idx_err = self.visit_node(node.arr_idx_n.idx1_n)
-        if idx1_type[1] != 'frag':
-            self.logError(f"Array index must be a 'frag' (integer), found '{idx1_type[1]}'.", idx_err)
+            if len(node.arr_idx_n.indices_n) != arr_dim:
+                self.logError(f"Array '{arr_name}' is {arr_dim}D but accessed with {len(node.arr_idx_n.indices_n)} indices.", arr_err)
 
-        idx2_val = None
-        if node.arr_idx_n.idx2_n:
-            if arr_dim == 1:
-                self.logError(f"Array '{arr_name}' is 1D but accessed with 2 indices.", arr_err)
-            idx2_type, idx2_val, idx2_err = self.visit_node(node.arr_idx_n.idx2_n)
-            if idx2_type[1] != 'frag':
-                self.logError(f"Array index must be a 'frag', found '{idx2_type[1]}'.", idx2_err)
-        elif arr_dim == 2:
-            self.logError(f"Array '{arr_name}' is 2D but accessed with 1 index.", arr_err)
+            for idx_node in node.arr_idx_n.indices_n:
+                idx_type, idx_val, idx_err = self.visit_node(idx_node)
+                if idx_type[1] != 'frag':
+                    self.logError(f"Array index must be a 'frag' (integer), found '{idx_type[1]}'.", idx_err)
 
-        value_type, value, val_err_n = self.visit_node(node.value_n)
+            value_type, value, val_err_n = self.visit_node(node.value_n)
 
-        # Handle compound assignments (+=, -=, *=, /=, %=)
-        op = node.op_t["tokenName"]
-        if op in ['+=', '-=', '*=', '/=', '%=']:
-            if arr_symbol["dtype"][1] not in self.numtypes or value_type[1] not in self.numtypes:
-                if not (op == '+=' and arr_symbol["dtype"][1] == 'ign' and value_type[1] in ['ign', 'tag']):
-                    self.logError(f"Compound assignment '{op}' invalid between '{arr_symbol['dtype'][1]}' and '{value_type[1]}'.", arr_err)
+            # Handle compound assignments (+=, -=, *=, /=, %=)
+            op = node.op_t["tokenName"]
+            if op in ['+=', '-=', '*=', '/=', '%=']:
+                if arr_symbol["dtype"][1] not in self.numtypes or value_type[1] not in self.numtypes:
+                    if not (op == '+=' and arr_symbol["dtype"][1] == 'ign' and value_type[1] in ['ign', 'tag']):
+                        self.logError(f"Compound assignment '{op}' invalid between '{arr_symbol['dtype'][1]}' and '{value_type[1]}'.", arr_err)
 
-        self.check_type_and_range("array element", arr_symbol["dtype"], value_type, value, id_n=node.arr_idx_n.id_t, index_1D=idx1_val, index_2D=idx2_val, err_n=val_err_n)
+            self.check_type_and_range("array element", arr_symbol["dtype"], value_type, value, id_n=node.arr_idx_n.id_t, err_n=val_err_n)
 
     def visit_node_func_call(self, node, expected_val):
         func_name = node.id_t["tokenName"]
@@ -666,40 +658,33 @@ class SemanticAnalyzer:
         return (('lit', 'tag'), node.val_t["tokenName"][1:-1], err_n)
 
     def visit_node_arr_idx(self, node): 
-        arr_sym = self.curr_scope.get(node.id_t["tokenName"])
-        arr_err = ErrorNode(node.id_t["tokenLine"], node.id_t["tokenCol"], node.id_t["tokenName"])
-        
-        if not arr_sym:
-            self.logError(f"Symbol '{node.id_t['tokenName']}' has not been declared.", arr_err)
-        
-        dtype = arr_sym["dtype"][1]
-        idx_type, idx_val, idx_err = self.visit_node(node.idx1_n)
-
-        if arr_sym["dtype"][0] != 'arr':
-            if not node.idx2_n and dtype == 'ign':
-                if idx_type[1] != 'frag':
-                    self.logError(f"Expected 'frag' (integer) for string indexing, got '{idx_type[1]}'.", idx_err)
-                return (('lit', 'tag'), "", arr_err)
-            else:
-                self.logError(f"Symbol '{node.id_t['tokenName']}' is not an array.", arr_err)
-
-        if idx_type[1] != 'frag':
-            self.logError(f"Expected 'frag' for array index, got '{idx_type[1]}'.", idx_err)
-
-        if node.idx2_n:
-            if arr_sym["arr_info"]["dimension"] == 1:
-                if dtype == 'ign':
-                    self.logError("String indexing not allowed for array elements.", arr_err)
-                self.logError(f"Array '{node.id_t['tokenName']}' is 1D but accessed with 2 indices.", arr_err)
+            arr_sym = self.curr_scope.get(node.id_t["tokenName"])
+            arr_err = ErrorNode(node.id_t["tokenLine"], node.id_t["tokenCol"], node.id_t["tokenName"])
             
-            idx2_type, idx2_val, idx2_err = self.visit_node(node.idx2_n)
-            if idx2_type[1] != 'frag':
-                self.logError(f"Expected 'frag' for array index, got '{idx2_type[1]}'.", idx2_err)
-        else:
-            if arr_sym["arr_info"]["dimension"] == 2:
-                return (('arr', dtype), self.default_vals[dtype], arr_err)
-        
-        return (('var', dtype), self.default_vals[dtype], arr_err)
+            if not arr_sym:
+                self.logError(f"Symbol '{node.id_t['tokenName']}' has not been declared.", arr_err)
+            
+            dtype = arr_sym["dtype"][1]
+
+            if arr_sym["dtype"][0] != 'arr':
+                # Allow string character indexing like str[0]
+                if len(node.indices_n) == 1 and dtype == 'ign':
+                    idx_type, idx_val, idx_err = self.visit_node(node.indices_n[0])
+                    if idx_type[1] != 'frag':
+                        self.logError(f"Expected 'frag' (integer) for string indexing, got '{idx_type[1]}'.", idx_err)
+                    return (('lit', 'tag'), "", arr_err)
+                else:
+                    self.logError(f"Symbol '{node.id_t['tokenName']}' is not an array.", arr_err)
+
+            if len(node.indices_n) != arr_sym["arr_info"]["dimension"]:
+                self.logError(f"Array '{node.id_t['tokenName']}' expects {arr_sym['arr_info']['dimension']} dimensions, but accessed with {len(node.indices_n)}.", arr_err)
+
+            for idx_node in node.indices_n:
+                idx_type, idx_val, idx_err = self.visit_node(idx_node)
+                if idx_type[1] != 'frag':
+                    self.logError(f"Expected 'frag' for array index, got '{idx_type[1]}'.", idx_err)
+            
+            return (('var', dtype), self.default_vals[dtype], arr_err)
 
     def visit_node_bi_op(self, node):
         left_type, left_val, left_err = self.visit_node(node.left_n)
@@ -1031,6 +1016,22 @@ class ASTBuilder:
         self.errors.append(SemanticError(f"Ln {self.current_token.line}, Col {self.current_token.column}: Expected '{expected_type}', found '{self.current_token.type}'"))
         raise SemanticError()
 
+    def parse_array_literal(self):
+        self.expect(TokenType.lbrace)
+        elements = []
+        if self.current_token.type != TokenType.rbrace:
+            if self.current_token.type == TokenType.lbrace:
+                elements.append(self.parse_array_literal())
+            else:
+                elements.append(self.parse_expression())
+            while self.match(TokenType.separator):
+                if self.current_token.type == TokenType.lbrace:
+                    elements.append(self.parse_array_literal())
+                else:
+                    elements.append(self.parse_expression())
+        self.expect(TokenType.rbrace)
+        return elements
+
     def parse_program(self) -> node_program:
         globals_ = []
         funcs_ = []
@@ -1065,35 +1066,16 @@ class ASTBuilder:
             id_token = self.expect(TokenType.identifier)
 
             if self.current_token.type == TokenType.lbracket:
-                self.advance()
-                size1 = self.parse_expression()
-                self.expect(TokenType.rbracket)
-                size2 = None
-                if self.match(TokenType.lbracket):
-                    size2 = self.parse_expression()
+                sizes = []
+                while self.match(TokenType.lbracket):
+                    sizes.append(self.parse_expression())
                     self.expect(TokenType.rbracket)
 
                 init_vals = []
                 if self.match(TokenType.assign):
-                    self.expect(TokenType.lbrace)
-                    if self.current_token.type != TokenType.rbrace:
-                        if self.current_token.type == TokenType.lbrace:
-                            while self.match(TokenType.lbrace):
-                                row = []
-                                if self.current_token.type != TokenType.rbrace:
-                                    row.append(self.parse_expression())
-                                    while self.match(TokenType.separator):
-                                        row.append(self.parse_expression())
-                                self.expect(TokenType.rbrace)
-                                init_vals.append(row)
-                                self.match(TokenType.separator) 
-                        else:
-                            init_vals.append(self.parse_expression())
-                            while self.match(TokenType.separator):
-                                init_vals.append(self.parse_expression())
-                    self.expect(TokenType.rbrace)
+                    init_vals = self.parse_array_literal()
                 
-                declarations.append(node_arr_dec(self.token_to_dict(dtype_token), self.token_to_dict(id_token), const_b, size1, size2, init_vals))
+                declarations.append(node_arr_dec(self.token_to_dict(dtype_token), self.token_to_dict(id_token), const_b, sizes, init_vals))
             else:
                 init_val = None
                 if self.match(TokenType.assign):
@@ -1312,25 +1294,22 @@ class ASTBuilder:
             return node_func_call(self.token_to_dict(id_token), args)
 
         if self.current_token.type == TokenType.lbracket:
-            self.advance()
-            idx1 = self.parse_expression()
-            self.expect(TokenType.rbracket)
-            idx2 = None
-            if self.match(TokenType.lbracket):
-                idx2 = self.parse_expression()
+            indices = []
+            while self.match(TokenType.lbracket):
+                indices.append(self.parse_expression())
                 self.expect(TokenType.rbracket)
             
             if self.current_token.type in (TokenType.increment, TokenType.decrement):
                 op = self.current_token
                 self.advance()
                 self.expect(TokenType.terminator)
-                return node_post_un_op(node_arr_idx(self.token_to_dict(id_token), idx1, idx2), self.token_to_dict(op))
+                return node_post_un_op(node_arr_idx(self.token_to_dict(id_token), indices), self.token_to_dict(op))
             
             op = self.current_token
             self.advance()
             val = self.parse_expression()
             self.expect(TokenType.terminator)
-            return node_arr_assign_stmt(node_arr_idx(self.token_to_dict(id_token), idx1, idx2), self.token_to_dict(op), val)
+            return node_arr_assign_stmt(node_arr_idx(self.token_to_dict(id_token), indices), self.token_to_dict(op), val)
 
         if self.current_token.type in (TokenType.increment, TokenType.decrement):
             op = self.current_token
@@ -1434,13 +1413,13 @@ class ASTBuilder:
                 return node_func_call(self.token_to_dict(tok), args)
             
             if self.match(TokenType.lbracket):
-                idx1 = self.parse_expression()
+                indices = []
+                indices.append(self.parse_expression())
                 self.expect(TokenType.rbracket)
-                idx2 = None
-                if self.match(TokenType.lbracket):
-                    idx2 = self.parse_expression()
+                while self.match(TokenType.lbracket):
+                    indices.append(self.parse_expression())
                     self.expect(TokenType.rbracket)
-                return node_arr_idx(self.token_to_dict(tok), idx1, idx2)
+                return node_arr_idx(self.token_to_dict(tok), indices)
                 
             if self.match(TokenType.dot):
                 m_tok = self.current_token
