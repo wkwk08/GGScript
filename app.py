@@ -1,10 +1,11 @@
 import streamlit as st
 import pandas as pd
+import re
 from streamlit_monaco import st_monaco
 from src.lexer import Lexer
 from src.token_types import TokenType
 from src.parser import analyze_syntax
-from src.semantic import analyze_semantics  # <--- CHANGED THIS IMPORT
+from src.semantic import analyze_semantics
 
 # ── PAGE CONFIG ───────────────────────────────────────────────────────
 st.set_page_config(
@@ -158,6 +159,48 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# ── CODE POINTER HELPER ───────────────────────────────────────────────
+def inject_code_pointer(error_str: str, code_text: str) -> str:
+    """Extracts Ln/Col from error and draws a pointer under the exact character."""
+    match = re.search(r'Ln (\d+), Col (\d+)', error_str)
+    if match:
+        ln = int(match.group(1))
+        col = int(match.group(2))
+        lines = code_text.split('\n')
+        
+        if 1 <= ln <= len(lines):
+            line_str = lines[ln - 1].rstrip('\n\r')
+            
+            # Expand tabs to 4 spaces for accurate visual alignment
+            expanded_line = ""
+            pointer_col = 0
+            for i in range(col - 1):
+                if i < len(line_str) and line_str[i] == '\t':
+                    expanded_line += "    "
+                    pointer_col += 4
+                else:
+                    if i < len(line_str):
+                        expanded_line += line_str[i]
+                    pointer_col += 1
+            
+            if col - 1 < len(line_str):
+                expanded_line += line_str[col-1:]
+            
+            safe_line = expanded_line.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace(" ", "&nbsp;")
+            pointer_spaces = "&nbsp;" * pointer_col
+            
+            # 5 spaces to perfectly match the width of "05 | "
+            prefix_spaces = "&nbsp;" * 5
+            
+            # Draw the beautiful error block
+            snippet = f"<div style='background:#1a1a1a; padding:8px 12px; border-left: 3px solid #ff5555; border-radius:4px; margin-top:6px; margin-bottom: 12px; font-family:Consolas, monospace; line-height: 1.4;'>"
+            snippet += f"<span style='color:#666;'>{ln:02d} | </span><span style='color:#eee;'>{safe_line}</span><br>"
+            snippet += f"<span>{prefix_spaces}</span><span style='color:#ff5555; font-weight:bold;'>{pointer_spaces}^</span>"
+            snippet += "</div>"
+            
+            return error_str + snippet
+    return error_str
+
 # ── TOKEN CATEGORY HELPER ─────────────────────────────────────────────
 def get_token_category(raw_type: str) -> str:
     KEYWORDS = {
@@ -202,7 +245,7 @@ def get_token_category(raw_type: str) -> str:
 SAMPLE_CODE = """/* Welcome to GGScript! */
 frag lobby() {
     ign message = "ggwp team!";
-    shout message;
+    shout message
     ggwp;
 }"""
 
@@ -246,7 +289,7 @@ with col_editor:
         minimap={"enabled": False}
     )
 
-# ── LEXICAL ANALYSIS LOGIC ────────────────────────────────────────────
+# ── COMPILER LOGIC ────────────────────────────────────────────────────
 terminal_lines = [""]
 
 if lex_btn and code_content and code_content.strip():
@@ -265,7 +308,8 @@ if lex_btn and code_content and code_content.strip():
             token_display = lexeme if raw_type_str.lower() in ["comment", "terminator", "separator", "lparen", "rparen", "lbrace", "rbrace", "lbracket", "rbracket"] else raw_type_str
             if raw_type_str.lower() == "choke_clutch":
                 token_display = "choke clutch"
-                
+                                
+            # Reverted dictionary to remove Ln and Col
             token_rows.append({
                 "Lexeme": lexeme,
                 "Token": token_display,
@@ -281,10 +325,9 @@ if lex_btn and code_content and code_content.strip():
                 html += '<tbody>'
                 
                 for row in token_rows:
-                    # Escape to prevent HTML injection issues
-                    lexeme_esc = row["Lexeme"].replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-                    token_esc  = row["Token"].replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-                    type_esc   = row["Type"].replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                    lexeme_esc = str(row["Lexeme"]).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                    token_esc  = str(row["Token"]).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                    type_esc   = str(row["Type"]).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
                     
                     html += '<tr>'
                     html += f'<td>{lexeme_esc}</td>'
@@ -310,7 +353,8 @@ if lex_btn and code_content and code_content.strip():
             terminal_lines.append(f"<span class='error-line'>Found {len(errors)} lexical error(s):</span>")
             for err in errors:
                 formatted_error = err.as_string() if hasattr(err, 'as_string') else str(err)
-                terminal_lines.append(f"<span class='error-line'>{formatted_error}</span>")
+                fancy_err = inject_code_pointer(formatted_error, code_content)
+                terminal_lines.append(f"<span class='error-line'>{fancy_err}</span>")
         else:
             terminal_lines.append("<span class='success-line'>Lexical analysis successful ✓ No errors.</span>")
             
@@ -322,9 +366,9 @@ if lex_btn and code_content and code_content.strip():
 
 elif run_btn:
     terminal_lines = ["→ executing program...", "(not implemented yet)"]
+    
 elif syn_btn:
     terminal_lines = ["→ syntax analysis..."]
-    # Fallback to empty string if editor is empty
     code_text = code_content if code_content else "" 
     
     try:
@@ -334,19 +378,21 @@ elif syn_btn:
         if lex_errors:
             terminal_lines.append(f"<span class='error-line'>Lexical errors found ({len(lex_errors)}). Cannot proceed to syntax.</span>")
             for err in lex_errors:
-                terminal_lines.append(f"<span class='error-line'>  {err.as_string()}</span>")
+                fancy_err = inject_code_pointer(err.as_string(), code_text)
+                terminal_lines.append(f"<span class='error-line'>  {fancy_err}</span>")
         else:
             success, message = analyze_syntax(tokens)
             if success:
                 terminal_lines.append(f"<span class='success-line'>{message}</span>")
             else:
-                terminal_lines.append(f"<span class='error-line'>{message}</span>")
+                fancy_err = inject_code_pointer(message, code_text)
+                terminal_lines.append(f"<span class='error-line'>{fancy_err}</span>")
                 
     except Exception as e:
         terminal_lines.append(f"<span class='error-line'>Parser crashed: {str(e)}</span>")
+        
 elif sem_btn:
     terminal_lines = ["→ semantic analysis..."]
-    # Fallback to empty string if editor is empty
     code_text = code_content if code_content else "" 
     
     try:
@@ -356,18 +402,22 @@ elif sem_btn:
         if lex_errors:
             terminal_lines.append(f"<span class='error-line'>Lexical errors found ({len(lex_errors)}). Cannot proceed to semantic.</span>")
             for err in lex_errors:
-                terminal_lines.append(f"<span class='error-line'>  {err.as_string()}</span>")
+                fancy_err = inject_code_pointer(err.as_string(), code_text)
+                terminal_lines.append(f"<span class='error-line'>  {fancy_err}</span>")
         else:
             syntax_success, syntax_message = analyze_syntax(tokens)
             if not syntax_success:
-                # This line includes your requested prefix + the exact syntax error
-                terminal_lines.append(f"<span class='error-line'>Syntax errors found. Cannot proceed to semantic: {syntax_message}</span>")
+                fancy_err = inject_code_pointer(syntax_message, code_text)
+                terminal_lines.append(f"<span class='error-line'>Syntax errors found. Cannot proceed to semantic:<br>{fancy_err}</span>")
             else:
                 semantic_success, semantic_message = analyze_semantics(tokens)
                 if semantic_success:
                     terminal_lines.append(f"<span class='success-line'>{semantic_message}</span>")
                 else:
-                    terminal_lines.append(f"<span class='error-line'>{semantic_message}</span>")
+                    for err_msg in semantic_message.split('\n'):
+                        if err_msg.strip():
+                            fancy_err = inject_code_pointer(err_msg, code_text)
+                            terminal_lines.append(f"<span class='error-line'>{fancy_err}</span>")
                     
     except Exception as e:
         terminal_lines.append(f"<span class='error-line'>Semantic analyzer crashed: {str(e)}</span>")
