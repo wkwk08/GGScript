@@ -245,7 +245,7 @@ def get_token_category(raw_type: str) -> str:
 SAMPLE_CODE = """/* Welcome to GGScript! */
 frag lobby() {
     ign message = "ggwp team!";
-    shout message
+    shout message;
     ggwp;
 }"""
 
