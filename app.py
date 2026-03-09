@@ -166,8 +166,17 @@ def inject_code_pointer(error_str: str, code_text: str) -> str:
     if match:
         ln = int(match.group(1))
         col = int(match.group(2))
-        lines = code_text.split('\n')
         
+        # Ignore trailing blank lines
+        cleaned_text = code_text.rstrip('\n\r\t ')
+        lines = cleaned_text.split('\n') if cleaned_text else [""]
+        
+        # Constrain pointer to EOF bounds
+        if ln > len(lines):
+            ln = len(lines)
+            # Point right after the last character
+            col = len(lines[-1]) + 2 if lines else 1
+            
         if 1 <= ln <= len(lines):
             line_str = lines[ln - 1].rstrip('\n\r')
             

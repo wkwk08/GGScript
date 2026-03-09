@@ -1359,13 +1359,24 @@ PREDICT_SET = {
 # ────────────────────────────────────────────────
 class SyntaxAnalyzer:
     def __init__(self, tokens):
-        # Filter tokens (exclude comments/whitespace)
+        # 1. Filter out whitespace, newlines, and comments first to find real code
         self.tokens = [t for t in tokens if t.type not in [
             TokenType.whitespace, 
             TokenType.newline, 
             TokenType.comment, 
             TokenType.eof
         ]]
+        
+        # 2. Anchor the EOF to the exact end of the last real token
+        if self.tokens:
+            last_real_token = self.tokens[-1]
+            self.eof_line = last_real_token.line
+            # Add the length of the last token to point right after it
+            self.eof_col = last_real_token.column + len(str(last_real_token.value))
+        else:
+            self.eof_line = 1
+            self.eof_col = 1
+            
         self.token_idx = -1
         self.advance()
 
@@ -1376,7 +1387,8 @@ class SyntaxAnalyzer:
             # Use map_token_type to translate Lexer Type -> Grammar Symbol
             self.current_type = self.map_token_type(self.current_token)
         else:
-            self.current_token = Token(TokenType.eof, None, line=1, column=1)
+            # 3. Use smart EOF coordinates
+            self.current_token = Token(TokenType.eof, None, line=self.eof_line, column=self.eof_col)
             self.current_type = 'eof'
 
     def peek(self):
