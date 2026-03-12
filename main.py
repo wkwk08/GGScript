@@ -117,10 +117,10 @@ frag lobby() {
         self.btn_lex = self.create_nav_button(nav_frame, "LEXICAL", self.run_lexical)
         self.btn_lex.pack(side="right", padx=(10, 0))
 
-        main_paned = tk.PanedWindow(self.root, orient=tk.HORIZONTAL, bg="#444444", bd=0, sashwidth=2)
+        main_paned = tk.PanedWindow(self.root, orient=tk.HORIZONTAL, bg="#444444", bd=0, sashwidth=8, sashrelief="raised", opaqueresize=True)
         main_paned.pack(side="top", fill="both", expand=True, padx=15, pady=(0, 15))
 
-        left_paned = tk.PanedWindow(main_paned, orient=tk.VERTICAL, bg="#444444", bd=0, sashwidth=2)
+        left_paned = tk.PanedWindow(main_paned, orient=tk.VERTICAL, bg="#444444", bd=0, sashwidth=8, sashrelief="raised", opaqueresize=True)
         main_paned.add(left_paned, stretch="always", minsize=600)
         
         right_frame = tk.Frame(main_paned, bg="#000000", highlightbackground="#444444", highlightthickness=1)
@@ -153,10 +153,10 @@ frag lobby() {
         self.terminal.tag_config("output", foreground="#ffffff")
         self.terminal.tag_config("input", foreground="#dddddd", font=("Consolas", 12, "italic"))
 
-        self.terminal.tag_config("error_border", foreground="#ff5555", background="#1a1a1a", font=("Consolas", 12, "bold"))
-        self.terminal.tag_config("error_lineno", foreground="#666666", background="#1a1a1a")
-        self.terminal.tag_config("error_code", foreground="#eeeeee", background="#1a1a1a")
-        self.terminal.tag_config("error_pointer", foreground="#ff5555", background="#1a1a1a", font=("Consolas", 12, "bold"))
+        self.terminal.tag_config("error_border", foreground="#ff5555", font=("Consolas", 12, "bold"))
+        self.terminal.tag_config("error_lineno", foreground="#666666")
+        self.terminal.tag_config("error_code", foreground="#eeeeee")
+        self.terminal.tag_config("error_pointer", foreground="#ff5555", font=("Consolas", 12, "bold"))
 
         self.table = ttk.Treeview(right_frame, columns=("Lexeme", "Token", "Type"), show="headings", style="Dark.Treeview")
         self.table.heading("#1", text="Lexeme")
@@ -324,6 +324,7 @@ frag lobby() {
             pointer_spaces = " " * pointer_col
             
             self.print_term(error_str, "error")
+            self.print_term("")  # Add blank line for spacing
             box_width = 80 
             
             self.terminal.config(state=tk.NORMAL)
