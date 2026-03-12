@@ -485,7 +485,7 @@ frag lobby() {
                 def execute_thread():
                     try:
                         exec(py_code, exec_env)
-                        self.root.after(0, self.print_term, "\n\n[Process finished]", "info")
+                        self.root.after(0, self.print_term, "\n\n[Code Executed]", "info")
                     except Exception as e:
                         error_trace = traceback.format_exc()
                         self.root.after(0, self.print_term, f"\nExecution failed: {str(e)}\n{error_trace}", "error")
