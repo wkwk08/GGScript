@@ -462,11 +462,13 @@ frag lobby() {
                 # 2. Expose specific UI commands to the generated Python code
                 def console_disp(*args):
                     output_text = "".join(map(str, args))
+                    # Don't add automatic newline - user controls via \n in code
                     self.root.after(0, self.print_term, output_text, "output", "")
 
-                def console_insp(prompt_var):
+                def console_insp(prompt_var=""):
                     # Uses updated terminal typing function safely handling empty strings
-                    user_val = self.request_input(f"{prompt_var}: ")
+                    # Note: prompt_var is now ignored - user controls prompts via shout()
+                    user_val = self.request_input("")
                     if not user_val: 
                         return 0 # Default fallback if user hits enter with no text
                     try:
