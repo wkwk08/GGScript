@@ -1604,11 +1604,8 @@ class SyntaxAnalyzer:
             if is_non_terminal(top):
                 # Array Dimension Validation
                 if top == "<positive_integer>" and str(self.current_token.value) == "0":
-                    error = InvalidSyntaxError(
-                        line, column, 
-                        "Array dimensions must be greater than 0."
-                    )
-                    break # Stop parsing immediately
+                    error = InvalidSyntaxError(line, column, "Array dimensions must be greater than 0.")
+                    break
                 
                 # Ambiguity Check: Main Function vs Global Section
                 if top == "<global_section>" and self.current_type == "frag":
@@ -1630,6 +1627,29 @@ class SyntaxAnalyzer:
                     else:
                         stack.append(";")
                         stack.append("<variable_declaration>")
+                    continue
+
+                # ------------------------------------------------------------------
+                # ---> NEW CODE STARTS HERE <---
+                # ------------------------------------------------------------------
+                # Ambiguity Check 1: Assignment vs Function Call Statement
+                if top == "<executable_statement>" and self.current_type == "identifier":
+                    symbol_after_id = self.peek_n(1)
+                    stack.pop()
+                    if symbol_after_id == "(":
+                        stack.append("<function_call_stmt>")
+                    else:
+                        stack.append("<assignment_statement>")
+                    continue
+                    
+                # Ambiguity Check 2: Variable vs Function Call in Math Expressions
+                if top == "<primary_expression>" and self.current_type == "identifier":
+                    symbol_after_id = self.peek_n(1)
+                    stack.pop()
+                    if symbol_after_id == "(":
+                        stack.append("<function_call_expr>")
+                    else:
+                        stack.append("identifier")
                     continue
 
                 # Standard Table Lookup
