@@ -65,7 +65,7 @@ frag lobby() {
     
     ign username;
     shout("Enter your username: ");
-    comsat(username);
+    comsat username;
     
     shout("Hello, " + username + "!");
     ggwp;
