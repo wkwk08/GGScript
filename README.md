@@ -24,21 +24,11 @@ $ venv\Scripts\activate
 $ source venv/bin/activate
 ```
 
-3. **Install dependencies**
-```
-$ pip install -r requirements.txt
-$ pip install streamlit-monaco
-```
-
 ### Usage 
 
 #### Run 
 
-Choose one to run:
+Launch the native desktop Tkinter GUI:
 ```
-1. CLI lexer
-$ python main.py your_script.gg
-
-2. Streamlit app
-$ streamlit run app.py
+$ python main.py
 ```
