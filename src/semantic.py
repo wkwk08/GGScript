@@ -717,13 +717,17 @@ class SemanticAnalyzer:
                 self.logError(f"Type mismatch for '{op}', requires numeric operands.", left_err)
             
             if op == '/':
-                if right_val == 0: self.logError("Division by 0.", right_err)
-                return (dtype, left_val / right_val, left_err)
+                # Only check division by zero if divisor is a literal constant (known at compile time)
+                if right_type[0] == 'lit' and right_val == 0: 
+                    self.logError("Division by 0.", right_err)
+                return (dtype, left_val / right_val if right_val != 0 else None, left_err)
             elif op == '%':
-                if right_val == 0: self.logError("Modulo by 0.", right_err)
+                # Only check modulo by zero if divisor is a literal constant (known at compile time)
+                if right_type[0] == 'lit' and right_val == 0: 
+                    self.logError("Modulo by 0.", right_err)
                 if left_type[1] == 'elo' or right_type[1] == 'elo':
                     self.logError("Modulo only supports 'frag' (integer).", left_err)
-                return (dtype, left_val % right_val, left_err)
+                return (dtype, left_val % right_val if right_val != 0 else None, left_err)
             elif op == '-': return (dtype, left_val - right_val, left_err)
             elif op == '*': return (dtype, left_val * right_val, left_err)
 
