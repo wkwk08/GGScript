@@ -50,9 +50,11 @@ class node_func_dec:
         self.body_n = body_n
 
 class node_funcpar_var:
-    def __init__(self, dtype_t, id_t):
+    def __init__(self, dtype_t, id_t, is_array=False, dims=0):
         self.dtype_t = dtype_t
         self.id_t = id_t
+        self.is_array = is_array
+        self.dims = dims
 
 class node_main_func:
     def __init__(self, body_n):
@@ -469,8 +471,10 @@ class SemanticAnalyzer:
         param_types = []
         if node.params_n: 
             for param in node.params_n:
+                dtype_tuple = ('arr', param.dtype_t["tokenName"]) if param.is_array else ("var", param.dtype_t["tokenName"])
                 param_types.append({
-                    "dtype": ("var", param.dtype_t["tokenName"]) 
+                    "dtype": dtype_tuple,
+                    "dims": param.dims
                 })  
         
         self.current_function_name = func_name
@@ -484,8 +488,13 @@ class SemanticAnalyzer:
                 if self.curr_scope.get(param_name, checkParent=False):
                     self.logError(f"Parameter '{param_name}' already declared in function '{func_name}'.", err_n)
                 
-                var_dtype = ('var', param.dtype_t["tokenName"])
-                self.curr_scope.set(param_name, value=self.default_vals[var_dtype[1]], dtype=var_dtype, const=False)
+                var_dtype = ('arr', param.dtype_t["tokenName"]) if param.is_array else ('var', param.dtype_t["tokenName"])
+                
+                # Check if it should be an array or a normal variable in scope
+                if param.is_array:
+                    self.curr_scope.set_array(param_name, value=[], dtype=var_dtype, arr_info={'dimension': param.dims, 'sizes': []}, const=False)
+                else:
+                    self.curr_scope.set(param_name, value=self.default_vals[var_dtype[1]], dtype=var_dtype, const=False)
 
         self.function_return_stack.append(return_type[1])
         
@@ -596,6 +605,13 @@ class SemanticAnalyzer:
             
             for i, (arg_node, param_type) in enumerate(zip(args, func_symbol["params"])):
                 arg_val_type, arg_val, arg_err_n = self.visit_node(arg_node)
+                
+                # Verify Array vs Variable mismatch
+                if param_type["dtype"][0] != arg_val_type[0]:
+                    expected_kind = "array" if param_type["dtype"][0] == "arr" else "variable"
+                    got_kind = "array" if arg_val_type[0] == "arr" else "variable"
+                    self.logError(f"Parameter kind mismatch for param {i+1} of '{node_id['tokenName']}': expected {expected_kind}, got {got_kind}.", arg_err_n)
+
                 if param_type["dtype"][1] != arg_val_type[1]: 
                     if not (param_type["dtype"][1] == 'elo' and arg_val_type[1] == 'frag'):
                         self.logError(f"Type mismatch for param {i+1} of '{node_id['tokenName']}': expected '{param_type['dtype'][1]}', got '{arg_val_type[1]}'.", arg_err_n)
@@ -1044,6 +1060,76 @@ class ASTBuilder:
         self.expect(TokenType.rbrace)
         return elements
 
+    def parse_declarations(self):
+        """Parse variable, array, or constant declarations"""
+        declarations = []
+        is_const = False
+        
+        # Check for constant declaration
+        if self.current_token.type == TokenType.stun:
+            is_const = True
+            self.advance()
+        
+        # Parse data type
+        dtype_token = self.current_token
+        self.advance()
+        
+        # Check if it's an array or variable declaration
+        if self.current_token.type == TokenType.identifier:
+            id_token = self.current_token
+            self.advance()
+            
+            # Check if it's an array (has brackets)
+            if self.current_token.type == TokenType.lbracket:
+                # Parse array declaration
+                sizes = []
+                while self.match(TokenType.lbracket):
+                    if self.current_token.type != TokenType.rbracket:
+                        sizes.append(self.parse_expression())
+                    self.expect(TokenType.rbracket)
+                
+                init_values = None
+                if self.match(TokenType.assign):
+                    init_values = self.parse_array_literal()
+                
+                declarations.append(node_arr_dec(
+                    self.token_to_dict(dtype_token),
+                    self.token_to_dict(id_token),
+                    is_const,
+                    sizes,
+                    init_values
+                ))
+            else:
+                # Parse variable declaration(s)
+                init_value = None
+                if self.current_token.type == TokenType.assign:
+                    self.advance()
+                    init_value = self.parse_expression()
+                
+                declarations.append(node_vardec(
+                    self.token_to_dict(dtype_token),
+                    self.token_to_dict(id_token),
+                    is_const,
+                    init_value
+                ))
+                
+                # Handle multiple variable declarations separated by commas
+                while self.match(TokenType.separator):
+                    id_token = self.expect(TokenType.identifier)
+                    init_value = None
+                    if self.match(TokenType.assign):
+                        init_value = self.parse_expression()
+                    
+                    declarations.append(node_vardec(
+                        self.token_to_dict(dtype_token),
+                        self.token_to_dict(id_token),
+                        is_const,
+                        init_value
+                    ))
+        
+        self.expect(TokenType.terminator)
+        return declarations
+
     def parse_program(self) -> node_program:
         globals_ = []
         funcs_ = []
@@ -1064,44 +1150,6 @@ class ASTBuilder:
             
         return node_program(globals_, funcs_, main_)
 
-    def parse_declarations(self):
-        const_b = False
-        if self.match(TokenType.stun):
-            const_b = True
-        
-        dtype_token = self.current_token
-        self.advance() 
-        
-        declarations = []
-        
-        while True:
-            id_token = self.expect(TokenType.identifier)
-
-            if self.current_token.type == TokenType.lbracket:
-                sizes = []
-                while self.match(TokenType.lbracket):
-                    sizes.append(self.parse_expression())
-                    self.expect(TokenType.rbracket)
-
-                init_vals = []
-                if self.match(TokenType.assign):
-                    init_vals = self.parse_array_literal()
-                
-                declarations.append(node_arr_dec(self.token_to_dict(dtype_token), self.token_to_dict(id_token), const_b, sizes, init_vals))
-            else:
-                init_val = None
-                if self.match(TokenType.assign):
-                    init_val = self.parse_expression()
-                declarations.append(node_vardec(self.token_to_dict(dtype_token), self.token_to_dict(id_token), const_b, init_val))
-            
-            if self.match(TokenType.separator):
-                continue
-            else:
-                break
-                
-        self.expect(TokenType.terminator)
-        return declarations
-
     def parse_function_dec(self):
         self.expect(TokenType.build)
         dtype_token = self.current_token
@@ -1114,12 +1162,33 @@ class ASTBuilder:
             p_dt = self.current_token
             self.advance()
             p_id = self.expect(TokenType.identifier)
-            params.append(node_funcpar_var(self.token_to_dict(p_dt), self.token_to_dict(p_id)))
+            
+            is_arr = False
+            dims = 0
+            if self.current_token.type == TokenType.lbracket:
+                is_arr = True
+                while self.match(TokenType.lbracket):
+                    self.parse_expression() # Consume the array size inside the parameter
+                    self.expect(TokenType.rbracket)
+                    dims += 1
+                    
+            params.append(node_funcpar_var(self.token_to_dict(p_dt), self.token_to_dict(p_id), is_arr, dims))
+            
             while self.match(TokenType.separator):
                 p_dt = self.current_token
                 self.advance()
                 p_id = self.expect(TokenType.identifier)
-                params.append(node_funcpar_var(self.token_to_dict(p_dt), self.token_to_dict(p_id)))
+                
+                is_arr = False
+                dims = 0
+                if self.current_token.type == TokenType.lbracket:
+                    is_arr = True
+                    while self.match(TokenType.lbracket):
+                        self.parse_expression()
+                        self.expect(TokenType.rbracket)
+                        dims += 1
+                        
+                params.append(node_funcpar_var(self.token_to_dict(p_dt), self.token_to_dict(p_id), is_arr, dims))
         self.expect(TokenType.rparen)
         self.expect(TokenType.lbrace)
         body = self.parse_code_block()

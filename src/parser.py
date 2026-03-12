@@ -112,11 +112,15 @@ CFG = {
         []  # 39
     ],
     "<parameter_list>": [
-        ["<data_type>", "identifier", "<parameter_tail>"]  # 40
+        ["<data_type>", "identifier", "<param_arr_opt>", "<parameter_tail>"]  # 40
     ],
     "<parameter_tail>": [
-        [",", "<data_type>", "identifier", "<parameter_tail>"],  # 41
+        [",", "<data_type>", "identifier", "<param_arr_opt>", "<parameter_tail>"],  # 41
         []  # 42
+    ],
+    "<param_arr_opt>": [
+        ["<dimension_list>"],
+        []
     ],
     "<statement_list>": [
         ["<statement>", "<statement_list>"],  # 43
@@ -508,7 +512,9 @@ PREDICT_SET = {
     "<dimension_tail>": {
         "[": ["<dimension_tail>", 0],
         "=": ["<dimension_tail>", 1],
-        ";": ["<dimension_tail>", 1]
+        ";": ["<dimension_tail>", 1],
+        ",": ["<dimension_tail>", 1],
+        ")": ["<dimension_tail>", 1]
     },
     "<array_size>": {
         "integer": ["<array_size>", 0],
@@ -625,6 +631,11 @@ PREDICT_SET = {
         ",": ["<parameter_tail>", 0],
         ")": ["<parameter_tail>", 1]
     },
+    "<param_arr_opt>": {
+        "[": ["<param_arr_opt>", 0],
+        ",": ["<param_arr_opt>", 1],
+        ")": ["<param_arr_opt>", 1]
+    },
     "<statement_list>": {
         "frag": ["<statement_list>", 0],
         "elo": ["<statement_list>", 0],
@@ -718,7 +729,20 @@ PREDICT_SET = {
         ",": ["<array_access>", 1],
         "]": ["<array_access>", 1],
         "++": ["<array_access>", 1],
-        "--": ["<array_access>", 1]
+        "--": ["<array_access>", 1],
+        "+": ["<array_access>", 1],
+        "-": ["<array_access>", 1],
+        "*": ["<array_access>", 1],
+        "/": ["<array_access>", 1],
+        "%": ["<array_access>", 1],
+        "<": ["<array_access>", 1],
+        ">": ["<array_access>", 1],
+        "<=": ["<array_access>", 1],
+        ">=": ["<array_access>", 1],
+        "==": ["<array_access>", 1],
+        "!=": ["<array_access>", 1],
+        "&&": ["<array_access>", 1],
+        "||": ["<array_access>", 1]
     },
     "<input_statement>": {
         "comsat": ["<input_statement>", 0]
