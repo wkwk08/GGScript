@@ -6,6 +6,7 @@ class CodeGen:
         self.indent_level = 0
         self.global_vars = set()
         self.current_function = None
+        self.loop_depth = 0
         
         # GGScript to Python default values mapping
         self.type_defaults = {
@@ -170,7 +171,10 @@ class GGScriptArray:
 
     def visit_node_code_block(self, node):
         for stmt in node.statements_n:
-            self.visit(stmt)
+            res = self.visit(stmt)
+
+            if res:
+                 self.generated_code += f"{self.indent()}{res}\n"
         return ""
 
     def visit_node_func_dec(self, node):
@@ -360,6 +364,8 @@ class GGScriptArray:
         return ""
 
     def visit_node_loop_stmt(self, node):
+        self.loop_depth += 1
+
         if node.loop_type == "grind":
             if node.init_n:
                 if isinstance(node.init_n, list):
@@ -400,6 +406,7 @@ class GGScriptArray:
             self.generated_code += f"{self.indent()}if not ({cond}):\n"
             self.generated_code += f"{self.indent()}    break\n"
             self.indent_level -= 1
+        self.loop_depth -= 1   
         return ""
 
     # ==========================================
@@ -497,7 +504,8 @@ class GGScriptArray:
     # JUMP STATEMENTS
     # ==========================================
     def visit_node_break_stmt(self, node):
-        self.generated_code += f"{self.indent()}break\n"
+        if self.loop_depth > 0:
+            self.generated_code += f"{self.indent()}break\n"
         return ""
 
     def visit_node_continue_stmt(self, node):

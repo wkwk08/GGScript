@@ -647,7 +647,11 @@ class SemanticAnalyzer:
 
     def visit_node_str(self, node):
         err_n = ErrorNode(node.val_t["tokenLine"], node.val_t["tokenCol"], node.val_t["tokenName"])
-        return (('lit', 'ign'), node.val_t["tokenName"][1:-1], err_n)
+        val = str(node.val_t["tokenName"])
+        # Only strip quotes if they are actually present
+        if len(val) >= 2 and val.startswith('"') and val.endswith('"'):
+            val = val[1:-1]
+        return (('lit', 'ign'), val, err_n)
     
     def visit_node_bool(self, node):
         err_n = ErrorNode(node.val_t["tokenLine"], node.val_t["tokenCol"], node.val_t["tokenName"])
@@ -655,7 +659,11 @@ class SemanticAnalyzer:
 
     def visit_node_char(self, node):
         err_n = ErrorNode(node.val_t["tokenLine"], node.val_t["tokenCol"], node.val_t["tokenName"])
-        return (('lit', 'tag'), node.val_t["tokenName"][1:-1], err_n)
+        val = str(node.val_t["tokenName"])
+        # Only strip quotes if they are actually present
+        if len(val) >= 2 and val.startswith("'") and val.endswith("'"):
+            val = val[1:-1]
+        return (('lit', 'tag'), val, err_n)
 
     def visit_node_arr_idx(self, node): 
             arr_sym = self.curr_scope.get(node.id_t["tokenName"])
@@ -1130,7 +1138,7 @@ class ASTBuilder:
 
     def parse_code_block(self):
         stmts = []
-        while self.current_token.type not in (TokenType.rbrace, TokenType.eof, TokenType.choke, TokenType.choke_clutch):
+        while self.current_token.type not in (TokenType.rbrace, TokenType.eof, TokenType.choke, TokenType.choke_clutch, TokenType.role, TokenType.noob):
             if self.current_token.type in (TokenType.frag, TokenType.elo, TokenType.ign, TokenType.surebol, TokenType.tag, TokenType.stun):
                 stmts.extend(self.parse_declarations())
             elif self.current_token.type == TokenType.clutch:

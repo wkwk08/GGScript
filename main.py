@@ -514,7 +514,7 @@ frag lobby() {
             
             ast_errors = []
             ast = ASTBuilder(tokens, ast_errors).parse_program()
-            if ast_errors: return self.print_term("AST Building Failed:\n" + "\n".join(ast_errors), "error")
+            if ast_errors: return self.print_term("AST Building Failed:\n" + "\n".join(str(e) for e in ast_errors), "error")
                 
             self.print_term("→ Code Generation successful ✓ Executing program...\n", "success")
             
