@@ -252,11 +252,11 @@ frag lobby() {
         def setup_terminal_input():
             # 1. Unlock the terminal and print the prompt
             self.terminal.config(state=tk.NORMAL)
-            self.terminal.insert("end", prompt, "output")
+            if prompt:
+                self.terminal.insert("end", prompt, "output")
             self.terminal.see("end")
             
             # 2. Mark the exact spot where the user starts typing
-            # 'end-1c' fixes the Tkinter implicit newline bug
             self.terminal.mark_set("input_start", "end-1c")
             self.terminal.mark_gravity("input_start", "left")
             
@@ -264,6 +264,80 @@ frag lobby() {
             self.terminal.mark_set("insert", "end-1c")
             self.terminal.focus_set()
             
+            def on_keypress(event):
+                # Let Enter be handled by on_enter below
+                if event.keysym == "Return":
+                    return
+
+                # 1. Handle Cut (Ctrl+X)
+                if event.keysym.lower() == "x" and (event.state & 4 or event.state & 8):
+                    try:
+                        sel_start = self.terminal.index("sel.first")
+                        sel_end = self.terminal.index("sel.last")
+                        if self.terminal.compare(sel_start, "<", "input_start"):
+                            # Manually copy to clipboard
+                            self.root.clipboard_clear()
+                            self.root.clipboard_append(self.terminal.get(sel_start, sel_end))
+                            
+                            # Only delete the part after the prompt
+                            if self.terminal.compare(sel_end, ">", "input_start"):
+                                self.terminal.delete("input_start", sel_end)
+                            
+                            self.terminal.tag_remove("sel", "1.0", "end")
+                            self.terminal.mark_set("insert", "end-1c")
+                            return "break"
+                    except tk.TclError:
+                        pass
+                
+                # 2. Handle Paste (Ctrl+V)
+                if event.keysym.lower() == "v" and (event.state & 4 or event.state & 8):
+                    try:
+                        sel_start = self.terminal.index("sel.first")
+                        if self.terminal.compare(sel_start, "<", "input_start"):
+                            self.terminal.tag_remove("sel", "1.0", "end")
+                    except tk.TclError:
+                        pass
+                    
+                    if self.terminal.compare("insert", "<", "input_start"):
+                        self.terminal.mark_set("insert", "end-1c")
+                    return # Let Tkinter handle the actual paste text at the corrected cursor
+
+                # Check if the keystroke modifies the text
+                is_modifying = event.keysym in ("BackSpace", "Delete") or (event.char and event.char.isprintable())
+                if not is_modifying:
+                    return
+
+                try:
+                    # 3. Handling active selections (like Ctrl+A)
+                    sel_start = self.terminal.index("sel.first")
+                    sel_end = self.terminal.index("sel.last")
+                    
+                    # If selection overlaps the read-only area
+                    if self.terminal.compare(sel_start, "<", "input_start"):
+                        # Delete ONLY the part of the selection that the user is allowed to edit
+                        if self.terminal.compare(sel_end, ">", "input_start"):
+                            self.terminal.delete("input_start", sel_end)
+                        
+                        # Clear selection highlight and move cursor to end
+                        self.terminal.tag_remove("sel", "1.0", "end")
+                        self.terminal.mark_set("insert", "end-1c")
+                        
+                        # Insert the character if they typed one (instead of hitting Backspace)
+                        if event.char and event.char.isprintable() and event.keysym not in ("BackSpace", "Delete"):
+                            self.terminal.insert("end-1c", event.char)
+                            
+                        self.terminal.see("end")
+                        return "break"
+                except tk.TclError:
+                    # 4. Standard Typing/Deletion without selection
+                    if event.keysym == "BackSpace" and self.terminal.compare("insert", "<=", "input_start"):
+                        return "break"
+                    if event.keysym == "Delete" and self.terminal.compare("insert", "<", "input_start"):
+                        return "break"
+                    if event.char and event.char.isprintable() and self.terminal.compare("insert", "<", "input_start"):
+                        self.terminal.mark_set("insert", "end-1c")
+                        self.terminal.see("end")
+
             def on_enter(event):
                 # Get everything typed between the end of the prompt and the enter key
                 val = self.terminal.get("input_start", "end-1c")
@@ -272,20 +346,16 @@ frag lobby() {
                 # Visual newline and lock the terminal back down
                 self.terminal.insert("end", "\n")
                 self.terminal.unbind("<Return>")
-                self.terminal.unbind("<BackSpace>")
+                self.terminal.unbind("<Key>")
                 self.terminal.config(state=tk.DISABLED)
                 
                 # Signal the worker thread to continue execution
                 input_done.set()
                 return "break"
                 
-            def on_backspace(event):
-                # Prevent the user from deleting the prompt text
-                if self.terminal.compare("insert", "<=", "input_start"):
-                    return "break"
-                    
+            # Bind the unified event logic
+            self.terminal.bind("<Key>", on_keypress)
             self.terminal.bind("<Return>", on_enter)
-            self.terminal.bind("<BackSpace>", on_backspace)
             
         # Execute the UI interaction securely on the main GUI thread
         self.root.after(0, setup_terminal_input)
@@ -467,7 +537,6 @@ frag lobby() {
 
                 def console_insp(prompt_var=""):
                     # Uses updated terminal typing function safely handling empty strings
-                    # Note: prompt_var is now ignored - user controls prompts via shout()
                     user_val = self.request_input("")
                     if not user_val: 
                         return 0 # Default fallback if user hits enter with no text
