@@ -446,6 +446,11 @@ class SemanticAnalyzer:
                 def validate_init(init_node_list, current_dim):
                     if current_dim >= dim:
                         self.logError("Array initialization has too many dimensions.", err_n)
+                    
+                    # ---> NEW CHECK: Prevent out-of-bounds initialization <---
+                    if len(init_node_list) > evaluated_sizes[current_dim]:
+                        self.logError(f"Array '{id_name}' initialized with {len(init_node_list)} elements, but declared size is {evaluated_sizes[current_dim]}.", err_n)
+                    
                     res = []
                     for val_node in init_node_list:
                         if isinstance(val_node, list):
@@ -606,12 +611,14 @@ class SemanticAnalyzer:
             for i, (arg_node, param_type) in enumerate(zip(args, func_symbol["params"])):
                 arg_val_type, arg_val, arg_err_n = self.visit_node(arg_node)
                 
-                # Verify Array vs Variable mismatch
-                if param_type["dtype"][0] != arg_val_type[0]:
+                # Verify Array vs Variable/Literal mismatch - but allow literals for any parameter type
+                # Only check kind mismatch if the argument is not a literal
+                if arg_val_type[0] != 'lit' and param_type["dtype"][0] != arg_val_type[0]:
                     expected_kind = "array" if param_type["dtype"][0] == "arr" else "variable"
                     got_kind = "array" if arg_val_type[0] == "arr" else "variable"
                     self.logError(f"Parameter kind mismatch for param {i+1} of '{node_id['tokenName']}': expected {expected_kind}, got {got_kind}.", arg_err_n)
 
+                # Check data type compatibility
                 if param_type["dtype"][1] != arg_val_type[1]: 
                     if not (param_type["dtype"][1] == 'elo' and arg_val_type[1] == 'frag'):
                         self.logError(f"Type mismatch for param {i+1} of '{node_id['tokenName']}': expected '{param_type['dtype'][1]}', got '{arg_val_type[1]}'.", arg_err_n)
@@ -1214,6 +1221,8 @@ class ASTBuilder:
                 stmts.append(self.parse_if_stmt())
             elif self.current_token.type == TokenType.grind:
                 stmts.append(self.parse_for_loop())
+            elif self.current_token.type == TokenType.try_:
+                stmts.append(self.parse_do_while_loop())
             elif self.current_token.type == TokenType.retry:
                 stmts.append(self.parse_while_loop())
             elif self.current_token.type == TokenType.pick:
@@ -1297,6 +1306,18 @@ class ASTBuilder:
         self.expect(TokenType.rbrace)
 
         return node_loop_stmt("grind", init, cond, update, body)
+
+    def parse_do_while_loop(self):
+        self.expect(TokenType.try_)
+        self.expect(TokenType.lbrace)
+        body = self.parse_code_block()
+        self.expect(TokenType.rbrace)
+        self.expect(TokenType.retry)
+        self.expect(TokenType.lparen)
+        cond = self.parse_expression()
+        self.expect(TokenType.rparen)
+        self.expect(TokenType.terminator)
+        return node_loop_stmt("try", None, cond, None, body)
 
     def parse_while_loop(self):
         self.expect(TokenType.retry)
