@@ -105,7 +105,8 @@ CFG = {
         ["elo"],      # 34
         ["ign"],      # 35
         ["surebol"],  # 36
-        ["dodge"]     # 37
+        ["dodge"],     # 37
+        ["tag"]       # 38
     ],
     "<parameters>": [
         ["<parameter_list>"],  # 38
@@ -603,7 +604,8 @@ PREDICT_SET = {
         "elo": ["<return_type>", 1],
         "ign": ["<return_type>", 2],
         "surebol": ["<return_type>", 3],
-        "dodge": ["<return_type>", 4]
+        "dodge": ["<return_type>", 4],
+        "tag": ["<return_type>", 5]
     },
     "<data_type>": {
         "frag":    ["<data_type>", 0],
