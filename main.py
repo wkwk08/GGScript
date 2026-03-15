@@ -144,7 +144,7 @@ frag lobby() {
         term_header.pack(side="top", fill="x")
         
         self.terminal = tk.Text(term_container, bg="#000000", fg="#ffffff", font=("Consolas", 12), 
-                                insertbackground="#ffffff", borderwidth=0, highlightthickness=0, padx=10, pady=10, state=tk.DISABLED)
+                                insertbackground="#ffffff", borderwidth=0, highlightthickness=0, padx=10, pady=10, state=tk.DISABLED, height=6)
         self.terminal.pack(side="bottom", fill="both", expand=True)
         
         self.terminal.tag_config("error", foreground="#ffaaaa")
@@ -185,7 +185,8 @@ frag lobby() {
 
     def on_text_change(self, event=None):
         self.update_line_numbers()
-        
+        self.sync_scroll()
+
     def sync_scroll(self, event=None):
         self.line_numbers.yview_moveto(self.editor.yview()[0])
         
@@ -221,10 +222,12 @@ frag lobby() {
             self.editor.insert(tk.INSERT, f"\n{indent_str}    \n{indent_str}")
             self.editor.mark_set(tk.INSERT, "insert - 1 line lineend")
             self.update_line_numbers()
+            self.editor.see(tk.INSERT)
             return "break"
         
         self.editor.insert(tk.INSERT, f"\n{indent_str}")
         self.update_line_numbers()
+        self.editor.see(tk.INSERT)
         return "break"
 
     # ========================================================================
