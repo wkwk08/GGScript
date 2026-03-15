@@ -6,6 +6,8 @@ import re
 import threading
 import builtins
 import traceback
+import urllib.request
+import base64
 
 # ── COMPILER MODULE IMPORTS ──
 from src.lexer import Lexer
@@ -101,6 +103,20 @@ frag lobby() {
     def build_ui(self):
         nav_frame = tk.Frame(self.root, bg="#000000", height=50)
         nav_frame.pack(side="top", fill="x", pady=10, padx=15)
+
+        # --- LOGO CODE ---
+        try:
+            # Download the image data securely
+            req = urllib.request.Request("https://i.imgur.com/szLgNMG.png", headers={'User-Agent': 'Mozilla/5.0'})
+            raw_data = urllib.request.urlopen(req).read()
+            b64_data = base64.b64encode(raw_data)
+            self.logo_img = tk.PhotoImage(data=b64_data)
+            
+            # Set as App/Taskbar Icon
+            self.root.iconphoto(False, self.logo_img)
+            
+        except Exception as e:
+            print(f"Failed to load logo: {e}")
         
         title_lbl = tk.Label(nav_frame, text="GGScript Compiler", bg="#000000", fg="#ffffff", font=("Consolas", 18, "bold"))
         title_lbl.pack(side="left")
