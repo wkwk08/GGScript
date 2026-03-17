@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GGScript Compiler</title>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
+    <style>
+        /* Exact Tkinter Dark Theme & Layout (Desktop) */
+        body { font-family: 'Consolas', monospace; background: #000000; color: #ffffff; margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        
+        ::-webkit-scrollbar { width: 14px; height: 14px; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; border-left: 1px solid #222; }
+        ::-webkit-scrollbar-thumb { background: #333333; border: 3px solid #0a0a0a; border-radius: 7px; }
+        ::-webkit-scrollbar-thumb:hover { background: #444444; }
+
+        .nav-frame { background: #000000; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+        .logo-title-group { display: flex; align-items: center; }
+        .logo { height: 32px; margin-right: 15px; }
+        .title { font-size: 24px; font-weight: bold; }
+        
+        .btn-group { display: flex; }
+        .btn-group button { background: #000000; color: #ffffff; border: none; font-family: 'Consolas', monospace; font-weight: bold; cursor: pointer; width: 100px; padding: 8px; margin-left: 10px; font-size: 12px; }
+        .btn-group button:hover { background: #222222; }
+        
+        .main-paned { display: flex; flex: 1; padding: 0 15px 15px 15px; background: #000000; overflow: hidden; }
+        .sash-h { display: flex; flex: 1; background: #444444; gap: 8px; border: 1px solid #444444; }
+        .sash-v { display: flex; flex-direction: column; flex: 2; background: #444444; gap: 8px; min-width: 600px; }
+        
+        .editor-container { flex: 2; background: #000000; display: flex; min-height: 0; }
+        .term-container { flex: 1; background: #000000; display: flex; flex-direction: column; min-height: 0; }
+        .right-frame { flex: 1; background: #0a0a0a; min-width: 350px; display: flex; flex-direction: column; overflow: hidden; }
+        
+        .line-numbers { background: #0a0a0a; color: #555555; width: 40px; padding: 10px 5px; text-align: right; border: none; resize: none; overflow: hidden; outline: none; font-size: 13px; line-height: 1.2; }
+        .editor { flex: 1; background: #000000; color: #ffffff; padding: 10px; border: none; resize: none; outline: none; font-size: 13px; white-space: pre; overflow: auto; line-height: 1.2; box-sizing: border-box; }
+        
+        .term-header { background: #111111; color: #aaaaaa; padding: 5px 10px; font-weight: bold; font-size: 11px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; }
+        .term-submit-btn { background: #222222; color: #ffffff; border: 1px solid #555; font-family: 'Consolas', monospace; font-size: 10px; cursor: pointer; padding: 2px 8px; display: none; }
+        .term-submit-btn:hover { background: #444444; }
+
+        .terminal { flex: 1; padding: 10px; overflow-y: auto; font-size: 12px; white-space: pre-wrap; position: relative; cursor: text; box-sizing: border-box; } 
+        
+        .error { color: #ffaaaa; }
+        .success { color: #aaffaa; }
+        .info { color: #aaaaaa; }
+        .output { color: #ffffff; }
+        .input-log { color: #dddddd; font-style: italic; font-family: 'Consolas', monospace; font-size: 12px; }
+        .terminal-inline-input { outline: none; border: none; background: transparent; color: #dddddd; font-style: italic; font-family: 'Consolas', monospace; font-size: 12px; display: inline-block; min-width: 5px; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: #111111; color: #ffffff; border: 1px solid #444; border-top: none; padding: 6px 10px; text-align: left; position: sticky; top: 0; font-weight: bold; z-index: 1;}
+        td { border: none; padding: 4px 10px; }
+        tr { background: #0a0a0a; }
+        tr:hover { background: #333333; }
+        .table-wrapper { overflow-y: auto; flex: 1; background: #0a0a0a; }
+
+        @media (max-width: 850px) {
+            body { height: auto; overflow-y: auto; overflow-x: hidden; }
+            .nav-frame { flex-direction: column; gap: 15px; padding: 15px 10px; }
+            .logo-title-group { width: 100%; justify-content: center; }
+            .title { font-size: 20px; }
+            .btn-group { width: 100%; flex-wrap: wrap; justify-content: center; gap: 8px; }
+            .btn-group button { width: calc(50% - 8px); margin: 0; padding: 12px 0; font-size: 13px; }
+            .main-paned { padding: 0 10px 10px 10px; display: block; height: auto; overflow: visible; }
+            .sash-h { flex-direction: column; background: transparent; border: none; gap: 15px; }
+            .sash-v { min-width: 100%; height: auto; background: transparent; gap: 15px; }
+            .editor-container { height: 350px; flex: none; border: 1px solid #444; }
+            .term-container { height: 250px; flex: none; border: 1px solid #444; }
+            .right-frame { min-width: 100%; height: 400px; flex: none; border: 1px solid #444; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="nav-frame">
+        <div class="logo-title-group">
+            <img src="https://i.imgur.com/szLgNMG.png" class="logo" alt="GGScript Logo">
+            <div class="title">GGScript Compiler</div>
+        </div>
+        <div class="btn-group">
+            <button onclick="runStage('lexical')">LEXICAL</button>
+            <button onclick="runStage('syntax')">SYNTAX</button>
+            <button onclick="runStage('semantic')">SEMANTIC</button>
+            <button onclick="runStage('run')">RUN</button>
+        </div>
+    </div>
+
+    <div class="main-paned">
+        <div class="sash-h">
+            <div class="sash-v">
+                <div class="editor-container">
+                    <textarea id="line-numbers" class="line-numbers" readonly>1</textarea>
+                    <textarea id="editor" class="editor" spellcheck="false" wrap="off">/* Welcome to GGScript! */
+frag lobby() {
+    ign message = "ggwp team!";
+    shout(message);
+    
+    ign username;
+    shout("Enter your username: ");
+    comsat username;
+    
+    shout("Hello, " + username + "!");
+    ggwp;
+}</textarea>
+                </div>
+                <div class="term-container">
+                    <div class="term-header">
+                        <span>TERMINAL</span>
+                        <button id="term-enter-btn" class="term-submit-btn">SUBMIT</button>
+                    </div>
+                    <div id="terminal" class="terminal"><span class="info">Initializing Environment... Please wait.</span></div>
+                </div>
+            </div>
+            <div class="right-frame">
+                <div class="table-wrapper">
+                    <table>
+                        <thead><tr><th>Lexeme</th><th>Token</th><th>Type</th></tr></thead>
+                        <tbody id="table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let pyodideReady = false;
+        let pyodide;
+        const term = document.getElementById("terminal");
+        const enterBtn = document.getElementById("term-enter-btn");
+
+        async function initPyodide() {
+            pyodide = await loadPyodide();
+            window.console_disp = (...args) => printTerm(args.join(""), "output", "");
+            window.console_insp = async (promptText) => {
+                return new Promise((resolve) => {
+                    const editableSpan = document.createElement("span");
+                    editableSpan.className = "terminal-inline-input";
+                    editableSpan.contentEditable = "true";
+                    term.appendChild(editableSpan);
+                    editableSpan.focus();
+                    term.scrollTop = term.scrollHeight;
+                    term.onclick = () => editableSpan.focus();
+                    enterBtn.style.display = "inline-block";
+
+                    const submitInput = () => {
+                        const val = editableSpan.innerText.trim();
+                        editableSpan.contentEditable = "false";
+                        term.onclick = null; 
+                        enterBtn.style.display = "none";
+                        enterBtn.onclick = null;
+                        term.appendChild(document.createTextNode("\n"));
+                        term.scrollTop = term.scrollHeight;
+                        const numVal = parseFloat(val);
+                        resolve(val === "" ? 0 : (isNaN(numVal) ? val : numVal));
+                    };
+
+                    editableSpan.addEventListener("keydown", function(e) {
+                        if (e.key === "Enter") {
+                            e.preventDefault();
+                            submitInput();
+                        }
+                    });
+                    enterBtn.onclick = submitInput;
+                });
+            };
+            pyodide.registerJsModule("js_ui", { console_disp: window.console_disp, console_insp: window.console_insp });
+            await pyodide.runPythonAsync(`
+import js_ui
+import builtins
+exec_env = {
+    'console_disp': js_ui.console_disp,
+    'console_insp': js_ui.console_insp,
+    'builtins': builtins
+}
+            `);
+            pyodideReady = true;
+            clearTerm();
+            printTerm("Ready to compile GGScript.", "info");
+        }
+        initPyodide();
+
+        const editor = document.getElementById("editor");
+        const lineNums = document.getElementById("line-numbers");
+
+        function updateLines() {
+            const lines = editor.value.split("\n").length;
+            lineNums.value = Array.from({length: lines}, (_, i) => i + 1).join("\n");
+        }
+        
+        editor.addEventListener("input", updateLines);
+        editor.addEventListener("scroll", () => { lineNums.scrollTop = editor.scrollTop; });
+
+        // --- UPDATED KEYDOWN WITH FULL INDENTATION LOGIC ---
+        editor.addEventListener("keydown", function(e) {
+            const start = this.selectionStart;
+            const end = this.selectionEnd;
+            const value = this.value;
+
+            // 1. Handle Tab
+            if (e.key === "Tab") {
+                e.preventDefault();
+                this.value = value.substring(0, start) + "    " + value.substring(end);
+                this.selectionStart = this.selectionEnd = start + 4;
+                updateLines();
+            }
+
+            // 2. Auto-Close pairs
+            const pairs = {'{': '}', '[': ']', '(': ')', '"': '"', "'": "'"};
+            if (pairs[e.key]) {
+                e.preventDefault();
+                this.value = value.substring(0, start) + e.key + pairs[e.key] + value.substring(end);
+                this.selectionStart = this.selectionEnd = start + 1;
+                updateLines();
+            }
+
+            // 3. Smart Indent + Persistent Indent on Enter
+            if (e.key === "Enter") {
+                e.preventDefault();
+                
+                // Get the current line content to find its indentation
+                const linesBefore = value.substring(0, start).split('\n');
+                const currentLine = linesBefore[linesBefore.length - 1];
+                const indentMatch = currentLine.match(/^\s*/);
+                const currentIndent = indentMatch ? indentMatch[0] : "";
+
+                const charBefore = value.substring(start - 1, start);
+                const charAfter = value.substring(start, start + 1);
+
+                // Case A: Between curly braces { | }
+                if (charBefore === "{" && charAfter === "}") {
+                    const extraIndent = "    ";
+                    this.value = value.substring(0, start) + "\n" + currentIndent + extraIndent + "\n" + currentIndent + value.substring(end);
+                    this.selectionStart = this.selectionEnd = start + 1 + currentIndent.length + extraIndent.length;
+                } 
+                // Case B: Normal Persistent Indentation
+                else {
+                    this.value = value.substring(0, start) + "\n" + currentIndent + value.substring(end);
+                    this.selectionStart = this.selectionEnd = start + 1 + currentIndent.length;
+                }
+                
+                updateLines();
+            }
+        });
+        updateLines();
+
+        function clearTerm() { term.innerHTML = ""; }
+        function printTerm(text, tag="output", end="\n") {
+            const span = document.createElement("span");
+            span.className = tag;
+            span.textContent = text + end;
+            term.appendChild(span);
+            term.scrollTop = term.scrollHeight;
+        }
+
+        async function runStage(action) {
+            if (action === 'run' && !pyodideReady) {
+                printTerm("Please wait, Python environment is still loading...", "error");
+                return;
+            }
+            const code = editor.value;
+            clearTerm();
+            printTerm(`→ running ${action === 'run' ? 'compilation pipeline' : action + ' analysis'}...`, "info");
+            document.getElementById("table-body").innerHTML = "";
+            enterBtn.style.display = "none";
+
+            try {
+                const res = await fetch('/api/compile', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code, action })
+                });
+                const data = await res.json();
+
+                if (data.tokens) {
+                    data.tokens.forEach(t => {
+                        const row = `<tr><td>${t.lexeme}</td><td>${t.token}</td><td>${t.type}</td></tr>`;
+                        document.getElementById("table-body").innerHTML += row;
+                    });
+                }
+
+                if (!data.success) {
+                    printTerm(`[${data.stage} Error]\n`, "error", "");
+                    data.errors.forEach(err => printTerm(err, "error"));
+                    return;
+                }
+
+                if (action !== 'run') {
+                    printTerm(data.message, "success");
+                } else {
+                    printTerm("→ Code Generation successful ✓ Executing program...\n\n", "success");
+                    try {
+                        pyodide.globals.set("generated_code", data.python_code);
+                        await pyodide.runPythonAsync(`exec(generated_code, exec_env)`);
+                        await pyodide.runPythonAsync(`
+import asyncio
+if 'lobby' in exec_env:
+    await exec_env['lobby']()
+                        `);
+                        printTerm("\n[Code Executed]", "info");
+                    } catch (err) {
+                        printTerm(`\nExecution failed: ${err.message}`, "error");
+                    }
+                }
+            } catch (err) {
+                printTerm(`Failed to connect to API: ${err.message}`, "error");
+            }
+        }
+    </script>
+</body>
+</html>
