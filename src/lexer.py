@@ -1415,14 +1415,14 @@ class Lexer:
                 self.advance()
 
             if method_str in {'split', 'count'}:
-                tokens.append(Token(TokenType.separator, '.', start_pos.ln, start_pos.col))
+                tokens.append(Token(TokenType.dot, '.', start_pos.ln, start_pos.col))
                 tokens.append(Token(getattr(TokenType, method_str), method_str, start_pos.ln, start_pos.col + 1))
             else:
                 errors.append(LexicalError(start_pos, f"Unknown method '{method_str}' after '.'"))
             return
 
         # If it's not a digit or letter, treat as standalone dot
-        tokens.append(Token(TokenType.separator, '.', start_pos.ln, start_pos.col))
+        tokens.append(Token(TokenType.dot, '.', start_pos.ln, start_pos.col))
 
     def make_lparen(self, tokens, errors):
         start_pos = self.pos.copy()
