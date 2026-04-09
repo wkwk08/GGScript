@@ -351,6 +351,7 @@ CFG = {
         ["<postfix_op>"],  # 152
         ["<array_access>"], # 153
         ["<function_call_suffix>"], # 154
+        [".", "<function_name>", "(", "<argument_list>", ")"], # 
         []  # 155
     ],
     "<postfix_op>": [
@@ -382,7 +383,8 @@ CFG = {
     "<assign_tail>": [
         ["<assignment_operator>", "<expression>"], # For standard assignments: = 5
         ["++"],                                    # For postfix increment: ++
-        ["--"]                                     # For postfix decrement: --
+        ["--"],                                     # For postfix decrement: --
+        [".", "<function_name>", "(", "<argument_list>", ")"]
     ],
     "<condition>": [
         ["<expression>"]  # 175
@@ -1213,23 +1215,24 @@ PREDICT_SET = {
         "--": ["<postfix_tail>", 0],
         "[": ["<postfix_tail>", 1],
         "(": ["<postfix_tail>", 2],
-        "+": ["<postfix_tail>", 3],
-        "-": ["<postfix_tail>", 3],
-        "*": ["<postfix_tail>", 3],
-        "/": ["<postfix_tail>", 3],
-        "%": ["<postfix_tail>", 3],
-        "<": ["<postfix_tail>", 3],
-        ">": ["<postfix_tail>", 3],
-        "<=": ["<postfix_tail>", 3],
-        ">=": ["<postfix_tail>", 3],
-        "==": ["<postfix_tail>", 3],
-        "!=": ["<postfix_tail>", 3],
-        "&&": ["<postfix_tail>", 3],
-        "||": ["<postfix_tail>", 3],
-        ")": ["<postfix_tail>", 3],
-        ";": ["<postfix_tail>", 3],
-        ",": ["<postfix_tail>", 3],
-        "]": ["<postfix_tail>", 3]
+        ".": ["<postfix_tail>", 3],
+        "+": ["<postfix_tail>", 4],
+        "-": ["<postfix_tail>", 4],
+        "*": ["<postfix_tail>", 4],
+        "/": ["<postfix_tail>", 4],
+        "%": ["<postfix_tail>", 4],
+        "<": ["<postfix_tail>", 4],
+        ">": ["<postfix_tail>", 4],
+        "<=": ["<postfix_tail>", 4],
+        ">=": ["<postfix_tail>", 4],
+        "==": ["<postfix_tail>", 4],
+        "!=": ["<postfix_tail>", 4],
+        "&&": ["<postfix_tail>", 4],
+        "||": ["<postfix_tail>", 4],
+        ")": ["<postfix_tail>", 4],
+        ";": ["<postfix_tail>", 4],
+        ",": ["<postfix_tail>", 4],
+        "]": ["<postfix_tail>", 4]
     },
     "<postfix_op>": {
         "++": ["<postfix_op>", 0],
@@ -1361,7 +1364,8 @@ PREDICT_SET = {
         "/=": ["<assign_tail>", 0],
         "%=": ["<assign_tail>", 0],
         "++": ["<assign_tail>", 1],
-        "--": ["<assign_tail>", 2]
+        "--": ["<assign_tail>", 2],
+        ".":  ["<assign_tail>", 3]
     },
     "<integer_literal>": {
         "integer": ["<integer_literal>", 0]

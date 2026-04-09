@@ -627,12 +627,18 @@ class SemanticAnalyzer:
                 self.logError(f"{call_string.capitalize()} '{node_id['tokenName']}' expects 0 parameters, got {len(args)}.", err_n)
 
     def visit_node_method_call(self, node, expected_val):
-        target_type, target_val, target_err = self.visit_node(node.target_n)
+        var_name = node.id_t["tokenName"]
+        target_err = ErrorNode(node.id_t["tokenLine"], node.id_t["tokenCol"], var_name)
+        target_sym = self.curr_scope.get(var_name)
+        if not target_sym:
+            self.logError(f"Symbol '{var_name}' hasn't been declared yet.", target_err) 
+        target_type = target_sym["dtype"]
         method_name = node.method_t["tokenName"]
-        err_n = ErrorNode(node.method_t["tokenLine"], node.method_t["tokenCol"], node.method_t["tokenName"])
+        err_n = ErrorNode(node.method_t["tokenLine"], node.method_t["tokenCol"], method_name)
 
         if method_name in ["stack", "craft", "drop", "count"]:
-            if target_type[0] != "arr":
+            is_valid_target = (target_type[0] == "arr") or (method_name == "count" and target_type[1] == "ign")
+            if not is_valid_target:
                 self.logError(f"Method '{method_name}' is only valid for arrays.", target_err)
             if method_name == "count":
                 return (('lit', 'frag'), 0, err_n)
