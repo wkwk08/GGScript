@@ -251,6 +251,7 @@ class GGScriptArray:
         var_name = node.id_t["tokenName"]
         if var_name in dir(builtins): var_name = f"_{var_name}"
         op = node.op_t["tokenName"]
+        if op == '/=': op = '//='
         val = self.visit(node.value_n)
         self.generated_code += f"{self.indent()}{var_name} {op} {val}\n"
         return ""
@@ -259,6 +260,7 @@ class GGScriptArray:
         var_name = node.arr_idx_n.id_t["tokenName"]
         if var_name in dir(builtins): var_name = f"_{var_name}"
         op = node.op_t["tokenName"]
+        if op == '/=': op = '//='
         val = self.visit(node.value_n)
         
         indices = [str(self.visit(idx)) for idx in node.arr_idx_n.indices_n]
@@ -446,6 +448,7 @@ class GGScriptArray:
         right = self.visit(node.right_n)
         if op == '&&': op = 'and'
         elif op == '||': op = 'or'
+        elif op == '/': op = '//'
         return f"({left} {op} {right})"
 
     def visit_node_pre_un_op(self, node):
