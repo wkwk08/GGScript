@@ -38,7 +38,7 @@ def get_token_category(raw_type: str) -> str:
     }
     if raw_lower in OPERATORS: return "OPERATOR"
     if raw_lower == "terminator": return "TERMINATOR"
-    if raw_lower in ("separator", ":"): return "SEPARATOR"
+    if raw_lower in ("separator", ":", "."): return "SEPARATOR"
     if raw_lower in ("(", ")", "{", "}", "[", "]"): return "BRACKET"
     
     return "OTHER"
@@ -435,7 +435,9 @@ frag lobby() {
         for item in self.table.get_children(): self.table.delete(item)
         for t in tokens:
             if t.type in (TokenType.eof, TokenType.newline, TokenType.whitespace): continue
-            raw_type_str = str(t.type).split('.')[-1] if '.' in str(t.type) else str(t.type)
+            raw_type_str = str(t.type)
+            if raw_type_str.startswith("TokenType."):
+                raw_type_str = raw_type_str.split('.')[-1]
             lexeme = str(t.value).replace("\n", "\\n").replace("\t", "\\t")
             token_display = lexeme if raw_type_str.lower() in ["comment", "terminator", "separator", "lparen", "rparen", "lbrace", "rbrace", "lbracket", "rbracket"] else raw_type_str
             if raw_type_str.lower() == "choke_clutch": token_display = "choke clutch"
