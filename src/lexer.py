@@ -41,13 +41,14 @@ EQ_OP_DLM = WHTSPC_DLM + ALPHANUM + '"\''
 UNRY_OP_DLM = WHTSPC_DLM + ALPHANUM + ';),'
 CL_PAREN_DLM = WHTSPC_DLM + ALPHANUM + ARITH_OPRTR + REL_OPRTR + '\n{)};'
 WHTSPC_ALPNUM_DLM = WHTSPC_DLM + ALPHANUM
+OP_BRCKT_DLM = WHTSPC_DLM + ALPHANUM + '{/"'
 CL_BRCKT_DLM = WHTSPC_DLM + ALPHANUM + '(};,/'
 OP_SQBRCKT_DLM = WHTSPC_DLM + ALPHANUM + ']/'
 CL_SQBRCKT_DLM = WHTSPC_DLM + ALPHANUM + ',)};[/}--++'
 DTYP_DLM = WHTSPC_DLM + '(['
 IDFR_DLM = WHTSPC_DLM + ARITH_OPRTR + REL_OPRTR + LOGIC_OPRTR + ';[()/'
 INT_FLT_DLM = WHTSPC_DLM + ARITH_OPRTR + REL_OPRTR + LOGIC_OPRTR + ';' + ',' + ':]()}'
-STRG_DLM = WHTSPC_DLM + ':;,)'
+STRG_DLM = WHTSPC_DLM + ':;,)}\/'
 BRC_DLM = WHTSPC_DLM + '{'
 COLON_DLM = WHTSPC_DLM + ':'
 DOT_DLM = '.();\n'
@@ -55,7 +56,7 @@ PRN_BLCK_DLM = WHTSPC_DLM + '(){ }'
 PRN_BRC_DLM = WHTSPC_DLM + '({'
 PRN_DLM = WHTSPC_DLM + '('
 SEMI_DLM = ';' + WHTSPC_DLM
-OP_PAREN_DLM = WHTSPC_DLM + ALPHANUM + '(){!'
+OP_PAREN_DLM = WHTSPC_DLM + ALPHANUM + '(){!"'
 
 # Validation constants
 MAX_INTEGER = 999999999999999
@@ -1477,7 +1478,7 @@ class Lexer:
     def make_lbrace(self, tokens, errors):
         start_pos = self.pos.copy()
         self.advance()  # consume '{'
-        if self.current_char is not None and self.current_char not in (WHTSPC_ALPNUM_DLM + '{'):
+        if self.current_char is not None and self.current_char not in OP_BRCKT_DLM:
             errors.append(LexicalError(start_pos,
                 f"Invalid delimiter '{self.current_char}' after '{{'"))
             return
