@@ -27,9 +27,9 @@ CFG = {
         []  # 5
     ],
     "<global_declaration>": [
-        ["<variable_declaration>", ";"],  # 6 
-        ["<constant_declaration>"],       # 7 
-        ["<array_declaration>", ";"]      # 8 
+        ["<variable_declaration>", ";"],  # 6
+        ["<constant_declaration>"],       # 7
+        ["<array_declaration>", ";"]      # 8
     ],
     "<variable_declaration>": [
         ["<data_type>", "<identifier_init_list>"]  # 9
@@ -41,14 +41,14 @@ CFG = {
         ["identifier", "<init_option>"]  # 11
     ],
     "<init_option>": [
-        ["=", "<expression>"],  # 12
-        ["(", "<expression>", ")"],  # 13
-        ["{", "<expression>", "}"],  # 14
-        []  # 15
+        ["=", "<expression>"],      # 12
+        ["(", "<expression>", ")"], # 13
+        ["{", "<expression>", "}"], # 14
+        []                          # 15
     ],
     "<init_tail>": [
         [",", "<identifier_init>", "<init_tail>"],  # 16
-        []  # 17
+        []                                          # 17
     ],
     "<constant_declaration>": [
         ["stun", "<data_type>", "identifier", "=", "<constant_value>", ";"]  # 18
@@ -57,384 +57,418 @@ CFG = {
         ["<data_type>", "identifier", "<dimension_list>", "<array_init>"]  # 19
     ],
     "<dimension_list>": [
-        ["[", "<array_size>", "]", "<dimension_tail>"]
+        ["[", "<array_size>", "]", "<dimension_tail>"]  # 20
     ],
     "<dimension_tail>": [
-        ["[", "<array_size>", "]", "<dimension_tail>"],
-        []
+        ["[", "<array_size>", "]", "<dimension_tail>"],  # 21
+        []                                               # 22
     ],
     "<array_size>": [
-        ["<positive_integer>"],
-        []
+        ["<positive_integer>"],  # 23
+        ["identifier"],          # 24
+        []                       # 25
     ],
     "<array_init>": [
-        ["=", "{", "<value_list>", "}"],  # 20
-        []  # 21
+        ["=", "{", "<value_list>", "}"],  # 26
+        []                                # 27
     ],
     "<value_list>": [
-        ["<array_element>", "<value_tail>"]  # 22 Updated
+        ["<array_element>", "<value_tail>"]  # 28
     ],
     "<value_tail>": [
-        [",", "<array_element>", "<value_tail>"],
-        []  # 24
+        [",", "<array_element>", "<value_tail>"],  # 29
+        []                                         # 30
     ],
     "<array_element>": [
-        ["<constant_value>"],       # Flat values: 1, "hello", etc.
-        ["{", "<value_list>", "}"]  # Nested arrays: {1, 2, 3}
+        ["<constant_value>"],       # 31
+        ["{", "<value_list>", "}"]  # 32
     ],
     "<function_definition>": [
-        ["build", "<return_type>", "identifier", "(", "<parameters>", ")", "{", "<function_body>", "}"]  # 25
+        ["build", "<return_type>", "identifier", "(", "<parameters>", ")", "{", "<standard_function_body>", "}"]  # 33
     ],
     "<main_function>": [
-        ["frag", "lobby", "(", ")", "{", "<function_body>", "}"]  # 26
+        ["frag", "lobby", "(", ")", "{", "<lobby_function_body>", "}"]  # 34
     ],
-    "<function_body>": [
-        ["<local_declaration_list>", "<statement_list>", "<return_statement>"]  # 27
+    "<standard_function_body>": [
+        ["<local_declaration_list>", "<statement_list>"] # 35
+    ],
+    "<lobby_function_body>": [
+        ["<local_declaration_list>", "<statement_list>", "<lobby_return_statement>"]  # 36
     ],
     "<local_declaration_list>": [
-        ["<local_declaration>", "<local_declaration_list>"],  # 28
-        []  # 29
+        ["<local_declaration>", "<local_declaration_list>"],  # 37
+        []                                                    # 38
     ],
     "<local_declaration>": [
-        ["<variable_declaration>", ";"],  # 30 
-        ["<constant_declaration>"],       # 31 
-        ["<array_declaration>", ";"]      # 32 
+        ["<variable_declaration>", ";"],  # 39
+        ["<constant_declaration>"],       # 40
+        ["<array_declaration>", ";"]      # 41
     ],
     "<return_type>": [
-        ["frag"],     # 33
-        ["elo"],      # 34
-        ["ign"],      # 35
-        ["surebol"],  # 36
-        ["dodge"],     # 37
-        ["tag"]       # 38
+        ["frag"],    # 42
+        ["elo"],     # 43
+        ["ign"],     # 44
+        ["surebol"], # 45
+        ["dodge"],   # 46
+        ["tag"]      # 47
     ],
     "<parameters>": [
-        ["<parameter_list>"],  # 38
-        []  # 39
+        ["<parameter_list>"],  # 48
+        []                     # 49
     ],
     "<parameter_list>": [
-        ["<data_type>", "identifier", "<param_arr_opt>", "<parameter_tail>"]  # 40
+        ["<data_type>", "identifier", "<param_arr_opt>", "<parameter_tail>"]  # 50
     ],
     "<parameter_tail>": [
-        [",", "<data_type>", "identifier", "<param_arr_opt>", "<parameter_tail>"],  # 41
-        []  # 42
+        [",", "<data_type>", "identifier", "<param_arr_opt>", "<parameter_tail>"],  # 51
+        []                                                                          # 52
     ],
     "<param_arr_opt>": [
-        ["<dimension_list>"],
-        []
+        ["<dimension_list>"],  # 53
+        []                     # 54
     ],
     "<statement_list>": [
-        ["<statement>", "<statement_list>"],  # 43
-        []  # 44
+        ["<statement>", "<statement_list>"],  # 55
+        []                                    # 56
     ],
     "<statement>": [
-        ["<declaration_statement>"],  # 45
-        ["<executable_statement>"],   # 46
-        ["<control_statement>"],      # 47
-        ["<local_declaration>"]       # 48
+        ["<declaration_statement>"],  # 57
+        ["<executable_statement>"],   # 58
+        ["<control_statement>"],      # 59
+        ["<local_declaration>"]       # 60
     ],
     "<declaration_statement>": [
-        ["<variable_declaration>", ";"],  # 49 
-        ["<constant_declaration>"],       # 50 
-        ["<array_declaration>", ";"]      # 51 
+        ["<variable_declaration>", ";"],  # 61
+        ["<constant_declaration>"],       # 62
+        ["<array_declaration>", ";"]      # 63
     ],
     "<executable_statement>": [
-        ["<assignment_statement>"],  # 52
-        ["<input_statement>"],       # 53
-        ["<output_statement>"],      # 54
-        ["<function_call_stmt>"],    # 55
-        ["<break_statement>"],       # 56
-        ["<continue_statement>"],     # 57
-        ["ggwp", "<return_value>", ";"]
+        ["<assignment_statement>"],     # 64
+        ["<input_statement>"],          # 65
+        ["<output_statement>"],         # 66
+        ["<function_call_stmt>"],       # 67
+        ["<break_statement>"],          # 68
+        ["<continue_statement>"],       # 69
+        ["ggwp", "<return_value>", ";"] # 70
     ],
     "<control_statement>": [
-        ["<if_statement>"],      # 58
-        ["<switch_statement>"],  # 59
-        ["<for_loop>"],          # 60
-        ["<while_loop>"],        # 61
-        ["<do_while_loop>"]      # 62
+        ["<if_statement>"],    # 71
+        ["<switch_statement>"],# 72
+        ["<for_loop>"],        # 73
+        ["<while_loop>"],      # 74
+        ["<do_while_loop>"]    # 75
     ],
     "<assignment_statement>": [
-        ["<lvalue>", "<assign_tail>", ";"] # 63
+        ["<lvalue>", "<assign_tail>", ";"]  # 76
     ],
     "<lvalue>": [
-        ["identifier", "<array_access>"]  # 64
+        ["identifier", "<array_access>"]  # 77
     ],
     "<array_access>": [
-        ["[", "<expression>", "]", "<array_access>"],  # 65
-        []  # 66
+        ["[", "<expression>", "]", "<array_access>"],  # 78
+        []                                             # 79
     ],
     "<input_statement>": [
-        ["comsat", "<input_list>", ";"]  # 67
+        ["comsat", "<input_list>", ";"]  # 80
     ],
     "<input_list>": [
-        ["<lvalue>", "<input_tail>"]  # 68
+        ["<lvalue>", "<input_tail>"]  # 81
     ],
     "<input_tail>": [
-        [",", "<lvalue>", "<input_tail>"],  # 69
-        []  # 70
+        [",", "<lvalue>", "<input_tail>"],  # 82
+        []                                  # 83
     ],
     "<output_statement>": [
-        ["shout", "<output_list>", ";"]  # 71
+        ["shout", "<output_list>", ";"]  # 84
     ],
     "<output_list>": [
-        ["<output_item>", "<output_tail>"]  # 72
+        ["<output_item>", "<output_tail>"]  # 85
     ],
     "<output_tail>": [
-        [",", "<output_item>", "<output_tail>"],  # 73
-        []  # 74
+        [",", "<output_item>", "<output_tail>"],  # 86
+        []                                        # 87
     ],
     "<output_item>": [
-        ["<string_literal>"],  # 75
-        ["<expression>"]       # 76
+        ["<string_literal>"],  # 88
+        ["<expression>"]       # 89
     ],
     "<function_call_stmt>": [
-        ["<function_name>", "(", "<argument_list>", ")", ";"]  # 77
+        ["<function_name>", "(", "<argument_list>", ")", ";"]  # 90
     ],
     "<function_call_expr>": [
-        ["<function_name>", "(", "<argument_list>", ")"]  # 78
+        ["<function_name>", "(", "<argument_list>", ")"]  # 91
     ],
     "<function_name>": [
-        ["identifier"],  # 79
-        ["stack"], ["craft"], ["drop"], ["count"], ["split"]
+        ["identifier"],  # 92
+        ["stack"],       # 93
+        ["craft"],       # 94
+        ["drop"],        # 95
+        ["count"],       # 96
+        ["split"]        # 97
     ],
     "<argument_list>": [
-        ["<expression>", "<argument_tail>"],  # 80
-        []  # 81
+        ["<expression>", "<argument_tail>"],  # 98
+        []                                    # 99
     ],
     "<argument_tail>": [
-        [",", "<expression>", "<argument_tail>"],  # 82
-        []  # 83
+        [",", "<expression>", "<argument_tail>"],  # 100
+        []                                         # 101
     ],
     "<break_statement>": [
-        ["afk", ";"]  # 84
+        ["afk", ";"]  # 102
     ],
     "<continue_statement>": [
-        ["hop", ";"]  # 85
+        ["hop", ";"]  # 103
     ],
-    "<return_statement>": [
-        ["ggwp", "<return_value>", ";"],  # 86
-        []  # 87
+    "<standard_return_statement>": [
+        ["ggwp", "<return_value>", ";"]  # 104
+    ],
+    "<lobby_return_statement>": [
+        ["ggwp", "<return_value>", ";"],  # 105
+        []                                # 106
     ],
     "<return_value>": [
-        ["<expression>"],  # 88
-        []  # 89
+        ["<expression>"],  # 107
+        []                 # 108
     ],
     "<if_statement>": [
-        ["clutch", "(", "<condition>", ")", "{", "<statement_list>", "}", "<else_if_block>", "<else_block>"]  # 90
+        ["clutch", "(", "<condition>", ")", "{", "<statement_list>", "}", "<else_if_block>", "<else_block>"]  # 109
     ],
     "<else_if_block>": [
-        ["<else_if>", "<else_if_block>"],  # 91
-        []  # 92
+        ["<else_if>", "<else_if_block>"],  # 110
+        []                                 # 111
     ],
     "<else_if>": [
-        ["choke_clutch", "(", "<condition>", ")", "{", "<statement_list>", "}"]  # 93
+        ["choke_clutch", "(", "<condition>", ")", "{", "<statement_list>", "}"]  # 112
     ],
     "<else_block>": [
-        ["choke", "{", "<statement_list>", "}"],  # 94
-        []  # 95
+        ["choke", "{", "<statement_list>", "}"],  # 113
+        []                                        # 114
     ],
     "<switch_statement>": [
-        ["pick", "(", "<expression>", ")", "{", "<case_blocks>", "<default_block>", "}"]  # 96
+        ["pick", "(", "<expression>", ")", "{", "<case_blocks>", "<default_block>", "}"]  # 115
     ],
     "<case_blocks>": [
-        ["<case_block>", "<case_blocks>"],  # 97
-        []  # 98
+        ["<case_block>", "<case_blocks>"],  # 116
+        []                                  # 117
     ],
     "<case_block>": [
-        ["role", "<case_value>", ":", "<case_body>"]  # 99
+        ["role", "<case_value>", ":", "<case_body>"]  # 118
     ],
     "<case_body>": [
-        ["<statement_list>"]  # 100
+        ["<statement_list>"]  # 119
     ],
     "<default_block>": [
-        ["noob", ":", "<case_body>"],  # 101
-        []  # 102
+        ["noob", ":", "<case_body>"],  # 120
+        []                             # 121
     ],
     "<for_loop>": [
-        ["grind", "(", "<for_init>", ";", "<condition>", ";", "<for_update>", ")", "{", "<statement_list>", "}"]  # 103
+        ["grind", "(", "<for_init>", ";", "<condition>", ";", "<for_update>", ")", "{", "<statement_list>", "}"]  # 122
     ],
     "<for_init>": [
-        ["<variable_declaration>"],        # 104
-        ["<assignment_statement_no_semi>"], # 105
-        []                                 # 106
+        ["<variable_declaration>"],           # 123
+        ["<assignment_statement_no_semi>"],   # 124
+        []                                    # 125
     ],
     "<assignment_statement_no_semi>": [
-        ["<lvalue>", "<assignment_operator>", "<expression>"]  # 107
+        ["<lvalue>", "<assignment_operator>", "<expression>"]  # 126
     ],
     "<for_update>": [
-        ["<assignment_expression>", "<update_tail>"],  # 108
-        []  # 109
+        ["<assignment_expression>", "<update_tail>"],  # 127
+        []                                             # 128
     ],
     "<update_tail>": [
-        [",", "<assignment_expression>", "<update_tail>"],  # 110
-        []  # 111
+        [",", "<assignment_expression>", "<update_tail>"],  # 129
+        []                                                  # 130
     ],
     "<while_loop>": [
-        ["retry", "(", "<condition>", ")", "{", "<statement_list>", "}"]  # 112
+        ["retry", "(", "<condition>", ")", "{", "<statement_list>", "}"]  # 131
     ],
     "<do_while_loop>": [
-        ["try", "{", "<statement_list>", "}", "retry", "(", "<condition>", ")", ";"]  # 113
+        ["try", "{", "<statement_list>", "}", "retry", "(", "<condition>", ")", ";"]  # 132
     ],
     "<expression>": [
-        ["<logical_or_expression>"]  # 114
+        ["<logical_or_expression>"]  # 133
     ],
     "<logical_or_expression>": [
-        ["<logical_and_expression>", "<logical_or_tail>"]  # 115
+        ["<logical_and_expression>", "<logical_or_tail>"]  # 134
     ],
     "<logical_or_tail>": [
-        ["||", "<logical_and_expression>", "<logical_or_tail>"],  # 116
-        []  # 117
+        ["||", "<logical_and_expression>", "<logical_or_tail>"],  # 135
+        []                                                        # 136
     ],
     "<logical_and_expression>": [
-        ["<equality_expression>", "<logical_and_tail>"]  # 118
+        ["<equality_expression>", "<logical_and_tail>"]  # 137
     ],
     "<logical_and_tail>": [
-        ["&&", "<equality_expression>", "<logical_and_tail>"],  # 119
-        []  # 120
+        ["&&", "<equality_expression>", "<logical_and_tail>"],  # 138
+        []                                                      # 139
     ],
     "<equality_expression>": [
-        ["<relational_expression>", "<equality_tail>"]  # 121
+        ["<relational_expression>", "<equality_tail>"]  # 140
     ],
     "<equality_tail>": [
-        ["<equality_op>", "<relational_expression>", "<equality_tail>"],  # 122
-        []  # 123
+        ["<equality_op>", "<relational_expression>", "<equality_tail>"],  # 141
+        []                                                                # 142
     ],
     "<equality_op>": [
-        ["=="],  # 124
-        ["!="]   # 125
+        ["=="],  # 143
+        ["!="]   # 144
     ],
     "<relational_expression>": [
-        ["<additive_expression>", "<relational_tail>"]  # 126
+        ["<additive_expression>", "<relational_tail>"]  # 145
     ],
     "<relational_tail>": [
-        ["<relational_op>", "<additive_expression>", "<relational_tail>"],  # 127
-        []  # 128
+        ["<relational_op>", "<additive_expression>", "<relational_tail>"],  # 146
+        []                                                                  # 147
     ],
     "<relational_op>": [
-        ["<"], [">"], ["<="], [">="]  # 129-132
+        ["<"],   # 148
+        [">"],   # 149
+        ["<="],  # 150
+        [">="]   # 151
     ],
     "<additive_expression>": [
-        ["<multiplicative_expression>", "<additive_tail>"]  # 133
+        ["<multiplicative_expression>", "<additive_tail>"]  # 152
     ],
     "<additive_tail>": [
-        ["<additive_op>", "<multiplicative_expression>", "<additive_tail>"],  # 134
-        []  # 135
+        ["<additive_op>", "<multiplicative_expression>", "<additive_tail>"],  # 153
+        []                                                                    # 154
     ],
     "<additive_op>": [
-        ["+"],  # 136
-        ["-"]   # 137
+        ["+"],  # 155
+        ["-"]   # 156
     ],
     "<multiplicative_expression>": [
-        ["<unary_expression>", "<multiplicative_tail>"]  # 138
+        ["<unary_expression>", "<multiplicative_tail>"]  # 157
     ],
     "<multiplicative_tail>": [
-        ["<multiplicative_op>", "<unary_expression>", "<multiplicative_tail>"],  # 139
-        []  # 140
+        ["<multiplicative_op>", "<unary_expression>", "<multiplicative_tail>"],  # 158
+        []                                                                       # 159
     ],
     "<multiplicative_op>": [
-        ["*"],  # 141
-        ["/"],  # 142
-        ["%"]   # 143
+        ["*"],  # 160
+        ["/"],  # 161
+        ["%"]   # 162
     ],
     "<unary_expression>": [
-        ["<unary_op>", "<unary_expression>"],  # 144
-        ["<postfix_expression>"]  # 145
+        ["<unary_op>", "<unary_expression>"],  # 163
+        ["<postfix_expression>"]               # 164
     ],
     "<unary_op>": [
-        ["+"], ["-"], ["!"], ["++"], ["--"]  # 146-150
+        ["+"],   # 165
+        ["-"],   # 166
+        ["!"],   # 167
+        ["++"],  # 168
+        ["--"]   # 169
     ],
     "<postfix_expression>": [
-        ["<primary_expression>", "<postfix_tail>"]  # 151
+        ["<primary_expression>", "<postfix_tail>"]  # 170
     ],
     "<postfix_tail>": [
-        ["<postfix_op>"],  # 152
-        ["<array_access>"], # 153
-        ["<function_call_suffix>"], # 154
-        [".", "<function_name>", "(", "<argument_list>", ")"], # 
-        []  # 155
+        ["<postfix_op>"],                                        # 171
+        ["<array_access>"],                                      # 172
+        ["<function_call_suffix>"],                              # 173
+        [".", "<function_name>", "(", "<argument_list>", ")"],   # 174
+        []                                                       # 175
     ],
     "<postfix_op>": [
-        ["++"],  # 156
-        ["--"]   # 157
+        ["++"],  # 176
+        ["--"]   # 177
     ],
     "<function_call_suffix>": [
-        ["(", "<argument_list>", ")"]  # 158
+        ["(", "<argument_list>", ")"]  # 178
     ],
     "<primary_expression>": [
-        ["<literal>"],  # 159
-        ["identifier"],  # 160
-        ["(", "<expression>", ")"],  # 161
-        ["<function_call_expr>"]  # 162
+        ["<literal>"],              # 179
+        ["identifier"],             # 180
+        ["(", "<expression>", ")"], # 181
+        ["<function_call_expr>"]    # 182
     ],
     "<data_type>": [
-        ["frag"],  # 163
-        ["elo"],   # 164
-        ["ign"],   # 165
-        ["surebol"], # 166
-        ["tag"]   # 167
+        ["frag"],    # 183
+        ["elo"],     # 184
+        ["ign"],     # 185
+        ["surebol"], # 186
+        ["dodge"],   # 187
+        ["tag"]      # 188
     ],
     "<assignment_operator>": [
-        ["="], ["+="], ["-="], ["*="], ["/="], ["%="] # 168-173
+        ["="],   # 189
+        ["+="],  # 190
+        ["-="],  # 191
+        ["*="],  # 192
+        ["/="],  # 193
+        ["%="]   # 194
     ],
     "<assignment_expression>": [
-        ["<lvalue>", "<assign_tail>"]  # 174 Updated
+        ["<lvalue>", "<assign_tail>"]  # 195
     ],
     "<assign_tail>": [
-        ["<assignment_operator>", "<expression>"], # For standard assignments: = 5
-        ["++"],                                    # For postfix increment: ++
-        ["--"],                                     # For postfix decrement: --
-        [".", "<function_name>", "(", "<argument_list>", ")"]
+        ["<assignment_operator>", "<expression>"],               # 196
+        ["++"],                                                  # 197
+        ["--"],                                                  # 198
+        [".", "<function_name>", "(", "<argument_list>", ")"]    # 199
     ],
     "<condition>": [
-        ["<expression>"]  # 175
+        ["<expression>"]  # 200
     ],
     "<literal>": [
-        ["<integer_literal>"], # 176
-        ["<float_literal>"],   # 177
-        ["<string_literal>"],  # 178
-        ["<char_literal>"],    # 179
-        ["<boolean_literal>"]  # 180
+        ["<integer_literal>"],  # 201
+        ["<float_literal>"],    # 202
+        ["<string_literal>"],   # 203
+        ["<char_literal>"],     # 204
+        ["<boolean_literal>"]   # 205
     ],
     "<boolean_literal>": [
-        ["buff"],  # 193
-        ["nerf"]   # 194
+        ["buff"],  # 206
+        ["nerf"]   # 207
     ],
     "<constant_value>": [
-        ["<const_add_expression>"]
+        ["<const_add_expression>"]  # 208
     ],
     "<const_add_expression>": [
-        ["<const_mul_expression>", "<const_add_tail>"]
+        ["<const_mul_expression>", "<const_add_tail>"]  # 209
     ],
     "<const_add_tail>": [
-        ["+", "<const_mul_expression>", "<const_add_tail>"],
-        ["-", "<const_mul_expression>", "<const_add_tail>"],
-        []
+        ["+", "<const_mul_expression>", "<const_add_tail>"],  # 210
+        ["-", "<const_mul_expression>", "<const_add_tail>"],  # 211
+        []                                                    # 212
     ],
     "<const_mul_expression>": [
-        ["<const_primary>", "<const_mul_tail>"]
+        ["<const_primary>", "<const_mul_tail>"]  # 213
     ],
     "<const_mul_tail>": [
-        ["*", "<const_primary>", "<const_mul_tail>"],
-        ["/", "<const_primary>", "<const_mul_tail>"],
-        ["%", "<const_primary>", "<const_mul_tail>"],
-        []
+        ["*", "<const_primary>", "<const_mul_tail>"],  # 214
+        ["/", "<const_primary>", "<const_mul_tail>"],  # 215
+        ["%", "<const_primary>", "<const_mul_tail>"],  # 216
+        []                                             # 217
     ],
     "<const_primary>": [
-        ["<literal>"],
-        ["(", "<constant_value>", ")"]
+        ["<literal>"],                  # 218
+        ["(", "<constant_value>", ")"]  # 219
     ],
     "<case_value>": [
-        ["<integer_literal>"], # 185
-        ["<char_literal>"],    # 186
-        ["<string_literal>"],  # 187
-        ["<boolean_literal>"]  # 188
+        ["<integer_literal>"],  # 220
+        ["<char_literal>"],     # 221
+        ["<string_literal>"],   # 222
+        ["<boolean_literal>"]   # 223
     ],
-    "<integer_literal>": [["integer"]], # 189
-    "<float_literal>": [["float"]],     # 190
-    "<string_literal>": [["string"]],   # 191
-    "<char_literal>": [["char"]], # 192
-    "<positive_integer>": [["integer"]] # 195
+    "<integer_literal>": [
+        ["integer"]  # 224
+    ],
+    "<float_literal>": [
+        ["float"]  # 225
+    ],
+    "<string_literal>": [
+        ["string"]  # 226
+    ],
+    "<char_literal>": [
+        ["char"]  # 227
+    ],
+    "<positive_integer>": [
+        ["integer"]  # 228
+    ]
 }
 
 # ────────────────────────────────────────────────
@@ -442,41 +476,22 @@ CFG = {
 # ────────────────────────────────────────────────
 PREDICT_SET = {
     "<program>": {
-        "frag": ["<program>", 0],
-        "elo": ["<program>", 0],
-        "ign": ["<program>", 0],
-        "surebol": ["<program>", 0],
-        "tag": ["<program>", 0],
-        "stun": ["<program>", 0],
-        "build": ["<program>", 0]
+        "build": ["<program>", 0], "dodge": ["<program>", 0], "elo": ["<program>", 0], "frag": ["<program>", 0], "ign": ["<program>", 0], "stun": ["<program>", 0], "surebol": ["<program>", 0], "tag": ["<program>", 0]
     },
     "<global_section>": {
-        "frag": ["<global_section>", 0],
-        "elo": ["<global_section>", 0],
-        "ign": ["<global_section>", 0],
-        "surebol": ["<global_section>", 0],
-        "tag": ["<global_section>", 0],
-        "stun": ["<global_section>", 0],
-        "build": ["<global_section>", 1]
+        "dodge": ["<global_section>", 0], "elo": ["<global_section>", 0], "ign": ["<global_section>", 0], "stun": ["<global_section>", 0], "surebol": ["<global_section>", 0], "tag": ["<global_section>", 0],
+        "build": ["<global_section>", 1], "frag": ["<global_section>", 1]
     },
     "<function_section>": {
         "build": ["<function_section>", 0],
         "frag": ["<function_section>", 1]
     },
     "<global_declaration>": {
-        "frag": ["<global_declaration>", 0],
-        "elo": ["<global_declaration>", 0],
-        "ign": ["<global_declaration>", 0],
-        "surebol": ["<global_declaration>", 0],
-        "tag": ["<global_declaration>", 0],
+        "dodge": ["<global_declaration>", 0], "elo": ["<global_declaration>", 0], "frag": ["<global_declaration>", 0], "ign": ["<global_declaration>", 0], "surebol": ["<global_declaration>", 0], "tag": ["<global_declaration>", 0],
         "stun": ["<global_declaration>", 1]
     },
     "<variable_declaration>": {
-        "frag": ["<variable_declaration>", 0],
-        "elo": ["<variable_declaration>", 0],
-        "ign": ["<variable_declaration>", 0],
-        "surebol": ["<variable_declaration>", 0],
-        "tag": ["<variable_declaration>", 0]
+        "dodge": ["<variable_declaration>", 0], "elo": ["<variable_declaration>", 0], "frag": ["<variable_declaration>", 0], "ign": ["<variable_declaration>", 0], "surebol": ["<variable_declaration>", 0], "tag": ["<variable_declaration>", 0]
     },
     "<identifier_init_list>": {
         "identifier": ["<identifier_init_list>", 0]
@@ -488,8 +503,7 @@ PREDICT_SET = {
         "=": ["<init_option>", 0],
         "(": ["<init_option>", 1],
         "{": ["<init_option>", 2],
-        ",": ["<init_option>", 3],
-        ";": ["<init_option>", 3]
+        ",": ["<init_option>", 3], ";": ["<init_option>", 3]
     },
     "<init_tail>": {
         ",": ["<init_tail>", 0],
@@ -499,53 +513,34 @@ PREDICT_SET = {
         "stun": ["<constant_declaration>", 0]
     },
     "<array_declaration>": {
-        "frag": ["<array_declaration>", 0],
-        "elo": ["<array_declaration>", 0],
-        "ign": ["<array_declaration>", 0],
-        "surebol": ["<array_declaration>", 0],
-        "tag": ["<array_declaration>", 0]
-    },
-    "<array_init>": {
-        "=": ["<array_init>", 0],
-        ";": ["<array_init>", 1]
+        "dodge": ["<array_declaration>", 0], "elo": ["<array_declaration>", 0], "frag": ["<array_declaration>", 0], "ign": ["<array_declaration>", 0], "surebol": ["<array_declaration>", 0], "tag": ["<array_declaration>", 0]
     },
     "<dimension_list>": {
         "[": ["<dimension_list>", 0]
     },
     "<dimension_tail>": {
         "[": ["<dimension_tail>", 0],
-        "=": ["<dimension_tail>", 1],
-        ";": ["<dimension_tail>", 1],
-        ",": ["<dimension_tail>", 1],
-        ")": ["<dimension_tail>", 1]
+        ")": ["<dimension_tail>", 1], ",": ["<dimension_tail>", 1], ";": ["<dimension_tail>", 1], "=": ["<dimension_tail>", 1]
     },
     "<array_size>": {
         "integer": ["<array_size>", 0],
-        "]": ["<array_size>", 1]
+        "identifier": ["<array_size>", 1],
+        "]": ["<array_size>", 2]
     },
-    "<array_element>": {
-        "integer": ["<array_element>", 0],
-        "float": ["<array_element>", 0],
-        "string": ["<array_element>", 0],
-        "char": ["<array_element>", 0],
-        "buff": ["<array_element>", 0],
-        "nerf": ["<array_element>", 0],
-        "(": ["<array_element>", 0],
-        "{": ["<array_element>", 1]
+    "<array_init>": {
+        "=": ["<array_init>", 0],
+        ";": ["<array_init>", 1]
     },
     "<value_list>": {
-        "integer": ["<value_list>", 0],
-        "float": ["<value_list>", 0],
-        "string": ["<value_list>", 0],
-        "char": ["<value_list>", 0],
-        "buff": ["<value_list>", 0],
-        "nerf": ["<value_list>", 0],
-        "(": ["<value_list>", 0],
-        "{": ["<value_list>", 0]
+        "(": ["<value_list>", 0], "buff": ["<value_list>", 0], "char": ["<value_list>", 0], "float": ["<value_list>", 0], "integer": ["<value_list>", 0], "nerf": ["<value_list>", 0], "string": ["<value_list>", 0], "{": ["<value_list>", 0]
     },
     "<value_tail>": {
         ",": ["<value_tail>", 0],
         "}": ["<value_tail>", 1]
+    },
+    "<array_element>": {
+        "(": ["<array_element>", 0], "buff": ["<array_element>", 0], "char": ["<array_element>", 0], "float": ["<array_element>", 0], "integer": ["<array_element>", 0], "nerf": ["<array_element>", 0], "string": ["<array_element>", 0],
+        "{": ["<array_element>", 1]
     },
     "<function_definition>": {
         "build": ["<function_definition>", 0]
@@ -553,52 +548,19 @@ PREDICT_SET = {
     "<main_function>": {
         "frag": ["<main_function>", 0]
     },
-    "<function_body>": {
-        "frag": ["<function_body>", 0],
-        "elo": ["<function_body>", 0],
-        "ign": ["<function_body>", 0],
-        "surebol": ["<function_body>", 0],
-        "tag": ["<function_body>", 0],
-        "stun": ["<function_body>", 0],
-        "identifier": ["<function_body>", 0],
-        "comsat": ["<function_body>", 0],
-        "shout": ["<function_body>", 0],
-        "afk": ["<function_body>", 0],
-        "hop": ["<function_body>", 0],
-        "clutch": ["<function_body>", 0],
-        "pick": ["<function_body>", 0],
-        "grind": ["<function_body>", 0],
-        "retry": ["<function_body>", 0],
-        "try": ["<function_body>", 0],
-        "ggwp": ["<function_body>", 0],
-        "}": ["<function_body>", 0]
+    "<standard_function_body>": {
+        "afk": ["<standard_function_body>", 0], "clutch": ["<standard_function_body>", 0], "comsat": ["<standard_function_body>", 0], "count": ["<standard_function_body>", 0], "craft": ["<standard_function_body>", 0], "dodge": ["<standard_function_body>", 0], "drop": ["<standard_function_body>", 0], "elo": ["<standard_function_body>", 0], "frag": ["<standard_function_body>", 0], "ggwp": ["<standard_function_body>", 0], "grind": ["<standard_function_body>", 0], "hop": ["<standard_function_body>", 0], "identifier": ["<standard_function_body>", 0], "ign": ["<standard_function_body>", 0], "pick": ["<standard_function_body>", 0], "retry": ["<standard_function_body>", 0], "shout": ["<standard_function_body>", 0], "split": ["<standard_function_body>", 0], "stack": ["<standard_function_body>", 0], "stun": ["<standard_function_body>", 0], "surebol": ["<standard_function_body>", 0], "tag": ["<standard_function_body>", 0], "try": ["<standard_function_body>", 0]
+    },
+    "<lobby_function_body>": {
+        "afk": ["<lobby_function_body>", 0], "clutch": ["<lobby_function_body>", 0], "comsat": ["<lobby_function_body>", 0], "count": ["<lobby_function_body>", 0], "craft": ["<lobby_function_body>", 0], "dodge": ["<lobby_function_body>", 0], "drop": ["<lobby_function_body>", 0], "elo": ["<lobby_function_body>", 0], "frag": ["<lobby_function_body>", 0], "ggwp": ["<lobby_function_body>", 0], "grind": ["<lobby_function_body>", 0], "hop": ["<lobby_function_body>", 0], "identifier": ["<lobby_function_body>", 0], "ign": ["<lobby_function_body>", 0], "pick": ["<lobby_function_body>", 0], "retry": ["<lobby_function_body>", 0], "shout": ["<lobby_function_body>", 0], "split": ["<lobby_function_body>", 0], "stack": ["<lobby_function_body>", 0], "stun": ["<lobby_function_body>", 0], "surebol": ["<lobby_function_body>", 0], "tag": ["<lobby_function_body>", 0], "try": ["<lobby_function_body>", 0],
+        "}": ["<lobby_function_body>", 1]
     },
     "<local_declaration_list>": {
-        "frag": ["<local_declaration_list>", 0],
-        "elo": ["<local_declaration_list>", 0],
-        "ign": ["<local_declaration_list>", 0],
-        "surebol": ["<local_declaration_list>", 0],
-        "tag": ["<local_declaration_list>", 0],
-        "stun": ["<local_declaration_list>", 0],
-        "identifier": ["<local_declaration_list>", 1],
-        "comsat": ["<local_declaration_list>", 1],
-        "shout": ["<local_declaration_list>", 1],
-        "afk": ["<local_declaration_list>", 1],
-        "hop": ["<local_declaration_list>", 1],
-        "clutch": ["<local_declaration_list>", 1],
-        "pick": ["<local_declaration_list>", 1],
-        "grind": ["<local_declaration_list>", 1],
-        "retry": ["<local_declaration_list>", 1],
-        "try": ["<local_declaration_list>", 1],
-        "ggwp": ["<local_declaration_list>", 1],
-        "}": ["<local_declaration_list>", 1]
+        "dodge": ["<local_declaration_list>", 0], "elo": ["<local_declaration_list>", 0], "frag": ["<local_declaration_list>", 0], "ign": ["<local_declaration_list>", 0], "stun": ["<local_declaration_list>", 0], "surebol": ["<local_declaration_list>", 0], "tag": ["<local_declaration_list>", 0],
+        "afk": ["<local_declaration_list>", 1], "clutch": ["<local_declaration_list>", 1], "comsat": ["<local_declaration_list>", 1], "count": ["<local_declaration_list>", 1], "craft": ["<local_declaration_list>", 1], "drop": ["<local_declaration_list>", 1], "ggwp": ["<local_declaration_list>", 1], "grind": ["<local_declaration_list>", 1], "hop": ["<local_declaration_list>", 1], "identifier": ["<local_declaration_list>", 1], "pick": ["<local_declaration_list>", 1], "retry": ["<local_declaration_list>", 1], "shout": ["<local_declaration_list>", 1], "split": ["<local_declaration_list>", 1], "stack": ["<local_declaration_list>", 1], "try": ["<local_declaration_list>", 1], "}": ["<local_declaration_list>", 1]
     },
     "<local_declaration>": {
-        "frag": ["<local_declaration>", 0],
-        "elo": ["<local_declaration>", 0],
-        "ign": ["<local_declaration>", 0],
-        "surebol": ["<local_declaration>", 0],
-        "tag": ["<local_declaration>", 0],
+        "dodge": ["<local_declaration>", 0], "elo": ["<local_declaration>", 0], "frag": ["<local_declaration>", 0], "ign": ["<local_declaration>", 0], "surebol": ["<local_declaration>", 0], "tag": ["<local_declaration>", 0],
         "stun": ["<local_declaration>", 1]
     },
     "<return_type>": {
@@ -609,27 +571,12 @@ PREDICT_SET = {
         "dodge": ["<return_type>", 4],
         "tag": ["<return_type>", 5]
     },
-    "<data_type>": {
-        "frag":    ["<data_type>", 0],
-        "elo":     ["<data_type>", 1],
-        "ign":     ["<data_type>", 2],
-        "surebol": ["<data_type>", 3],
-        "tag":     ["<data_type>", 4]
-    },
     "<parameters>": {
-        "frag": ["<parameters>", 0],
-        "elo": ["<parameters>", 0],
-        "ign": ["<parameters>", 0],
-        "surebol": ["<parameters>", 0],
-        "tag": ["<parameters>", 0],
+        "dodge": ["<parameters>", 0], "elo": ["<parameters>", 0], "frag": ["<parameters>", 0], "ign": ["<parameters>", 0], "surebol": ["<parameters>", 0], "tag": ["<parameters>", 0],
         ")": ["<parameters>", 1]
     },
     "<parameter_list>": {
-        "frag": ["<parameter_list>", 0],
-        "elo": ["<parameter_list>", 0],
-        "ign": ["<parameter_list>", 0],
-        "surebol": ["<parameter_list>", 0],
-        "tag": ["<parameter_list>", 0]
+        "dodge": ["<parameter_list>", 0], "elo": ["<parameter_list>", 0], "frag": ["<parameter_list>", 0], "ign": ["<parameter_list>", 0], "surebol": ["<parameter_list>", 0], "tag": ["<parameter_list>", 0]
     },
     "<parameter_tail>": {
         ",": ["<parameter_tail>", 0],
@@ -637,72 +584,26 @@ PREDICT_SET = {
     },
     "<param_arr_opt>": {
         "[": ["<param_arr_opt>", 0],
-        ",": ["<param_arr_opt>", 1],
-        ")": ["<param_arr_opt>", 1]
+        ")": ["<param_arr_opt>", 1], ",": ["<param_arr_opt>", 1]
     },
     "<statement_list>": {
-        "frag": ["<statement_list>", 0],
-        "elo": ["<statement_list>", 0],
-        "ign": ["<statement_list>", 0],
-        "surebol": ["<statement_list>", 0],
-        "tag": ["<statement_list>", 0],
-        "stun": ["<statement_list>", 0],
-        "identifier": ["<statement_list>", 0],
-        "comsat": ["<statement_list>", 0],
-        "shout": ["<statement_list>", 0],
-        "afk": ["<statement_list>", 0],
-        "hop": ["<statement_list>", 0],
-        "clutch": ["<statement_list>", 0],
-        "pick": ["<statement_list>", 0],
-        "grind": ["<statement_list>", 0],
-        "retry": ["<statement_list>", 0],
-        "try": ["<statement_list>", 0],
-        "ggwp": ["<statement_list>", 0],
-        "}": ["<statement_list>", 1],
-        "role": ["<statement_list>", 1],
-        "noob": ["<statement_list>", 1]
+        "afk": ["<statement_list>", 0], "clutch": ["<statement_list>", 0], "comsat": ["<statement_list>", 0], "count": ["<statement_list>", 0], "craft": ["<statement_list>", 0], "dodge": ["<statement_list>", 0], "drop": ["<statement_list>", 0], "elo": ["<statement_list>", 0], "frag": ["<statement_list>", 0], "ggwp": ["<statement_list>", 0], "grind": ["<statement_list>", 0], "hop": ["<statement_list>", 0], "identifier": ["<statement_list>", 0], "ign": ["<statement_list>", 0], "pick": ["<statement_list>", 0], "retry": ["<statement_list>", 0], "shout": ["<statement_list>", 0], "split": ["<statement_list>", 0], "stack": ["<statement_list>", 0], "stun": ["<statement_list>", 0], "surebol": ["<statement_list>", 0], "tag": ["<statement_list>", 0], "try": ["<statement_list>", 0],
+        "noob": ["<statement_list>", 1], "role": ["<statement_list>", 1], "}": ["<statement_list>", 1]
     },
     "<statement>": {
-        "frag": ["<statement>", 3],
-        "elo": ["<statement>", 3],
-        "ign": ["<statement>", 3],
-        "surebol": ["<statement>", 3],
-        "tag": ["<statement>", 3],
-        "stun": ["<statement>", 3],
-        "identifier": ["<statement>", 1],
-        "comsat": ["<statement>", 1],
-        "shout": ["<statement>", 1],
-        "afk": ["<statement>", 1],
-        "hop": ["<statement>", 1],
-        "stack": ["<statement>", 1],
-        "craft": ["<statement>", 1],
-        "drop": ["<statement>", 1],
-        "count": ["<statement>", 1],
-        "split": ["<statement>", 1],
-        "ggwp": ["<statement>", 1],
-        "clutch": ["<statement>", 2],
-        "pick": ["<statement>", 2],
-        "grind": ["<statement>", 2],
-        "retry": ["<statement>", 2],
-        "try": ["<statement>", 2]
+        "dodge": ["<statement>", 0], "elo": ["<statement>", 0], "frag": ["<statement>", 0], "ign": ["<statement>", 0], "stun": ["<statement>", 0], "surebol": ["<statement>", 0], "tag": ["<statement>", 0],
+        "afk": ["<statement>", 1], "comsat": ["<statement>", 1], "count": ["<statement>", 1], "craft": ["<statement>", 1], "drop": ["<statement>", 1], "ggwp": ["<statement>", 1], "hop": ["<statement>", 1], "identifier": ["<statement>", 1], "shout": ["<statement>", 1], "split": ["<statement>", 1], "stack": ["<statement>", 1],
+        "clutch": ["<statement>", 2], "grind": ["<statement>", 2], "pick": ["<statement>", 2], "retry": ["<statement>", 2], "try": ["<statement>", 2]
     },
     "<declaration_statement>": {
-        "frag": ["<declaration_statement>", 0],
-        "elo": ["<declaration_statement>", 0],
-        "ign": ["<declaration_statement>", 0],
-        "surebol": ["<declaration_statement>", 0],
-        "tag": ["<declaration_statement>", 0],
+        "dodge": ["<declaration_statement>", 0], "elo": ["<declaration_statement>", 0], "frag": ["<declaration_statement>", 0], "ign": ["<declaration_statement>", 0], "surebol": ["<declaration_statement>", 0], "tag": ["<declaration_statement>", 0],
         "stun": ["<declaration_statement>", 1]
     },
     "<executable_statement>": {
         "identifier": ["<executable_statement>", 0],
         "comsat": ["<executable_statement>", 1],
         "shout": ["<executable_statement>", 2],
-        "stack": ["<executable_statement>", 3],
-        "craft": ["<executable_statement>", 3],
-        "drop": ["<executable_statement>", 3],
-        "count": ["<executable_statement>", 3],
-        "split": ["<executable_statement>", 3],
+        "count": ["<executable_statement>", 3], "craft": ["<executable_statement>", 3], "drop": ["<executable_statement>", 3], "split": ["<executable_statement>", 3], "stack": ["<executable_statement>", 3],
         "afk": ["<executable_statement>", 4],
         "hop": ["<executable_statement>", 5],
         "ggwp": ["<executable_statement>", 6]
@@ -722,31 +623,7 @@ PREDICT_SET = {
     },
     "<array_access>": {
         "[": ["<array_access>", 0],
-        "=": ["<array_access>", 1],
-        "+=": ["<array_access>", 1],
-        "-=": ["<array_access>", 1],
-        "*=": ["<array_access>", 1],
-        "/=": ["<array_access>", 1],
-        "%=": ["<array_access>", 1],
-        ";": ["<array_access>", 1],
-        ")": ["<array_access>", 1],
-        ",": ["<array_access>", 1],
-        "]": ["<array_access>", 1],
-        "++": ["<array_access>", 1],
-        "--": ["<array_access>", 1],
-        "+": ["<array_access>", 1],
-        "-": ["<array_access>", 1],
-        "*": ["<array_access>", 1],
-        "/": ["<array_access>", 1],
-        "%": ["<array_access>", 1],
-        "<": ["<array_access>", 1],
-        ">": ["<array_access>", 1],
-        "<=": ["<array_access>", 1],
-        ">=": ["<array_access>", 1],
-        "==": ["<array_access>", 1],
-        "!=": ["<array_access>", 1],
-        "&&": ["<array_access>", 1],
-        "||": ["<array_access>", 1]
+        "!=": ["<array_access>", 1], "%": ["<array_access>", 1], "%=": ["<array_access>", 1], "&&": ["<array_access>", 1], ")": ["<array_access>", 1], "*": ["<array_access>", 1], "*=": ["<array_access>", 1], "+": ["<array_access>", 1], "++": ["<array_access>", 1], "+=": ["<array_access>", 1], ",": ["<array_access>", 1], "-": ["<array_access>", 1], "--": ["<array_access>", 1], "-=": ["<array_access>", 1], ".": ["<array_access>", 1], "/": ["<array_access>", 1], "/=": ["<array_access>", 1], ";": ["<array_access>", 1], "<": ["<array_access>", 1], "<=": ["<array_access>", 1], "=": ["<array_access>", 1], "==": ["<array_access>", 1], ">": ["<array_access>", 1], ">=": ["<array_access>", 1], "]": ["<array_access>", 1], "||": ["<array_access>", 1], "}": ["<array_access>", 1]
     },
     "<input_statement>": {
         "comsat": ["<input_statement>", 0]
@@ -762,19 +639,7 @@ PREDICT_SET = {
         "shout": ["<output_statement>", 0]
     },
     "<output_list>": {
-        "string": ["<output_list>", 0],
-        "+": ["<output_list>", 0],
-        "-": ["<output_list>", 0],
-        "!": ["<output_list>", 0],
-        "++": ["<output_list>", 0],
-        "--": ["<output_list>", 0],
-        "integer": ["<output_list>", 0],
-        "float": ["<output_list>", 0],
-        "char": ["<output_list>", 0],
-        "buff": ["<output_list>", 0],
-        "nerf": ["<output_list>", 0],
-        "identifier": ["<output_list>", 0],
-        "(": ["<output_list>", 0]
+        "!": ["<output_list>", 0], "(": ["<output_list>", 0], "+": ["<output_list>", 0], "++": ["<output_list>", 0], "-": ["<output_list>", 0], "--": ["<output_list>", 0], "buff": ["<output_list>", 0], "char": ["<output_list>", 0], "count": ["<output_list>", 0], "craft": ["<output_list>", 0], "drop": ["<output_list>", 0], "float": ["<output_list>", 0], "identifier": ["<output_list>", 0], "integer": ["<output_list>", 0], "nerf": ["<output_list>", 0], "split": ["<output_list>", 0], "stack": ["<output_list>", 0], "string": ["<output_list>", 0]
     },
     "<output_tail>": {
         ",": ["<output_tail>", 0],
@@ -782,34 +647,13 @@ PREDICT_SET = {
     },
     "<output_item>": {
         "string": ["<output_item>", 0],
-        "+": ["<output_item>", 1],
-        "-": ["<output_item>", 1],
-        "!": ["<output_item>", 1],
-        "++": ["<output_item>", 1],
-        "--": ["<output_item>", 1],
-        "integer": ["<output_item>", 1],
-        "float": ["<output_item>", 1],
-        "char": ["<output_item>", 1],
-        "buff": ["<output_item>", 1],
-        "nerf": ["<output_item>", 1],
-        "identifier": ["<output_item>", 1],
-        "(": ["<output_item>", 1]
+        "!": ["<output_item>", 1], "(": ["<output_item>", 1], "+": ["<output_item>", 1], "++": ["<output_item>", 1], "-": ["<output_item>", 1], "--": ["<output_item>", 1], "buff": ["<output_item>", 1], "char": ["<output_item>", 1], "count": ["<output_item>", 1], "craft": ["<output_item>", 1], "drop": ["<output_item>", 1], "float": ["<output_item>", 1], "identifier": ["<output_item>", 1], "integer": ["<output_item>", 1], "nerf": ["<output_item>", 1], "split": ["<output_item>", 1], "stack": ["<output_item>", 1]
     },
     "<function_call_stmt>": {
-        "identifier": ["<function_call_stmt>", 0],
-        "stack": ["<function_call_stmt>", 0],
-        "craft": ["<function_call_stmt>", 0],
-        "drop": ["<function_call_stmt>", 0],
-        "count": ["<function_call_stmt>", 0],
-        "split": ["<function_call_stmt>", 0]
+        "count": ["<function_call_stmt>", 0], "craft": ["<function_call_stmt>", 0], "drop": ["<function_call_stmt>", 0], "identifier": ["<function_call_stmt>", 0], "split": ["<function_call_stmt>", 0], "stack": ["<function_call_stmt>", 0]
     },
     "<function_call_expr>": {
-        "identifier": ["<function_call_expr>", 0],
-        "stack": ["<function_call_expr>", 0],
-        "craft": ["<function_call_expr>", 0],
-        "drop": ["<function_call_expr>", 0],
-        "count": ["<function_call_expr>", 0],
-        "split": ["<function_call_expr>", 0]
+        "count": ["<function_call_expr>", 0], "craft": ["<function_call_expr>", 0], "drop": ["<function_call_expr>", 0], "identifier": ["<function_call_expr>", 0], "split": ["<function_call_expr>", 0], "stack": ["<function_call_expr>", 0]
     },
     "<function_name>": {
         "identifier": ["<function_name>", 0],
@@ -820,19 +664,7 @@ PREDICT_SET = {
         "split": ["<function_name>", 5]
     },
     "<argument_list>": {
-        "+": ["<argument_list>", 0],
-        "-": ["<argument_list>", 0],
-        "!": ["<argument_list>", 0],
-        "++": ["<argument_list>", 0],
-        "--": ["<argument_list>", 0],
-        "integer": ["<argument_list>", 0],
-        "float": ["<argument_list>", 0],
-        "string": ["<argument_list>", 0],
-        "char": ["<argument_list>", 0],
-        "buff": ["<argument_list>", 0],
-        "nerf": ["<argument_list>", 0],
-        "identifier": ["<argument_list>", 0],
-        "(": ["<argument_list>", 0],
+        "!": ["<argument_list>", 0], "(": ["<argument_list>", 0], "+": ["<argument_list>", 0], "++": ["<argument_list>", 0], "-": ["<argument_list>", 0], "--": ["<argument_list>", 0], "buff": ["<argument_list>", 0], "char": ["<argument_list>", 0], "count": ["<argument_list>", 0], "craft": ["<argument_list>", 0], "drop": ["<argument_list>", 0], "float": ["<argument_list>", 0], "identifier": ["<argument_list>", 0], "integer": ["<argument_list>", 0], "nerf": ["<argument_list>", 0], "split": ["<argument_list>", 0], "stack": ["<argument_list>", 0], "string": ["<argument_list>", 0],
         ")": ["<argument_list>", 1]
     },
     "<argument_tail>": {
@@ -845,24 +677,15 @@ PREDICT_SET = {
     "<continue_statement>": {
         "hop": ["<continue_statement>", 0]
     },
-    "<return_statement>": {
-        "ggwp": ["<return_statement>", 0],
-        "}": ["<return_statement>", 1]
+    "<standard_return_statement>": {
+        "ggwp": ["<standard_return_statement>", 0]
+    },
+    "<lobby_return_statement>": {
+        "ggwp": ["<lobby_return_statement>", 0],
+        "}": ["<lobby_return_statement>", 1]
     },
     "<return_value>": {
-        "+": ["<return_value>", 0],
-        "-": ["<return_value>", 0],
-        "!": ["<return_value>", 0],
-        "++": ["<return_value>", 0],
-        "--": ["<return_value>", 0],
-        "integer": ["<return_value>", 0],
-        "float": ["<return_value>", 0],
-        "string": ["<return_value>", 0],
-        "char": ["<return_value>", 0],
-        "buff": ["<return_value>", 0],
-        "nerf": ["<return_value>", 0],
-        "identifier": ["<return_value>", 0],
-        "(": ["<return_value>", 0],
+        "!": ["<return_value>", 0], "(": ["<return_value>", 0], "+": ["<return_value>", 0], "++": ["<return_value>", 0], "-": ["<return_value>", 0], "--": ["<return_value>", 0], "buff": ["<return_value>", 0], "char": ["<return_value>", 0], "count": ["<return_value>", 0], "craft": ["<return_value>", 0], "drop": ["<return_value>", 0], "float": ["<return_value>", 0], "identifier": ["<return_value>", 0], "integer": ["<return_value>", 0], "nerf": ["<return_value>", 0], "split": ["<return_value>", 0], "stack": ["<return_value>", 0], "string": ["<return_value>", 0],
         ";": ["<return_value>", 1]
     },
     "<if_statement>": {
@@ -870,82 +693,27 @@ PREDICT_SET = {
     },
     "<else_if_block>": {
         "choke_clutch": ["<else_if_block>", 0],
-        "choke": ["<else_if_block>", 1],
-        "frag": ["<else_if_block>", 1],
-        "elo": ["<else_if_block>", 1],
-        "ign": ["<else_if_block>", 1],
-        "surebol": ["<else_if_block>", 1],
-        "tag": ["<else_if_block>", 1],
-        "stun": ["<else_if_block>", 1],
-        "identifier": ["<else_if_block>", 1],
-        "comsat": ["<else_if_block>", 1],
-        "shout": ["<else_if_block>", 1],
-        "afk": ["<else_if_block>", 1],
-        "hop": ["<else_if_block>", 1],
-        "clutch": ["<else_if_block>", 1],
-        "pick": ["<else_if_block>", 1],
-        "grind": ["<else_if_block>", 1],
-        "retry": ["<else_if_block>", 1],
-        "try": ["<else_if_block>", 1],
-        "ggwp": ["<else_if_block>", 1],
-        "}": ["<else_if_block>", 1]
+        "afk": ["<else_if_block>", 1], "choke": ["<else_if_block>", 1], "clutch": ["<else_if_block>", 1], "comsat": ["<else_if_block>", 1], "count": ["<else_if_block>", 1], "craft": ["<else_if_block>", 1], "dodge": ["<else_if_block>", 1], "drop": ["<else_if_block>", 1], "elo": ["<else_if_block>", 1], "frag": ["<else_if_block>", 1], "ggwp": ["<else_if_block>", 1], "grind": ["<else_if_block>", 1], "hop": ["<else_if_block>", 1], "identifier": ["<else_if_block>", 1], "ign": ["<else_if_block>", 1], "noob": ["<else_if_block>", 1], "pick": ["<else_if_block>", 1], "retry": ["<else_if_block>", 1], "role": ["<else_if_block>", 1], "shout": ["<else_if_block>", 1], "split": ["<else_if_block>", 1], "stack": ["<else_if_block>", 1], "stun": ["<else_if_block>", 1], "surebol": ["<else_if_block>", 1], "tag": ["<else_if_block>", 1], "try": ["<else_if_block>", 1], "}": ["<else_if_block>", 1]
     },
     "<else_if>": {
         "choke_clutch": ["<else_if>", 0]
     },
     "<else_block>": {
         "choke": ["<else_block>", 0],
-        "frag": ["<else_block>", 1],
-        "elo": ["<else_block>", 1],
-        "ign": ["<else_block>", 1],
-        "surebol": ["<else_block>", 1],
-        "tag": ["<else_block>", 1],
-        "stun": ["<else_block>", 1],
-        "identifier": ["<else_block>", 1],
-        "comsat": ["<else_block>", 1],
-        "shout": ["<else_block>", 1],
-        "afk": ["<else_block>", 1],
-        "hop": ["<else_block>", 1],
-        "clutch": ["<else_block>", 1],
-        "pick": ["<else_block>", 1],
-        "grind": ["<else_block>", 1],
-        "retry": ["<else_block>", 1],
-        "try": ["<else_block>", 1],
-        "ggwp": ["<else_block>", 1],
-        "}": ["<else_block>", 1]
+        "afk": ["<else_block>", 1], "clutch": ["<else_block>", 1], "comsat": ["<else_block>", 1], "count": ["<else_block>", 1], "craft": ["<else_block>", 1], "dodge": ["<else_block>", 1], "drop": ["<else_block>", 1], "elo": ["<else_block>", 1], "frag": ["<else_block>", 1], "ggwp": ["<else_block>", 1], "grind": ["<else_block>", 1], "hop": ["<else_block>", 1], "identifier": ["<else_block>", 1], "ign": ["<else_block>", 1], "noob": ["<else_block>", 1], "pick": ["<else_block>", 1], "retry": ["<else_block>", 1], "role": ["<else_block>", 1], "shout": ["<else_block>", 1], "split": ["<else_block>", 1], "stack": ["<else_block>", 1], "stun": ["<else_block>", 1], "surebol": ["<else_block>", 1], "tag": ["<else_block>", 1], "try": ["<else_block>", 1], "}": ["<else_block>", 1]
     },
     "<switch_statement>": {
         "pick": ["<switch_statement>", 0]
     },
     "<case_blocks>": {
         "role": ["<case_blocks>", 0],
-        "noob": ["<case_blocks>", 1],
-        "}": ["<case_blocks>", 1]
+        "noob": ["<case_blocks>", 1], "}": ["<case_blocks>", 1]
     },
     "<case_block>": {
         "role": ["<case_block>", 0]
     },
     "<case_body>": {
-        "frag": ["<case_body>", 0],
-        "elo": ["<case_body>", 0],
-        "ign": ["<case_body>", 0],
-        "surebol": ["<case_body>", 0],
-        "tag": ["<case_body>", 0],
-        "stun": ["<case_body>", 0],
-        "identifier": ["<case_body>", 0],
-        "comsat": ["<case_body>", 0],
-        "shout": ["<case_body>", 0],
-        "afk": ["<case_body>", 0],
-        "hop": ["<case_body>", 0],
-        "clutch": ["<case_body>", 0],
-        "pick": ["<case_body>", 0],
-        "grind": ["<case_body>", 0],
-        "retry": ["<case_body>", 0],
-        "try": ["<case_body>", 0],
-        "ggwp": ["<case_body>", 0],
-        "role": ["<case_body>", 0],
-        "noob": ["<case_body>", 0],
-        "}": ["<case_body>", 0]
+        "afk": ["<case_body>", 0], "clutch": ["<case_body>", 0], "comsat": ["<case_body>", 0], "count": ["<case_body>", 0], "craft": ["<case_body>", 0], "dodge": ["<case_body>", 0], "drop": ["<case_body>", 0], "elo": ["<case_body>", 0], "frag": ["<case_body>", 0], "ggwp": ["<case_body>", 0], "grind": ["<case_body>", 0], "hop": ["<case_body>", 0], "identifier": ["<case_body>", 0], "ign": ["<case_body>", 0], "noob": ["<case_body>", 0], "pick": ["<case_body>", 0], "retry": ["<case_body>", 0], "role": ["<case_body>", 0], "shout": ["<case_body>", 0], "split": ["<case_body>", 0], "stack": ["<case_body>", 0], "stun": ["<case_body>", 0], "surebol": ["<case_body>", 0], "tag": ["<case_body>", 0], "try": ["<case_body>", 0], "}": ["<case_body>", 0]
     },
     "<default_block>": {
         "noob": ["<default_block>", 0],
@@ -955,11 +723,7 @@ PREDICT_SET = {
         "grind": ["<for_loop>", 0]
     },
     "<for_init>": {
-        "frag": ["<for_init>", 0],
-        "elo": ["<for_init>", 0],
-        "ign": ["<for_init>", 0],
-        "surebol": ["<for_init>", 0],
-        "tag": ["<for_init>", 0],
+        "dodge": ["<for_init>", 0], "elo": ["<for_init>", 0], "frag": ["<for_init>", 0], "ign": ["<for_init>", 0], "surebol": ["<for_init>", 0], "tag": ["<for_init>", 0],
         "identifier": ["<for_init>", 1],
         ";": ["<for_init>", 2]
     },
@@ -981,197 +745,63 @@ PREDICT_SET = {
         "try": ["<do_while_loop>", 0]
     },
     "<expression>": {
-        "+": ["<expression>", 0],
-        "-": ["<expression>", 0],
-        "!": ["<expression>", 0],
-        "++": ["<expression>", 0],
-        "--": ["<expression>", 0],
-        "integer": ["<expression>", 0],
-        "float": ["<expression>", 0],
-        "string": ["<expression>", 0],
-        "char": ["<expression>", 0],
-        "buff": ["<expression>", 0],
-        "nerf": ["<expression>", 0],
-        "identifier": ["<expression>", 0],
-        "(": ["<expression>", 0]
+        "!": ["<expression>", 0], "(": ["<expression>", 0], "+": ["<expression>", 0], "++": ["<expression>", 0], "-": ["<expression>", 0], "--": ["<expression>", 0], "buff": ["<expression>", 0], "char": ["<expression>", 0], "count": ["<expression>", 0], "craft": ["<expression>", 0], "drop": ["<expression>", 0], "float": ["<expression>", 0], "identifier": ["<expression>", 0], "integer": ["<expression>", 0], "nerf": ["<expression>", 0], "split": ["<expression>", 0], "stack": ["<expression>", 0], "string": ["<expression>", 0]
     },
     "<logical_or_expression>": {
-        "+": ["<logical_or_expression>", 0],
-        "-": ["<logical_or_expression>", 0],
-        "!": ["<logical_or_expression>", 0],
-        "++": ["<logical_or_expression>", 0],
-        "--": ["<logical_or_expression>", 0],
-        "integer": ["<logical_or_expression>", 0],
-        "float": ["<logical_or_expression>", 0],
-        "string": ["<logical_or_expression>", 0],
-        "char": ["<logical_or_expression>", 0],
-        "buff": ["<logical_or_expression>", 0],
-        "nerf": ["<logical_or_expression>", 0],
-        "identifier": ["<logical_or_expression>", 0],
-        "(": ["<logical_or_expression>", 0]
+        "!": ["<logical_or_expression>", 0], "(": ["<logical_or_expression>", 0], "+": ["<logical_or_expression>", 0], "++": ["<logical_or_expression>", 0], "-": ["<logical_or_expression>", 0], "--": ["<logical_or_expression>", 0], "buff": ["<logical_or_expression>", 0], "char": ["<logical_or_expression>", 0], "count": ["<logical_or_expression>", 0], "craft": ["<logical_or_expression>", 0], "drop": ["<logical_or_expression>", 0], "float": ["<logical_or_expression>", 0], "identifier": ["<logical_or_expression>", 0], "integer": ["<logical_or_expression>", 0], "nerf": ["<logical_or_expression>", 0], "split": ["<logical_or_expression>", 0], "stack": ["<logical_or_expression>", 0], "string": ["<logical_or_expression>", 0]
     },
     "<logical_or_tail>": {
         "||": ["<logical_or_tail>", 0],
-        ")": ["<logical_or_tail>", 1],
-        ";": ["<logical_or_tail>", 1],
-        ",": ["<logical_or_tail>", 1],
-        "]": ["<logical_or_tail>", 1]
+        ")": ["<logical_or_tail>", 1], ",": ["<logical_or_tail>", 1], ";": ["<logical_or_tail>", 1], "]": ["<logical_or_tail>", 1], "}": ["<logical_or_tail>", 1]
     },
     "<logical_and_expression>": {
-        "+": ["<logical_and_expression>", 0],
-        "-": ["<logical_and_expression>", 0],
-        "!": ["<logical_and_expression>", 0],
-        "++": ["<logical_and_expression>", 0],
-        "--": ["<logical_and_expression>", 0],
-        "integer": ["<logical_and_expression>", 0],
-        "float": ["<logical_and_expression>", 0],
-        "string": ["<logical_and_expression>", 0],
-        "char": ["<logical_and_expression>", 0],
-        "buff": ["<logical_and_expression>", 0],
-        "nerf": ["<logical_and_expression>", 0],
-        "identifier": ["<logical_and_expression>", 0],
-        "(": ["<logical_and_expression>", 0]
+        "!": ["<logical_and_expression>", 0], "(": ["<logical_and_expression>", 0], "+": ["<logical_and_expression>", 0], "++": ["<logical_and_expression>", 0], "-": ["<logical_and_expression>", 0], "--": ["<logical_and_expression>", 0], "buff": ["<logical_and_expression>", 0], "char": ["<logical_and_expression>", 0], "count": ["<logical_and_expression>", 0], "craft": ["<logical_and_expression>", 0], "drop": ["<logical_and_expression>", 0], "float": ["<logical_and_expression>", 0], "identifier": ["<logical_and_expression>", 0], "integer": ["<logical_and_expression>", 0], "nerf": ["<logical_and_expression>", 0], "split": ["<logical_and_expression>", 0], "stack": ["<logical_and_expression>", 0], "string": ["<logical_and_expression>", 0]
     },
     "<logical_and_tail>": {
         "&&": ["<logical_and_tail>", 0],
-        "||": ["<logical_and_tail>", 1],
-        ")": ["<logical_and_tail>", 1],
-        ";": ["<logical_and_tail>", 1],
-        ",": ["<logical_and_tail>", 1],
-        "]": ["<logical_and_tail>", 1]
+        ")": ["<logical_and_tail>", 1], ",": ["<logical_and_tail>", 1], ";": ["<logical_and_tail>", 1], "]": ["<logical_and_tail>", 1], "||": ["<logical_and_tail>", 1], "}": ["<logical_and_tail>", 1]
     },
     "<equality_expression>": {
-        "+": ["<equality_expression>", 0],
-        "-": ["<equality_expression>", 0],
-        "!": ["<equality_expression>", 0],
-        "++": ["<equality_expression>", 0],
-        "--": ["<equality_expression>", 0],
-        "integer": ["<equality_expression>", 0],
-        "float": ["<equality_expression>", 0],
-        "string": ["<equality_expression>", 0],
-        "char": ["<equality_expression>", 0],
-        "buff": ["<equality_expression>", 0],
-        "nerf": ["<equality_expression>", 0],
-        "identifier": ["<equality_expression>", 0],
-        "(": ["<equality_expression>", 0]
+        "!": ["<equality_expression>", 0], "(": ["<equality_expression>", 0], "+": ["<equality_expression>", 0], "++": ["<equality_expression>", 0], "-": ["<equality_expression>", 0], "--": ["<equality_expression>", 0], "buff": ["<equality_expression>", 0], "char": ["<equality_expression>", 0], "count": ["<equality_expression>", 0], "craft": ["<equality_expression>", 0], "drop": ["<equality_expression>", 0], "float": ["<equality_expression>", 0], "identifier": ["<equality_expression>", 0], "integer": ["<equality_expression>", 0], "nerf": ["<equality_expression>", 0], "split": ["<equality_expression>", 0], "stack": ["<equality_expression>", 0], "string": ["<equality_expression>", 0]
     },
     "<equality_tail>": {
-        "==": ["<equality_tail>", 0],
-        "!=": ["<equality_tail>", 0],
-        "&&": ["<equality_tail>", 1],
-        "||": ["<equality_tail>", 1],
-        ")": ["<equality_tail>", 1],
-        ";": ["<equality_tail>", 1],
-        ",": ["<equality_tail>", 1],
-        "]": ["<equality_tail>", 1]
+        "!=": ["<equality_tail>", 0], "==": ["<equality_tail>", 0],
+        "&&": ["<equality_tail>", 1], ")": ["<equality_tail>", 1], ",": ["<equality_tail>", 1], ";": ["<equality_tail>", 1], "]": ["<equality_tail>", 1], "||": ["<equality_tail>", 1], "}": ["<equality_tail>", 1]
     },
     "<equality_op>": {
         "==": ["<equality_op>", 0],
         "!=": ["<equality_op>", 1]
     },
     "<relational_expression>": {
-        "+": ["<relational_expression>", 0],
-        "-": ["<relational_expression>", 0],
-        "!": ["<relational_expression>", 0],
-        "++": ["<relational_expression>", 0],
-        "--": ["<relational_expression>", 0],
-        "integer": ["<relational_expression>", 0],
-        "float": ["<relational_expression>", 0],
-        "string": ["<relational_expression>", 0],
-        "char": ["<relational_expression>", 0],
-        "buff": ["<relational_expression>", 0],
-        "nerf": ["<relational_expression>", 0],
-        "identifier": ["<relational_expression>", 0],
-        "(": ["<relational_expression>", 0]
+        "!": ["<relational_expression>", 0], "(": ["<relational_expression>", 0], "+": ["<relational_expression>", 0], "++": ["<relational_expression>", 0], "-": ["<relational_expression>", 0], "--": ["<relational_expression>", 0], "buff": ["<relational_expression>", 0], "char": ["<relational_expression>", 0], "count": ["<relational_expression>", 0], "craft": ["<relational_expression>", 0], "drop": ["<relational_expression>", 0], "float": ["<relational_expression>", 0], "identifier": ["<relational_expression>", 0], "integer": ["<relational_expression>", 0], "nerf": ["<relational_expression>", 0], "split": ["<relational_expression>", 0], "stack": ["<relational_expression>", 0], "string": ["<relational_expression>", 0]
     },
     "<relational_tail>": {
-        "<": ["<relational_tail>", 0],
-        ">": ["<relational_tail>", 0],
-        "<=": ["<relational_tail>", 0],
-        ">=": ["<relational_tail>", 0],
-        "==": ["<relational_tail>", 1],
-        "!=": ["<relational_tail>", 1],
-        "&&": ["<relational_tail>", 1],
-        "||": ["<relational_tail>", 1],
-        ")": ["<relational_tail>", 1],
-        ";": ["<relational_tail>", 1],
-        ",": ["<relational_tail>", 1],
-        "]": ["<relational_tail>", 1]
+        "<": ["<relational_tail>", 0], "<=": ["<relational_tail>", 0], ">": ["<relational_tail>", 0], ">=": ["<relational_tail>", 0],
+        "!=": ["<relational_tail>", 1], "&&": ["<relational_tail>", 1], ")": ["<relational_tail>", 1], ",": ["<relational_tail>", 1], ";": ["<relational_tail>", 1], "==": ["<relational_tail>", 1], "]": ["<relational_tail>", 1], "||": ["<relational_tail>", 1], "}": ["<relational_tail>", 1]
     },
     "<relational_op>": {
-        "<":  ["<relational_op>", 0],
-        ">":  ["<relational_op>", 1],
+        "<": ["<relational_op>", 0],
+        ">": ["<relational_op>", 1],
         "<=": ["<relational_op>", 2],
         ">=": ["<relational_op>", 3]
     },
     "<additive_expression>": {
-        "+": ["<additive_expression>", 0],
-        "-": ["<additive_expression>", 0],
-        "!": ["<additive_expression>", 0],
-        "++": ["<additive_expression>", 0],
-        "--": ["<additive_expression>", 0],
-        "integer": ["<additive_expression>", 0],
-        "float": ["<additive_expression>", 0],
-        "string": ["<additive_expression>", 0],
-        "char": ["<additive_expression>", 0],
-        "buff": ["<additive_expression>", 0],
-        "nerf": ["<additive_expression>", 0],
-        "identifier": ["<additive_expression>", 0],
-        "(": ["<additive_expression>", 0]
+        "!": ["<additive_expression>", 0], "(": ["<additive_expression>", 0], "+": ["<additive_expression>", 0], "++": ["<additive_expression>", 0], "-": ["<additive_expression>", 0], "--": ["<additive_expression>", 0], "buff": ["<additive_expression>", 0], "char": ["<additive_expression>", 0], "count": ["<additive_expression>", 0], "craft": ["<additive_expression>", 0], "drop": ["<additive_expression>", 0], "float": ["<additive_expression>", 0], "identifier": ["<additive_expression>", 0], "integer": ["<additive_expression>", 0], "nerf": ["<additive_expression>", 0], "split": ["<additive_expression>", 0], "stack": ["<additive_expression>", 0], "string": ["<additive_expression>", 0]
     },
     "<additive_tail>": {
-        "+": ["<additive_tail>", 0],
-        "-": ["<additive_tail>", 0],
-        "<": ["<additive_tail>", 1],
-        ">": ["<additive_tail>", 1],
-        "<=": ["<additive_tail>", 1],
-        ">=": ["<additive_tail>", 1],
-        "==": ["<additive_tail>", 1],
-        "!=": ["<additive_tail>", 1],
-        "&&": ["<additive_tail>", 1],
-        "||": ["<additive_tail>", 1],
-        ")": ["<additive_tail>", 1],
-        ";": ["<additive_tail>", 1],
-        ",": ["<additive_tail>", 1],
-        "]": ["<additive_tail>", 1]
+        "+": ["<additive_tail>", 0], "-": ["<additive_tail>", 0],
+        "!=": ["<additive_tail>", 1], "&&": ["<additive_tail>", 1], ")": ["<additive_tail>", 1], ",": ["<additive_tail>", 1], ";": ["<additive_tail>", 1], "<": ["<additive_tail>", 1], "<=": ["<additive_tail>", 1], "==": ["<additive_tail>", 1], ">": ["<additive_tail>", 1], ">=": ["<additive_tail>", 1], "]": ["<additive_tail>", 1], "||": ["<additive_tail>", 1], "}": ["<additive_tail>", 1]
     },
     "<additive_op>": {
         "+": ["<additive_op>", 0],
         "-": ["<additive_op>", 1]
     },
     "<multiplicative_expression>": {
-        "+": ["<multiplicative_expression>", 0],
-        "-": ["<multiplicative_expression>", 0],
-        "!": ["<multiplicative_expression>", 0],
-        "++": ["<multiplicative_expression>", 0],
-        "--": ["<multiplicative_expression>", 0],
-        "integer": ["<multiplicative_expression>", 0],
-        "float": ["<multiplicative_expression>", 0],
-        "string": ["<multiplicative_expression>", 0],
-        "char": ["<multiplicative_expression>", 0],
-        "buff": ["<multiplicative_expression>", 0],
-        "nerf": ["<multiplicative_expression>", 0],
-        "identifier": ["<multiplicative_expression>", 0],
-        "(": ["<multiplicative_expression>", 0]
+        "!": ["<multiplicative_expression>", 0], "(": ["<multiplicative_expression>", 0], "+": ["<multiplicative_expression>", 0], "++": ["<multiplicative_expression>", 0], "-": ["<multiplicative_expression>", 0], "--": ["<multiplicative_expression>", 0], "buff": ["<multiplicative_expression>", 0], "char": ["<multiplicative_expression>", 0], "count": ["<multiplicative_expression>", 0], "craft": ["<multiplicative_expression>", 0], "drop": ["<multiplicative_expression>", 0], "float": ["<multiplicative_expression>", 0], "identifier": ["<multiplicative_expression>", 0], "integer": ["<multiplicative_expression>", 0], "nerf": ["<multiplicative_expression>", 0], "split": ["<multiplicative_expression>", 0], "stack": ["<multiplicative_expression>", 0], "string": ["<multiplicative_expression>", 0]
     },
     "<multiplicative_tail>": {
-        "*": ["<multiplicative_tail>", 0],
-        "/": ["<multiplicative_tail>", 0],
-        "%": ["<multiplicative_tail>", 0],
-        "+": ["<multiplicative_tail>", 1],
-        "-": ["<multiplicative_tail>", 1],
-        "<": ["<multiplicative_tail>", 1],
-        ">": ["<multiplicative_tail>", 1],
-        "<=": ["<multiplicative_tail>", 1],
-        ">=": ["<multiplicative_tail>", 1],
-        "==": ["<multiplicative_tail>", 1],
-        "!=": ["<multiplicative_tail>", 1],
-        "&&": ["<multiplicative_tail>", 1],
-        "||": ["<multiplicative_tail>", 1],
-        ")": ["<multiplicative_tail>", 1],
-        ";": ["<multiplicative_tail>", 1],
-        ",": ["<multiplicative_tail>", 1],
-        "]": ["<multiplicative_tail>", 1]
+        "%": ["<multiplicative_tail>", 0], "*": ["<multiplicative_tail>", 0], "/": ["<multiplicative_tail>", 0],
+        "!=": ["<multiplicative_tail>", 1], "&&": ["<multiplicative_tail>", 1], ")": ["<multiplicative_tail>", 1], "+": ["<multiplicative_tail>", 1], ",": ["<multiplicative_tail>", 1], "-": ["<multiplicative_tail>", 1], ";": ["<multiplicative_tail>", 1], "<": ["<multiplicative_tail>", 1], "<=": ["<multiplicative_tail>", 1], "==": ["<multiplicative_tail>", 1], ">": ["<multiplicative_tail>", 1], ">=": ["<multiplicative_tail>", 1], "]": ["<multiplicative_tail>", 1], "||": ["<multiplicative_tail>", 1], "}": ["<multiplicative_tail>", 1]
     },
     "<multiplicative_op>": {
         "*": ["<multiplicative_op>", 0],
@@ -1179,60 +809,25 @@ PREDICT_SET = {
         "%": ["<multiplicative_op>", 2]
     },
     "<unary_expression>": {
-        "+": ["<unary_expression>", 0],
-        "-": ["<unary_expression>", 0],
-        "!": ["<unary_expression>", 0],
-        "++": ["<unary_expression>", 0],
-        "--": ["<unary_expression>", 0],
-        "integer": ["<unary_expression>", 1],
-        "float": ["<unary_expression>", 1],
-        "string": ["<unary_expression>", 1],
-        "char": ["<unary_expression>", 1],
-        "buff": ["<unary_expression>", 1],
-        "nerf": ["<unary_expression>", 1],
-        "identifier": ["<unary_expression>", 1],
-        "(": ["<unary_expression>", 1]
+        "!": ["<unary_expression>", 0], "+": ["<unary_expression>", 0], "++": ["<unary_expression>", 0], "-": ["<unary_expression>", 0], "--": ["<unary_expression>", 0],
+        "(": ["<unary_expression>", 1], "buff": ["<unary_expression>", 1], "char": ["<unary_expression>", 1], "count": ["<unary_expression>", 1], "craft": ["<unary_expression>", 1], "drop": ["<unary_expression>", 1], "float": ["<unary_expression>", 1], "identifier": ["<unary_expression>", 1], "integer": ["<unary_expression>", 1], "nerf": ["<unary_expression>", 1], "split": ["<unary_expression>", 1], "stack": ["<unary_expression>", 1], "string": ["<unary_expression>", 1]
     },
     "<unary_op>": {
-        "+":  ["<unary_op>", 0],
-        "-":  ["<unary_op>", 1],
-        "!":  ["<unary_op>", 2],
+        "+": ["<unary_op>", 0],
+        "-": ["<unary_op>", 1],
+        "!": ["<unary_op>", 2],
         "++": ["<unary_op>", 3],
         "--": ["<unary_op>", 4]
     },
     "<postfix_expression>": {
-        "integer": ["<postfix_expression>", 0],
-        "float": ["<postfix_expression>", 0],
-        "string": ["<postfix_expression>", 0],
-        "char": ["<postfix_expression>", 0],
-        "buff": ["<postfix_expression>", 0],
-        "nerf": ["<postfix_expression>", 0],
-        "identifier": ["<postfix_expression>", 0],
-        "(": ["<postfix_expression>", 0]
+        "(": ["<postfix_expression>", 0], "buff": ["<postfix_expression>", 0], "char": ["<postfix_expression>", 0], "count": ["<postfix_expression>", 0], "craft": ["<postfix_expression>", 0], "drop": ["<postfix_expression>", 0], "float": ["<postfix_expression>", 0], "identifier": ["<postfix_expression>", 0], "integer": ["<postfix_expression>", 0], "nerf": ["<postfix_expression>", 0], "split": ["<postfix_expression>", 0], "stack": ["<postfix_expression>", 0], "string": ["<postfix_expression>", 0]
     },
     "<postfix_tail>": {
-        "++": ["<postfix_tail>", 0],
-        "--": ["<postfix_tail>", 0],
+        "++": ["<postfix_tail>", 0], "--": ["<postfix_tail>", 0],
         "[": ["<postfix_tail>", 1],
         "(": ["<postfix_tail>", 2],
         ".": ["<postfix_tail>", 3],
-        "+": ["<postfix_tail>", 4],
-        "-": ["<postfix_tail>", 4],
-        "*": ["<postfix_tail>", 4],
-        "/": ["<postfix_tail>", 4],
-        "%": ["<postfix_tail>", 4],
-        "<": ["<postfix_tail>", 4],
-        ">": ["<postfix_tail>", 4],
-        "<=": ["<postfix_tail>", 4],
-        ">=": ["<postfix_tail>", 4],
-        "==": ["<postfix_tail>", 4],
-        "!=": ["<postfix_tail>", 4],
-        "&&": ["<postfix_tail>", 4],
-        "||": ["<postfix_tail>", 4],
-        ")": ["<postfix_tail>", 4],
-        ";": ["<postfix_tail>", 4],
-        ",": ["<postfix_tail>", 4],
-        "]": ["<postfix_tail>", 4]
+        "!=": ["<postfix_tail>", 4], "%": ["<postfix_tail>", 4], "&&": ["<postfix_tail>", 4], ")": ["<postfix_tail>", 4], "*": ["<postfix_tail>", 4], "+": ["<postfix_tail>", 4], ",": ["<postfix_tail>", 4], "-": ["<postfix_tail>", 4], "/": ["<postfix_tail>", 4], ";": ["<postfix_tail>", 4], "<": ["<postfix_tail>", 4], "<=": ["<postfix_tail>", 4], "==": ["<postfix_tail>", 4], ">": ["<postfix_tail>", 4], ">=": ["<postfix_tail>", 4], "]": ["<postfix_tail>", 4], "||": ["<postfix_tail>", 4], "}": ["<postfix_tail>", 4]
     },
     "<postfix_op>": {
         "++": ["<postfix_op>", 0],
@@ -1242,130 +837,79 @@ PREDICT_SET = {
         "(": ["<function_call_suffix>", 0]
     },
     "<primary_expression>": {
-        "integer": ["<primary_expression>", 0],
-        "float": ["<primary_expression>", 0],
-        "string": ["<primary_expression>", 0],
-        "char": ["<primary_expression>", 0],
-        "buff": ["<primary_expression>", 0],
-        "nerf": ["<primary_expression>", 0],
+        "buff": ["<primary_expression>", 0], "char": ["<primary_expression>", 0], "float": ["<primary_expression>", 0], "integer": ["<primary_expression>", 0], "nerf": ["<primary_expression>", 0], "string": ["<primary_expression>", 0],
         "identifier": ["<primary_expression>", 1],
         "(": ["<primary_expression>", 2],
-        "stack": ["<primary_expression>", 3],
-        "craft": ["<primary_expression>", 3],
-        "drop": ["<primary_expression>", 3],
-        "count": ["<primary_expression>", 3],
-        "split": ["<primary_expression>", 3]
+        "count": ["<primary_expression>", 3], "craft": ["<primary_expression>", 3], "drop": ["<primary_expression>", 3], "split": ["<primary_expression>", 3], "stack": ["<primary_expression>", 3]
     },
-    "<case_value>": {
-        "integer": ["<case_value>", 0],
-        "char": ["<case_value>", 1],
-        "string": ["<case_value>", 2],
-        "buff": ["<case_value>", 3],
-        "nerf": ["<case_value>", 3]
-    },
-    "<boolean_literal>": {
-        "buff": ["<boolean_literal>", 0],
-        "nerf": ["<boolean_literal>", 1]
-    },
-    "<constant_value>": {
-        "integer": ["<constant_value>", 0],
-        "float": ["<constant_value>", 0],
-        "string": ["<constant_value>", 0],
-        "char": ["<constant_value>", 0],
-        "buff": ["<constant_value>", 0],
-        "nerf": ["<constant_value>", 0],
-        "(": ["<constant_value>", 0]
-    },
-    "<const_add_expression>": {
-        "integer": ["<const_add_expression>", 0],
-        "float": ["<const_add_expression>", 0],
-        "string": ["<const_add_expression>", 0],
-        "char": ["<const_add_expression>", 0],
-        "buff": ["<const_add_expression>", 0],
-        "nerf": ["<const_add_expression>", 0],
-        "(": ["<const_add_expression>", 0]
-    },
-    "<const_add_tail>": {
-        "+": ["<const_add_tail>", 0],
-        "-": ["<const_add_tail>", 1],
-        ")": ["<const_add_tail>", 2],
-        ";": ["<const_add_tail>", 2],
-        ",": ["<const_add_tail>", 2],
-        "}": ["<const_add_tail>", 2]
-    },
-    "<const_mul_expression>": {
-        "integer": ["<const_mul_expression>", 0],
-        "float": ["<const_mul_expression>", 0],
-        "string": ["<const_mul_expression>", 0],
-        "char": ["<const_mul_expression>", 0],
-        "buff": ["<const_mul_expression>", 0],
-        "nerf": ["<const_mul_expression>", 0],
-        "(": ["<const_mul_expression>", 0]
-    },
-    "<const_mul_tail>": {
-        "*": ["<const_mul_tail>", 0],
-        "/": ["<const_mul_tail>", 1],
-        "%": ["<const_mul_tail>", 2],
-        "+": ["<const_mul_tail>", 3],
-        "-": ["<const_mul_tail>", 3],
-        ")": ["<const_mul_tail>", 3],
-        ";": ["<const_mul_tail>", 3],
-        ",": ["<const_mul_tail>", 3],
-        "}": ["<const_mul_tail>", 3]
-    },
-    "<const_primary>": {
-        "integer": ["<const_primary>", 0],
-        "float": ["<const_primary>", 0],
-        "string": ["<const_primary>", 0],
-        "char": ["<const_primary>", 0],
-        "buff": ["<const_primary>", 0],
-        "nerf": ["<const_primary>", 0],
-        "(": ["<const_primary>", 1]
-    },
-    "<condition>": {
-        "+": ["<condition>", 0],
-        "-": ["<condition>", 0],
-        "!": ["<condition>", 0],
-        "++": ["<condition>", 0],
-        "--": ["<condition>", 0],
-        "integer": ["<condition>", 0],
-        "float": ["<condition>", 0],
-        "string": ["<condition>", 0],
-        "char": ["<condition>", 0],
-        "buff": ["<condition>", 0],
-        "nerf": ["<condition>", 0],
-        "identifier": ["<condition>", 0],
-        "(": ["<condition>", 0]
-    },
-    "<literal>": {
-        "integer": ["<literal>", 0],
-        "float": ["<literal>", 1],
-        "string": ["<literal>", 2],
-        "char": ["<literal>", 3],
-        "buff": ["<literal>", 4],
-        "nerf": ["<literal>", 4]
-    },
-    "<assignment_expression>": {
-        "identifier": ["<assignment_expression>", 0]
+    "<data_type>": {
+        "frag": ["<data_type>", 0],
+        "elo": ["<data_type>", 1],
+        "ign": ["<data_type>", 2],
+        "surebol": ["<data_type>", 3],
+        "dodge": ["<data_type>", 4],
+        "tag": ["<data_type>", 5]
     },
     "<assignment_operator>": {
-        "=":  ["<assignment_operator>", 0],
+        "=": ["<assignment_operator>", 0],
         "+=": ["<assignment_operator>", 1],
         "-=": ["<assignment_operator>", 2],
         "*=": ["<assignment_operator>", 3],
         "/=": ["<assignment_operator>", 4],
         "%=": ["<assignment_operator>", 5]
     },
+    "<assignment_expression>": {
+        "identifier": ["<assignment_expression>", 0]
+    },
     "<assign_tail>": {
-        "=":  ["<assign_tail>", 0],
-        "+=": ["<assign_tail>", 0],
-        "-=": ["<assign_tail>", 0],
-        "*=": ["<assign_tail>", 0],
-        "/=": ["<assign_tail>", 0],
-        "%=": ["<assign_tail>", 0],
+        "=": ["<assign_tail>", 0], "%=": ["<assign_tail>", 0], "*=": ["<assign_tail>", 0], "+=": ["<assign_tail>", 0], "-=": ["<assign_tail>", 0], "/=": ["<assign_tail>", 0],
         "++": ["<assign_tail>", 1],
         "--": ["<assign_tail>", 2],
-        ".":  ["<assign_tail>", 3]
+        ".": ["<assign_tail>", 3]
+    },
+    "<condition>": {
+        "!": ["<condition>", 0], "(": ["<condition>", 0], "+": ["<condition>", 0], "++": ["<condition>", 0], "-": ["<condition>", 0], "--": ["<condition>", 0], "buff": ["<condition>", 0], "char": ["<condition>", 0], "count": ["<condition>", 0], "craft": ["<condition>", 0], "drop": ["<condition>", 0], "float": ["<condition>", 0], "identifier": ["<condition>", 0], "integer": ["<condition>", 0], "nerf": ["<condition>", 0], "split": ["<condition>", 0], "stack": ["<condition>", 0], "string": ["<condition>", 0]
+    },
+    "<literal>": {
+        "integer": ["<literal>", 0],
+        "float": ["<literal>", 1],
+        "string": ["<literal>", 2],
+        "char": ["<literal>", 3],
+        "buff": ["<literal>", 4], "nerf": ["<literal>", 4]
+    },
+    "<boolean_literal>": {
+        "buff": ["<boolean_literal>", 0],
+        "nerf": ["<boolean_literal>", 1]
+    },
+    "<constant_value>": {
+        "(": ["<constant_value>", 0], "buff": ["<constant_value>", 0], "char": ["<constant_value>", 0], "float": ["<constant_value>", 0], "integer": ["<constant_value>", 0], "nerf": ["<constant_value>", 0], "string": ["<constant_value>", 0]
+    },
+    "<const_add_expression>": {
+        "(": ["<const_add_expression>", 0], "buff": ["<const_add_expression>", 0], "char": ["<const_add_expression>", 0], "float": ["<const_add_expression>", 0], "integer": ["<const_add_expression>", 0], "nerf": ["<const_add_expression>", 0], "string": ["<const_add_expression>", 0]
+    },
+    "<const_add_tail>": {
+        "+": ["<const_add_tail>", 0],
+        "-": ["<const_add_tail>", 1],
+        ")": ["<const_add_tail>", 2], ",": ["<const_add_tail>", 2], ";": ["<const_add_tail>", 2], "}": ["<const_add_tail>", 2]
+    },
+    "<const_mul_expression>": {
+        "(": ["<const_mul_expression>", 0], "buff": ["<const_mul_expression>", 0], "char": ["<const_mul_expression>", 0], "float": ["<const_mul_expression>", 0], "integer": ["<const_mul_expression>", 0], "nerf": ["<const_mul_expression>", 0], "string": ["<const_mul_expression>", 0]
+    },
+    "<const_mul_tail>": {
+        "*": ["<const_mul_tail>", 0],
+        "/": ["<const_mul_tail>", 1],
+        "%": ["<const_mul_tail>", 2],
+        ")": ["<const_mul_tail>", 3], "+": ["<const_mul_tail>", 3], ",": ["<const_mul_tail>", 3], "-": ["<const_mul_tail>", 3], ";": ["<const_mul_tail>", 3], "}": ["<const_mul_tail>", 3]
+    },
+    "<const_primary>": {
+        "buff": ["<const_primary>", 0], "char": ["<const_primary>", 0], "float": ["<const_primary>", 0], "integer": ["<const_primary>", 0], "nerf": ["<const_primary>", 0], "string": ["<const_primary>", 0],
+        "(": ["<const_primary>", 1]
+    },
+    "<case_value>": {
+        "integer": ["<case_value>", 0],
+        "char": ["<case_value>", 1],
+        "string": ["<case_value>", 2],
+        "buff": ["<case_value>", 3], "nerf": ["<case_value>", 3]
     },
     "<integer_literal>": {
         "integer": ["<integer_literal>", 0]
