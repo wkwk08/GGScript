@@ -1409,16 +1409,18 @@ class Lexer:
             return
 
         if self.current_char and self.current_char.isalpha():
-            # It's a method call like .split or .count
+            # It's a method call
             method_str = ''
             while self.current_char and (self.current_char.isalnum() or self.current_char == '_'):
                 method_str += self.current_char
                 self.advance()
 
-            if method_str in {'split', 'count'}:
+            # Check if it is a built-in method mapped in your CFG
+            if method_str in {'split', 'count', 'craft', 'drop', 'stack'}:
                 tokens.append(Token(TokenType.dot, '.', start_pos.ln, start_pos.col))
                 tokens.append(Token(getattr(TokenType, method_str), method_str, start_pos.ln, start_pos.col + 1))
             else:
+                # Throw an error if it's not a recognized built-in method
                 errors.append(LexicalError(start_pos, f"Unknown method '{method_str}' after '.'"))
             return
 
