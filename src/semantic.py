@@ -398,6 +398,11 @@ class SemanticAnalyzer:
         if node.init_value_n: 
             val_type, value, _ = self.visit_node(node.init_value_n)
 
+        if val_type and val_type[0] == 'arr' and isinstance(node.init_value_n, node_func_call) and node.init_value_n.id_t["tokenName"] == "stack":
+            arr_dtype = ('arr', dtype[1])
+            self.curr_scope.set_array(id_name, [], dtype=arr_dtype, arr_info={'dimension': 1, 'sizes': []}, const=const)
+            return
+
         default_val = self.default_vals[dtype[1]]
 
         if not val_type and value is None:
@@ -585,6 +590,11 @@ class SemanticAnalyzer:
         func_name = node.id_t["tokenName"]
         func_symbol = self.curr_scope.get(func_name)
         err_n = ErrorNode(node.id_t["tokenLine"], node.id_t["tokenCol"], node.id_t["tokenName"])
+
+        if func_name == "stack":
+            return (('arr', 'frag'), [], err_n)
+        
+        func_symbol = self.curr_scope.get(func_name)
         
         if not func_symbol:
             self.logError(f"Function '{func_name}' hasn't been declared yet.", err_n)
@@ -645,9 +655,9 @@ class SemanticAnalyzer:
             return (('lit', 'dodge'), None, err_n)
 
         elif method_name == "split":
-            if target_type[1] != "ign":
-                self.logError(f"Method 'split' is only valid for string ('ign') types.", target_err)
-            return (('arr', 'ign'), [], err_n)
+            if target_type[0] != "arr" and target_type[1] != "ign":
+                self.logError(f"Method 'split' is only valid for arrays or string ('ign') types.", target_err)
+            return (('lit', 'ign'), "", err_n)
 
         self.logError(f"Unknown method '{method_name}'.", err_n)
 
@@ -1252,7 +1262,7 @@ class ASTBuilder:
                     val = self.parse_expression()
                 self.expect(TokenType.terminator)
                 stmts.append(node_return_block(val))
-            elif self.current_token.type == TokenType.identifier:
+            elif self.current_token.type in (TokenType.identifier, TokenType.stack, TokenType.craft, TokenType.drop, TokenType.count, TokenType.split):
                 stmts.append(self.parse_assign_or_call())
             else:
                 self.errors.append(SemanticError(f"Ln {self.current_token.line}, Col {self.current_token.column}: Unexpected token {self.current_token.type}"))
@@ -1510,7 +1520,10 @@ class ASTBuilder:
         if self.match(TokenType.buff) or self.match(TokenType.nerf):
             return node_bool(self.token_to_dict(tok))
         
-        if self.match(TokenType.identifier):
+        if self.current_token.type in (TokenType.identifier, TokenType.stack, TokenType.craft, TokenType.drop, TokenType.count, TokenType.split):
+            tok = self.current_token
+            self.advance()
+             
             if self.match(TokenType.lparen):
                 args = []
                 if self.current_token.type != TokenType.rparen:

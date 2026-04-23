@@ -218,6 +218,9 @@ class GGScriptArray:
         var_type = node.dtype_t["tokenName"]
         
         if node.init_value_n:
+            if type(node.init_value_n).__name__ == "node_func_call" and node.init_value_n.id_t["tokenName"] == "stack":
+                self.generated_code += f"{self.indent()}{var_name} = GGScriptArray('{var_type}', 1)\n"
+                return "" 
             val = self.visit(node.init_value_n)
             if var_type == 'frag': val = f"int({val})"
             elif var_type == 'elo': val = f"float({val})"
@@ -418,6 +421,8 @@ class GGScriptArray:
         func_name = node.id_t["tokenName"]
         if func_name in dir(builtins): func_name = f"_{func_name}"
         args = [str(self.visit(arg)) for arg in node.args_n]
+        if func_name == "stack":
+            return "GGScriptArray('frag', 1)"
         return f"{func_name}({', '.join(args)})"
 
     def visit_node_method_call(self, node):
@@ -427,18 +432,16 @@ class GGScriptArray:
         args = [str(self.visit(arg)) for arg in node.args_n]
         
         # Translate native GGScript Array and String Methods natively to python logic
-        if method_name == "stack":
-            self.generated_code += f"{self.indent()}{var_name}.append({', '.join(args)})\n"
+        if method_name == "craft":      # append() equivalent
+            self.generated_code += f"{self.indent()}{var_name}.append({args[0]})\n"
             return ""
-        elif method_name == "drop":
-            return f"{var_name}.pop()"
-        elif method_name == "craft":
+        elif method_name == "drop":     # insert() equivalent
             self.generated_code += f"{self.indent()}{var_name}.insert({args[0]}, {args[1]})\n"
             return ""
-        elif method_name == "count":
-            return f"len({var_name})"
-        elif method_name == "split":
-            return f"{var_name}.split({', '.join(args)})"
+        elif method_name == "count":    # pop() equivalent
+            return f"{var_name}.pop()"
+        elif method_name == "split":    # toString() equivalent
+            return f"str({var_name})"
             
         return f"{var_name}.{method_name}({', '.join(args)})"
 
