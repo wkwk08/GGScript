@@ -135,7 +135,44 @@ frag lobby() {
 
         async function initPyodide() {
             pyodide = await loadPyodide();
-            window.console_disp = (...args) => printTerm(args.join(""), "output", "");
+            window.console_disp = (...args) => {
+                let outputText = "";
+                let i = 0;
+                while (i < args.length) {
+                    let item = args[i];
+                    if (typeof item === 'string' && item.includes('%')) {
+                        // Match C-style format specifiers like %.2f, %d, %f etc.
+                        const matches = item.match(/%[0-9]*\.?[0-9]*[df]/g);
+                        if (matches && matches.length > 0 && i + matches.length < args.length) {
+                            let formattedItem = item;
+                            for (let j = 0; j < matches.length; j++) {
+                                let val = args[i + 1 + j];
+                                let formatSpec = matches[j];
+                                let replacement = val;
+                                
+                                if (formatSpec.includes('f')) {
+                                    let numVal = parseFloat(val);
+                                    if (!isNaN(numVal)) {
+                                        let decimalsMatch = formatSpec.match(/\.(\d+)f/);
+                                        // If it has a .2f, format to 2. If it's just %f, default to 6 decimal places.
+                                        replacement = decimalsMatch ? numVal.toFixed(parseInt(decimalsMatch[1])) : numVal.toFixed(6);
+                                    }
+                                } else if (formatSpec.includes('d')) {
+                                    replacement = parseInt(val).toString();
+                                }
+                                
+                                formattedItem = formattedItem.replace(formatSpec, replacement);
+                            }
+                            outputText += formattedItem;
+                            i += matches.length + 1; // Skip the arguments we just injected
+                            continue;
+                        }
+                    }
+                    outputText += String(item);
+                    i++;
+                }
+                printTerm(outputText, "output", "");
+            };
             window.console_insp = async (promptText) => {
                 return new Promise((resolve) => {
                     const editableSpan = document.createElement("span");

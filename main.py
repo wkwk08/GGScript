@@ -552,7 +552,33 @@ frag lobby() {
                     
                 # 2. Expose specific UI commands to the generated Python code
                 def console_disp(*args):
-                    output_text = "".join(map(str, args))
+                    args_list = list(args)
+                    i = 0
+                    output_parts = []
+                    
+                    while i < len(args_list):
+                        item = args_list[i]
+                        # If it's a string and has a % formatter (e.g., %.2f, %d, %f)
+                        if isinstance(item, str) and '%' in item:
+                            matches = re.findall(r'%[0-9]*\.?[0-9]*[df]', item)
+                            num_formats = len(matches)
+                            
+                            # If we have formatters and enough arguments following the string
+                            if num_formats > 0 and i + num_formats < len(args_list):
+                                format_values = tuple(args_list[i+1 : i+1+num_formats])
+                                try:
+                                    # Use native Python string interpolation
+                                    formatted_item = item % format_values
+                                    output_parts.append(formatted_item)
+                                    i += num_formats + 1  # Skip the arguments we just consumed
+                                    continue
+                                except Exception:
+                                    pass # Fallback to normal printing if formatting fails
+                        
+                        output_parts.append(str(item))
+                        i += 1
+
+                    output_text = "".join(output_parts)    
                     # Don't add automatic newline - user controls via \n in code
                     self.root.after(0, self.print_term, output_text, "output", "")
 
